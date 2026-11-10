@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support — Splitaway</title>
+<style>
+  :root { --bg: #0a0a0f; --bg2: #13131a; --t1: #f0f0f8; --t2: #a0a0b8; --accent: #6c63ff; --green: #4caf81; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f4f4fb; --bg2: #ffffff; --t1: #1a1a2e; --t2: #555570; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; padding: 0 0 60px; }
+  header { background: var(--bg2); border-bottom: 1px solid rgba(108,99,255,.2); padding: 18px 24px; display: flex; align-items: center; gap: 14px; }
+  header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
+  main { max-width: 720px; margin: 0 auto; padding: 36px 24px; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 32px 0 12px; color: var(--accent); }
+  h3 { font-size: 1rem; font-weight: 700; margin: 20px 0 8px; }
+  p { margin-bottom: 14px; color: var(--t2); }
+  ul { margin: 0 0 14px 22px; color: var(--t2); }
+  li { margin-bottom: 6px; }
+  strong { color: var(--t1); }
+  .contact-card { background: var(--bg2); border: 1px solid rgba(108,99,255,.25); border-radius: 14px; padding: 24px; margin: 24px 0; }
+  .contact-card h3 { margin: 0 0 8px; color: var(--t1); }
+  .contact-card a { color: var(--accent); font-weight: 600; }
+  .faq-item { background: var(--bg2); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
+  .faq-item h3 { font-size: 0.95rem; margin: 0 0 8px; color: var(--t1); }
+  .faq-item p { margin: 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← Splitaway</a>
+  <h1>Support</h1>
+</header>
+<main>
+
+  <div class="contact-card">
+    <h3>📧 Kontakt</h3>
+    <p style="margin:0;color:var(--t2)">Bei Fragen zur App, Fehlermeldungen und Vorschlägen:</p>
+    <p style="margin:8px 0 0"><a href="mailto:rafaelbabaew@googlemail.com">rafaelbabaew@googlemail.com</a></p>
+  </div>
+
+  <h2>Häufige Fragen</h2>
+
+  <div class="faq-item"><h3>Wie lade ich Freunde zu einer Reise ein?</h3>
+    <p>Öffnen Sie die Einstellungen → tippen Sie auf das QR-Code-Symbol. Teilen Sie den Link oder QR-Code mit den Teilnehmern. Über den Link gelangen sie direkt in Ihre Reise.</p></div>
+
+  <div class="faq-item"><h3>Daten werden nicht zwischen Geräten synchronisiert</h3>
+    <p>Prüfen Sie Ihre Internetverbindung. Das Symbol oben rechts zeigt den Status: grün — online, rot — offline. Offline werden die Daten lokal gespeichert und nach Wiederherstellung der Verbindung synchronisiert.</p></div>
+
+  <div class="faq-item"><h3>Ich habe die Reise versehentlich verlassen. Wie komme ich zurück?</h3>
+    <p>Bitten Sie den Organisator, Ihnen den Einladungslink erneut zu schicken. Öffnen Sie den Link — Sie gelangen zurück in die Reise und wählen Ihren Namen.</p></div>
+
+  <div class="faq-item"><h3>Die Belegerkennung (OCR) funktioniert nicht</h3>
+    <p>Achten Sie auf ein scharfes, gut beleuchtetes Foto. Die App nutzt KI (Claude) zur Erkennung — das Ergebnis hängt von der Fotoqualität ab. Positionen können Sie jederzeit manuell eingeben.</p></div>
+
+  <div class="faq-item"><h3>Wie lösche ich eine Reise?</h3>
+    <p>Nur der Organisator kann eine Reise löschen. Einstellungen öffnen → nach unten scrollen → „Reise löschen“. Dies ist endgültig und entfernt alle Daten aus der Datenbank.</p></div>
+
+  <div class="faq-item"><h3>Die App öffnet sich offline nicht</h3>
+    <p>Nach dem ersten Öffnen wird die App für die Offline-Nutzung zwischengespeichert. Falls nicht, öffnen Sie die App mindestens einmal online; danach steht sie auch ohne Internet zur Verfügung.</p></div>
+
+  <div class="faq-item"><h3>Wie füge ich die App zum Startbildschirm hinzu?</h3>
+    <p><strong>Android (Chrome):</strong> Menü ⋮ → „Zum Startbildschirm hinzufügen“.<br>
+    <strong>iOS (Safari):</strong> „Teilen“ → „Zum Home-Bildschirm“.</p></div>
+
+  <div class="faq-item"><h3>Sind meine Daten sicher?</h3>
+    <p>Die Daten sind nur für Teilnehmer mit Einladungslink zugänglich. Jede Datenbankanfrage wird anhand des Tokens geprüft. Mehr dazu in unserer <a href="/privacy.html" style="color:var(--accent)">Datenschutzerklärung</a>.</p></div>
+
+  <h2>Rechtliches</h2>
+  <ul>
+    <li><a href="/privacy.html" style="color:var(--accent)">Datenschutzerklärung</a></li>
+    <li><a href="/terms.html" style="color:var(--accent)">Nutzungsbedingungen</a></li>
+  </ul>
+
+</main>
+</body>
+</html>

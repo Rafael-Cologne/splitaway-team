@@ -1,0 +1,34 @@
+node_modules/
+.env
+.env.*
+!.env.example
+!.env.*.example
+# Local backups and build deliverables must never be published through Git.
+/artifacts/
+*.p12
+*.pfx
+*.log
+.DS_Store
+dist/
+# Supabase anon key is public by design — sb-config.js is committed
+# Тестовые фото чеков и результаты OCR (могут содержать персональные данные)
+test-receipts/*.jpg
+test-receipts/*.jpeg
+test-receipts/*.png
+test-receipts/*.heic
+test-receipts/results/
+# Android keystore — никогда в git
+*.jks
+*.keystore
+keystore.properties
+!keystore.properties.example
+
+# APK build artifacts / deploy zips — not source, shouldn't be tracked
+*.apk
+deploy-*.zip
+
+# Contains developer machine-specific paths/username — local settings only
+.claude/settings.local.json
+
+# Local Netlify folder
+.netlify

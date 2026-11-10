@@ -1,0 +1,45 @@
+{
+  "name": "splitaway",
+  "version": "1.0.0",
+  "description": "Умное деление расходов в поездках",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rafel-Cologne/Splitaway.git"
+  },
+  "homepage": "https://splitaway.netlify.app",
+  "main": "server.js",
+  "scripts": {
+    "dev": "live-server public --port=3000 --open=/index.html",
+    "start": "node server.js",
+    "build": "npm run copy-deploy",
+    "copy-deploy": "node scripts/copy-deploy.cjs",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:build": "npx cap sync android && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.99.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsqr": "^1.4.0",
+    "lucide": "0.474.0",
+    "qrcodejs2": "0.0.2",
+    "web-push": "^3.6.6"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "live-server": "^1.2.2"
+  },
+  "keywords": [
+    "splitaway",
+    "travel",
+    "expenses",
+    "pwa"
+  ],
+  "author": "Splitaway",
+  "license": "MIT"
+}

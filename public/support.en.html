@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support — Splitaway</title>
+<style>
+  :root { --bg: #0a0a0f; --bg2: #13131a; --t1: #f0f0f8; --t2: #a0a0b8; --accent: #6c63ff; --green: #4caf81; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f4f4fb; --bg2: #ffffff; --t1: #1a1a2e; --t2: #555570; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; padding: 0 0 60px; }
+  header { background: var(--bg2); border-bottom: 1px solid rgba(108,99,255,.2); padding: 18px 24px; display: flex; align-items: center; gap: 14px; }
+  header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
+  main { max-width: 720px; margin: 0 auto; padding: 36px 24px; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 32px 0 12px; color: var(--accent); }
+  h3 { font-size: 1rem; font-weight: 700; margin: 20px 0 8px; }
+  p { margin-bottom: 14px; color: var(--t2); }
+  ul { margin: 0 0 14px 22px; color: var(--t2); }
+  li { margin-bottom: 6px; }
+  strong { color: var(--t1); }
+  .contact-card { background: var(--bg2); border: 1px solid rgba(108,99,255,.25); border-radius: 14px; padding: 24px; margin: 24px 0; }
+  .contact-card h3 { margin: 0 0 8px; color: var(--t1); }
+  .contact-card a { color: var(--accent); font-weight: 600; }
+  .faq-item { background: var(--bg2); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
+  .faq-item h3 { font-size: 0.95rem; margin: 0 0 8px; color: var(--t1); }
+  .faq-item p { margin: 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← Splitaway</a>
+  <h1>Support</h1>
+</header>
+<main>
+
+  <div class="contact-card">
+    <h3>📧 Contact us</h3>
+    <p style="margin:0;color:var(--t2)">For questions about the app, bug reports and suggestions:</p>
+    <p style="margin:8px 0 0"><a href="mailto:rafaelbabaew@googlemail.com">rafaelbabaew@googlemail.com</a></p>
+  </div>
+
+  <h2>Frequently asked questions</h2>
+
+  <div class="faq-item"><h3>How do I invite friends to a trip?</h3>
+    <p>Open Settings → tap the QR code icon. Share the link or QR code with participants. The link takes them straight into your trip.</p></div>
+
+  <div class="faq-item"><h3>Data does not sync between devices</h3>
+    <p>Make sure you are online. The icon in the top right shows the status: green — online, red — offline. While offline, data is saved locally and synced once the connection is back.</p></div>
+
+  <div class="faq-item"><h3>I accidentally left a trip. How do I get back?</h3>
+    <p>Ask the organiser to send the invitation link again. Open the link — you will be taken back to the trip and can pick your name.</p></div>
+
+  <div class="faq-item"><h3>OCR does not recognise a receipt</h3>
+    <p>Make sure the image is sharp and well lit. The app uses AI (Claude) for recognition, so the result depends on photo quality. You can always enter items manually.</p></div>
+
+  <div class="faq-item"><h3>How do I delete a trip?</h3>
+    <p>Only the organiser can delete a trip. Open Settings → scroll down → “Delete trip”. This cannot be undone and removes all data from the database.</p></div>
+
+  <div class="faq-item"><h3>The app does not open offline</h3>
+    <p>After the first launch the app is cached for offline use. If that did not happen, open the app online at least once; the browser will then keep it for use without internet.</p></div>
+
+  <div class="faq-item"><h3>How do I add the app to my home screen?</h3>
+    <p><strong>Android (Chrome):</strong> menu ⋮ → “Add to Home screen”.<br>
+    <strong>iOS (Safari):</strong> “Share” button → “Add to Home Screen”.</p></div>
+
+  <div class="faq-item"><h3>Is my data safe?</h3>
+    <p>Data is only available to participants who have the invitation link. Every database request is checked against the token. More in our <a href="/privacy.html" style="color:var(--accent)">Privacy Policy</a>.</p></div>
+
+  <h2>Legal documents</h2>
+  <ul>
+    <li><a href="/privacy.html" style="color:var(--accent)">Privacy Policy</a></li>
+    <li><a href="/terms.html" style="color:var(--accent)">Terms of Use</a></li>
+  </ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Splitaway</title>
+<style>
+  :root { --bg: #0a0a0f; --bg2: #13131a; --t1: #f0f0f8; --t2: #a0a0b8; --accent: #6c63ff; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f4f4fb; --bg2: #ffffff; --t1: #1a1a2e; --t2: #555570; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; padding: 0 0 60px; }
+  header { background: var(--bg2); border-bottom: 1px solid rgba(108,99,255,.2); padding: 18px 24px; display: flex; align-items: center; gap: 14px; }
+  header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
+  main { max-width: 720px; margin: 0 auto; padding: 36px 24px; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 32px 0 12px; color: var(--accent); }
+  p { margin-bottom: 14px; color: var(--t2); }
+  ul { margin: 0 0 14px 22px; color: var(--t2); }
+  li { margin-bottom: 6px; }
+  .updated { font-size: 0.82rem; color: var(--t2); margin-bottom: 28px; }
+  strong { color: var(--t1); }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← Splitaway</a>
+  <h1>Privacy Policy</h1>
+</header>
+<main>
+  <p class="updated">Last updated: 13 June 2026 · English translation; the Russian version prevails in case of discrepancies.</p>
+
+  <h2>1. Who we are</h2>
+  <p>Splitaway is an app for tracking shared travel expenses. It is developed as a personal project (<a href="mailto:rafaelbabaew@googlemail.com" style="color:var(--accent)">rafaelbabaew@googlemail.com</a>). The app runs as a progressive web app (PWA) and as an Android app.</p>
+
+  <h2>2. What data we collect</h2>
+  <p>Splitaway only collects data that you enter yourself:</p>
+  <ul>
+    <li><strong>Trip data</strong> — name, destination, list of participants (names, not linked to real identities).</li>
+    <li><strong>Financial records</strong> — expense amounts and how they are split. We do not process real payments.</li>
+    <li><strong>Member photo (optional)</strong> — if you add a photo yourself in Settings, it is reduced on your phone to about 160×160 pixels and stored with your trip member record. Everyone in that trip can see it. You can remove it at any time; the trip admin can remove it too. It is deleted together with the trip.</li>
+    <li><strong>Install identifier</strong> — a random code the app creates itself to link your name in a trip to this device. It is not a hardware device ID or an advertising identifier. It is stored with the trip member record and removed when the name is released or the trip is deleted.</li>
+    <li><strong>Push subscriptions</strong> — notification endpoint and keys used to send alerts (only with your explicit consent).</li>
+  </ul>
+  <p>We <strong>do not collect</strong>: user names, email, phone number, geolocation, hardware device IDs, advertising identifiers, or tracking cookies.</p>
+
+  <h2>3. How we store data</h2>
+  <ul>
+    <li><strong>Locally</strong> — data is stored in your browser's localStorage.</li>
+    <li><strong>In the cloud</strong> — when syncing, data is sent to Supabase (PostgreSQL). Access is protected by invitation tokens and Row Level Security.</li>
+    <li><strong>Hosting</strong> — static files are hosted on Netlify (USA). Supabase data is stored in the EU West region.</li>
+  </ul>
+
+  <h2>4. Shared access to a trip</h2>
+  <p>A trip is only accessible to people who have the invitation link with its unique token. Data is not public. The trip organiser can delete all data at any time in the settings.</p>
+
+  <h2>5. Third-party services</h2>
+  <ul>
+    <li><strong>Supabase</strong> — database and realtime (<a href="https://supabase.com/privacy" style="color:var(--accent)" target="_blank">policy</a>).</li>
+    <li><strong>Netlify</strong> — hosting (<a href="https://www.netlify.com/privacy/" style="color:var(--accent)" target="_blank">policy</a>).</li>
+    <li><strong>Anthropic Claude</strong> — receipt OCR via an API proxy on Netlify Functions (<a href="https://www.anthropic.com/privacy" style="color:var(--accent)" target="_blank">policy</a>). Receipt images are not stored.</li>
+  </ul>
+
+  <h2>6. Deleting data</h2>
+  <p>To delete all trip data: open the app → Settings → “Delete trip”. This irreversibly deletes all records from the database. Data in localStorage is cleared via “Browser settings → Clear site data”.</p>
+
+  <h2>7. Children</h2>
+  <p>The app is not intended for children under 13 and does not knowingly collect data about them.</p>
+
+  <h2>8. Changes</h2>
+  <p>If the policy changes significantly, we will update the date at the top. The current version is always available at <strong>splitaway.netlify.app/privacy.html</strong>.</p>
+
+  <h2>9. Contact</h2>
+  <p>Questions: <a href="mailto:rafaelbabaew@googlemail.com" style="color:var(--accent)">rafaelbabaew@googlemail.com</a></p>
+</main>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datenschutzerklärung — Splitaway</title>
+<style>
+  :root { --bg: #0a0a0f; --bg2: #13131a; --t1: #f0f0f8; --t2: #a0a0b8; --accent: #6c63ff; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f4f4fb; --bg2: #ffffff; --t1: #1a1a2e; --t2: #555570; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; padding: 0 0 60px; }
+  header { background: var(--bg2); border-bottom: 1px solid rgba(108,99,255,.2); padding: 18px 24px; display: flex; align-items: center; gap: 14px; }
+  header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
+  main { max-width: 720px; margin: 0 auto; padding: 36px 24px; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 32px 0 12px; color: var(--accent); }
+  p { margin-bottom: 14px; color: var(--t2); }
+  ul { margin: 0 0 14px 22px; color: var(--t2); }
+  li { margin-bottom: 6px; }
+  .updated { font-size: 0.82rem; color: var(--t2); margin-bottom: 28px; }
+  strong { color: var(--t1); }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← Splitaway</a>
+  <h1>Datenschutzerklärung</h1>
+</header>
+<main>
+  <p class="updated">Zuletzt aktualisiert: 13. Juni 2026 · Deutsche Übersetzung; bei Abweichungen gilt die russische Fassung.</p>
+
+  <h2>1. Wer wir sind</h2>
+  <p>Splitaway ist eine App zur gemeinsamen Erfassung von Reiseausgaben. Sie wird als privates Projekt entwickelt (<a href="mailto:rafaelbabaew@googlemail.com" style="color:var(--accent)">rafaelbabaew@googlemail.com</a>). Die App läuft als Progressive Web App (PWA) und als Android-App.</p>
+
+  <h2>2. Welche Daten wir erheben</h2>
+  <p>Splitaway erhebt nur Daten, die Sie selbst eingeben:</p>
+  <ul>
+    <li><strong>Reisedaten</strong> — Name, Reiseziel, Teilnehmerliste (Namen ohne Bezug zu realen Identitäten).</li>
+    <li><strong>Finanzeinträge</strong> — Ausgabenbeträge und ihre Aufteilung. Wir wickeln keine echten Zahlungen ab.</li>
+    <li><strong>Teilnehmerfoto (freiwillig)</strong> — wenn Sie selbst in den Einstellungen ein Foto hinzufügen, wird es auf Ihrem Telefon auf etwa 160×160 Pixel verkleinert und beim Teilnehmereintrag der Reise gespeichert. Alle Teilnehmer dieser Reise können es sehen. Sie können es jederzeit entfernen; auch der Reise-Admin kann es entfernen. Mit der Reise wird es gelöscht.</li>
+    <li><strong>Installations-Kennung</strong> — ein zufälliger Code, den die App selbst erzeugt, um Ihren Namen in einer Reise mit diesem Gerät zu verknüpfen. Es ist keine Hardware-Geräte-ID und keine Werbe-ID. Sie wird beim Teilnehmereintrag der Reise gespeichert und gelöscht, wenn der Name freigegeben oder die Reise gelöscht wird.</li>
+    <li><strong>Push-Abonnements</strong> — Endpunkt und Schlüssel für Benachrichtigungen (nur mit Ihrer ausdrücklichen Einwilligung).</li>
+  </ul>
+  <p>Wir erheben <strong>nicht</strong>: Benutzernamen, E-Mail, Telefonnummer, Standort, Hardware-Geräte-IDs, Werbe-IDs oder Tracking-Cookies.</p>
+
+  <h2>3. Wie wir Daten speichern</h2>
+  <ul>
+    <li><strong>Lokal</strong> — Daten werden im localStorage Ihres Browsers gespeichert.</li>
+    <li><strong>In der Cloud</strong> — bei der Synchronisierung werden Daten an Supabase (PostgreSQL) übertragen. Der Zugriff ist durch Einladungstokens und Row Level Security geschützt.</li>
+    <li><strong>Hosting</strong> — statische Dateien werden bei Netlify (USA) gehostet. Supabase-Daten werden in der Region EU West gespeichert.</li>
+  </ul>
+
+  <h2>4. Gemeinsamer Zugriff auf eine Reise</h2>
+  <p>Eine Reise ist nur für Personen zugänglich, die den Einladungslink mit dem eindeutigen Token haben. Die Daten sind nicht öffentlich. Der Organisator kann alle Daten jederzeit in den Einstellungen löschen.</p>
+
+  <h2>5. Dienste Dritter</h2>
+  <ul>
+    <li><strong>Supabase</strong> — Datenbank und Echtzeit (<a href="https://supabase.com/privacy" style="color:var(--accent)" target="_blank">Datenschutz</a>).</li>
+    <li><strong>Netlify</strong> — Hosting (<a href="https://www.netlify.com/privacy/" style="color:var(--accent)" target="_blank">Datenschutz</a>).</li>
+    <li><strong>Anthropic Claude</strong> — Belegerkennung (OCR) über einen API-Proxy auf Netlify Functions (<a href="https://www.anthropic.com/privacy" style="color:var(--accent)" target="_blank">Datenschutz</a>). Belegbilder werden nicht gespeichert.</li>
+  </ul>
+
+  <h2>6. Löschen von Daten</h2>
+  <p>So löschen Sie alle Reisedaten: App öffnen → Einstellungen → „Reise löschen“. Dadurch werden alle Einträge unwiderruflich aus der Datenbank gelöscht. Daten im localStorage löschen Sie über „Browsereinstellungen → Websitedaten löschen“.</p>
+
+  <h2>7. Kinder</h2>
+  <p>Die App richtet sich nicht an Kinder unter 13 Jahren und erhebt wissentlich keine Daten über sie.</p>
+
+  <h2>8. Änderungen</h2>
+  <p>Bei wesentlichen Änderungen aktualisieren wir das Datum oben. Die aktuelle Fassung ist immer unter <strong>splitaway.netlify.app/privacy.html</strong> abrufbar.</p>
+
+  <h2>9. Kontakt</h2>
+  <p>Fragen: <a href="mailto:rafaelbabaew@googlemail.com" style="color:var(--accent)">rafaelbabaew@googlemail.com</a></p>
+</main>
+</body>
+</html>

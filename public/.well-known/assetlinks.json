@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.splitaway.app",
+    "sha256_cert_fingerprints": [
+      "10:28:47:6C:A7:EC:F4:B1:07:43:40:33:1F:5D:D0:89:28:54:E3:D5:22:96:AF:5B:CD:56:A0:05:AB:F5:BC:59"
+    ]
+  }
+}]

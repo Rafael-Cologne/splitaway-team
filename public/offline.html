@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splitaway — Офлайн</title>
+<style>
+  body { font-family: 'Sora', sans-serif; background: #0a0a0f; color: #f0f0f8;
+         display: flex; align-items: center; justify-content: center;
+         min-height: 100vh; margin: 0; text-align: center; padding: 24px; }
+  .icon { font-size: 4rem; margin-bottom: 16px; }
+  h1   { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  p    { color: rgba(240,240,248,0.55); font-size: 0.9rem; margin-bottom: 24px; }
+  button { background: #6c63ff; color: #fff; border: none; border-radius: 12px;
+           padding: 13px 28px; font-size: 0.9rem; font-weight: 600;
+           cursor: pointer; font-family: inherit; }
+  button:hover { background: #8b83ff; }
+</style>
+</head>
+<body>
+  <div>
+    <div class="icon">✈️</div>
+    <h1>Нет подключения</h1>
+    <p>Splitaway работает офлайн.<br>Все данные сохранены и синхронизируются<br>при восстановлении интернета.</p>
+    <button onclick="location.reload()">Попробовать снова</button>
+  </div>
+<script>(function(){var T={"ru": ["Нет подключения", "Splitaway работает офлайн.<br>Все данные сохранены и синхронизируются<br>при восстановлении интернета.", "Попробовать снова"], "en": ["No connection", "Splitaway works offline.<br>All data is saved and will sync<br>when the internet is back.", "Try again"], "de": ["Keine Verbindung", "Splitaway funktioniert offline.<br>Alle Daten sind gespeichert und werden<br>synchronisiert, sobald das Internet zurück ist.", "Erneut versuchen"], "es": ["Sin conexión", "Splitaway funciona sin conexión.<br>Todos los datos están guardados y se sincronizarán<br>cuando vuelva internet.", "Reintentar"], "fr": ["Pas de connexion", "Splitaway fonctionne hors ligne.<br>Toutes les données sont enregistrées et seront synchronisées<br>dès le retour d’internet.", "Réessayer"], "pt": ["Sem ligação", "O Splitaway funciona offline.<br>Todos os dados estão guardados e serão sincronizados<br>quando a internet voltar.", "Tentar novamente"], "it": ["Nessuna connessione", "Splitaway funziona offline.<br>Tutti i dati sono salvati e verranno sincronizzati<br>al ritorno della connessione.", "Riprova"], "pl": ["Brak połączenia", "Splitaway działa offline.<br>Wszystkie dane są zapisane i zostaną zsynchronizowane<br>po przywróceniu internetu.", "Spróbuj ponownie"], "el": ["Χωρίς σύνδεση", "Το Splitaway λειτουργεί εκτός σύνδεσης.<br>Όλα τα δεδομένα αποθηκεύτηκαν και θα συγχρονιστούν<br>όταν επανέλθει το διαδίκτυο.", "Δοκιμάστε ξανά"], "tr": ["Bağlantı yok", "Splitaway çevrimdışı çalışır.<br>Tüm veriler kaydedildi ve internet geri geldiğinde<br>senkronize edilecek.", "Tekrar dene"]};var l=null;try{l=localStorage.getItem('sw_lang')}catch(e){}if(!l||!T[l]){var c=String((navigator.languages&&navigator.languages[0])||navigator.language||'en').toLowerCase().slice(0,2);l=T[c]?c:'en';}var x=T[l]||T.en;document.documentElement.lang=l;document.title=x[0]+' — Splitaway';var h=document.querySelector('h1'),p=document.querySelector('p'),b=document.querySelector('button');if(h)h.textContent=x[0];if(p)p.innerHTML=x[1];if(b)b.textContent=x[2];})();</script>
+</body>
+</html>

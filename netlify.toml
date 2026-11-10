@@ -1,0 +1,27 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Reference currency rate; trip and user data never leave Splitaway.
+[[redirects]]
+  from   = "/api/fx/rate"
+  to     = "/.netlify/functions/fx-rate"
+  status = 200
+
+# SPA fallback: все маршруты → index.html (кроме файлов и функций)
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Короткий alias для функции: /api/anthropic → Netlify Function
+[[redirects]]
+  from   = "/api/anthropic"
+  to     = "/.netlify/functions/anthropic-proxy"
+  status = 200
+
+# Receipt Analysis: Eagle Doc OCR (единственный провайдер, без каскада)
+[[redirects]]
+  from   = "/api/receipts/analyze"
+  to     = "/.netlify/functions/receipts-analyze"
+  status = 200
