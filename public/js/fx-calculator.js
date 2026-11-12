@@ -135,7 +135,7 @@
     const params = '?base=' + encodeURIComponent(base) + '&quote=' + encodeURIComponent(quote);
     const provider = NATIONAL_PROVIDER[base] || NATIONAL_PROVIDER[quote] || 'ecb';
     const urls = [
-      { url: (localShell ? TEAM_APP_URL : '') + '/api/fx/rate' + params, fallbackSource: null },
+      { url: (localShell ? (typeof TEAM_APP_URL==='string'?TEAM_APP_URL:'https://splitaway-team.netlify.app') : '') + '/api/fx/rate' + params, fallbackSource: null },
       { url: 'https://api.frankfurter.dev/v2/rate/' + encodeURIComponent(base) + '/' + encodeURIComponent(quote) + '?providers=' + provider,
         fallbackSource: provider.toUpperCase() + ' via Frankfurter' },
       { url: 'https://api.frankfurter.dev/v2/rate/' + encodeURIComponent(base) + '/' + encodeURIComponent(quote),
