@@ -14,16 +14,16 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <!-- lucide v0.474.0 — локальная копия, ISC License, работает офлайн и в APK -->
-<script defer src="/js/lucide.js?v=1.0.25-45-team"></script>
+<script defer src="/js/lucide.js?v=1.0.25-46-team"></script>
 <!-- qrcodejs2 v0.0.2 — локальная копия, MIT License -->
-<script src="/js/qrcode.min.js?v=1.0.25-45-team"></script>
-<script src="/js/jsQR.js?v=1.0.25-45-team"></script>
+<script src="/js/qrcode.min.js?v=1.0.25-46-team"></script>
+<script src="/js/jsQR.js?v=1.0.25-46-team"></script>
 <!-- supabase-js v2.99.1 — локальная копия, MIT License -->
-<script src="/js/supabase.js?v=1.0.25-45-team"></script>
-<script src="/js/sb-config.js?v=1.0.25-45-team"></script>
-<script src="/js/sb-client.js?v=1.0.25-45-team"></script>
+<script src="/js/supabase.js?v=1.0.25-46-team"></script>
+<script src="/js/sb-config.js?v=1.0.25-46-team"></script>
+<script src="/js/sb-client.js?v=1.0.25-46-team"></script>
 <!-- dom-utils.js — безопасная работа с DOM, escHtml, setSafeText -->
-<script src="/js/dom-utils.js?v=1.0.25-45-team"></script>
+<script src="/js/dom-utils.js?v=1.0.25-46-team"></script>
 <!-- i18n fallback: если i18n.js не загрузился (синтаксис-ошибка или старый SW-кэш),
      критические функции не крашат init() и fm() -->
 <script>
@@ -36,9 +36,9 @@ window.setCurrency=function(){};
 window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
-<script src="/js/i18n.js?v=1.0.25-45-team"></script>
-<script src="/js/fx-calculator.js?v=1.0.25-45-team"></script>
-<script src="/js/archive-i18n.js?v=1.0.25-45-team"></script>
+<script src="/js/i18n.js?v=1.0.25-46-team"></script>
+<script src="/js/fx-calculator.js?v=1.0.25-46-team"></script>
+<script src="/js/archive-i18n.js?v=1.0.25-46-team"></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -6429,15 +6429,18 @@ async function syncToSupabase(){await sbSync();}
 // ============================================================
 // ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
 // ============================================================
+let lastMemberLoadReason=null;
 async function loadFromSupabase(tripId){
+  lastMemberLoadReason=null;
   const sb=await getSupabase();
-  if(!sb)return false;
-  if(!S.me||!getMemberKey())return false;
+  if(!sb){lastMemberLoadReason='connection';return false;}
+  if(!S.me||!getMemberKey()){lastMemberLoadReason='missing_member_key';return false;}
   try{
     const {data,error}=await sb.rpc('load_member_trip_data',{
       p_trip_id:tripId,p_member_name:S.me,p_member_key:getMemberKey()
     });
-    if(error||data?.error||!data?.trip)return false;
+    if(error){lastMemberLoadReason='connection';return false;}
+    if(data?.error||!data?.trip){lastMemberLoadReason=data?.error||'trip_not_found';return false;}
     const tRes={data:data.trip},mRes={data:data.members},gRes={data:data.groups};
     const eRes={data:data.expenses},trRes={data:data.treasury};
     if(!tRes.data)return false;
@@ -6490,6 +6493,7 @@ async function loadFromSupabase(tripId){
     return true;
   }catch(err){
     console.warn('[SB] Load error:',err.message||err);
+    lastMemberLoadReason='connection';
     return false;
   }
 }
@@ -7044,8 +7048,11 @@ async function init(){
         S.inviteToken=localStorage.getItem('sw_invite_'+last)||null;
         S.adminToken=localStorage.getItem('sw_admin_'+last)||null;
         if(USE_SUPABASE&&!getMemberKey()){
-          S.trip={id:last,name:last};S.members=[];
-          showOb('ob-pick');renderPickList();return;
+          // A cached trip from the old project has no key for this database.
+          // Preserve its local copy but stop restoring it on every launch.
+          localStorage.removeItem('sw_last');
+          S.trip=null;S.members=[];S.groups=[];S.expenses=[];
+          showOb('ob-setup');renderFirstRunPreferences();return;
         }
         // Verify the personal key before any cached trip data is displayed.
         if(USE_SUPABASE){
@@ -7053,10 +7060,15 @@ async function init(){
           showOb('ob-loading');
           const ok=await loadFromSupabase(_initTripId);
           if(!ok){
+            if(lastMemberLoadReason==='member_key_invalid'||lastMemberLoadReason==='trip_not_found'){
+              // The personal key belongs to the previous project or the trip was removed.
+              // Keep the local archive, but do not display it or retry at startup.
+              localStorage.removeItem('sw_last');
+            }
             S.trip=null;S.members=[];S.groups=[];S.expenses=[];
             showOb('ob-setup');
             renderFirstRunPreferences();
-            toast(t('toast_sync_failed'));
+            if(lastMemberLoadReason==='connection')toast(t('toast_sync_failed'));
             return;
           }
           S.meGender=S.members.find(m=>m.name===S.me)?.gender||'m';
@@ -7122,8 +7134,8 @@ function pickGender(hiddenId,btn,val){
 // Запускаем после загрузки всех defer-скриптов (в т.ч. lucide)
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script src="js/receipt-ocr.js?v=1.0.25-45-team" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-45-team" defer></script>
-<script src="js/splitaway-update.js?v=1.0.25-45-team" defer></script>
+<script src="js/receipt-ocr.js?v=1.0.25-46-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-46-team" defer></script>
+<script src="js/splitaway-update.js?v=1.0.25-46-team" defer></script>
 </body>
 </html>
