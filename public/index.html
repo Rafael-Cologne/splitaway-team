@@ -1891,7 +1891,13 @@ async function pickName(name){
         p_invite_token:S.inviteToken,p_member_name:name,p_device_id:getDeviceId()
       });
       if(error)throw error;
-      if(!data?.ok){toast(data?.error==='name_taken'?t('toast_name_taken'):(data?.error||'Login failed'));return;}
+      if(!data?.ok){
+        const code=data?.error||'';
+        toast(code==='name_taken'?t('toast_name_taken'):
+          code==='invalid_invite_token'||code==='member_not_found'?t('toast_trip_not_found_db'):
+          t('toast_sync_failed'));
+        return;
+      }
       S.me=name;
       const memberKey=data.member_key||getMemberKey();
       if(!memberKey){toast('Member key unavailable. Ask the trip admin to release this name, then join again.');return;}
