@@ -14,16 +14,16 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <!-- lucide v0.474.0 — локальная копия, ISC License, работает офлайн и в APK -->
-<script defer src="/js/lucide.js?v=1.0.25-47-team"></script>
+<script defer src="/js/lucide.js?v=1.0.25-48-team"></script>
 <!-- qrcodejs2 v0.0.2 — локальная копия, MIT License -->
-<script src="/js/qrcode.min.js?v=1.0.25-47-team"></script>
-<script src="/js/jsQR.js?v=1.0.25-47-team"></script>
+<script src="/js/qrcode.min.js?v=1.0.25-48-team"></script>
+<script src="/js/jsQR.js?v=1.0.25-48-team"></script>
 <!-- supabase-js v2.99.1 — локальная копия, MIT License -->
-<script src="/js/supabase.js?v=1.0.25-47-team"></script>
-<script src="/js/sb-config.js?v=1.0.25-47-team"></script>
-<script src="/js/sb-client.js?v=1.0.25-47-team"></script>
+<script src="/js/supabase.js?v=1.0.25-48-team"></script>
+<script src="/js/sb-config.js?v=1.0.25-48-team"></script>
+<script src="/js/sb-client.js?v=1.0.25-48-team"></script>
 <!-- dom-utils.js — безопасная работа с DOM, escHtml, setSafeText -->
-<script src="/js/dom-utils.js?v=1.0.25-47-team"></script>
+<script src="/js/dom-utils.js?v=1.0.25-48-team"></script>
 <!-- i18n fallback: если i18n.js не загрузился (синтаксис-ошибка или старый SW-кэш),
      критические функции не крашат init() и fm() -->
 <script>
@@ -36,9 +36,9 @@ window.setCurrency=function(){};
 window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
-<script src="/js/i18n.js?v=1.0.25-47-team"></script>
-<script src="/js/fx-calculator.js?v=1.0.25-47-team"></script>
-<script src="/js/archive-i18n.js?v=1.0.25-47-team"></script>
+<script src="/js/i18n.js?v=1.0.25-48-team"></script>
+<script src="/js/fx-calculator.js?v=1.0.25-48-team"></script>
+<script src="/js/archive-i18n.js?v=1.0.25-48-team"></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -1087,6 +1087,17 @@ function isAdm(name){return name===S.adminName||(S.coAdmins||[]).includes(name);
 function isTripAdmin(){return Boolean(S.isAdmin===true);}
 
 let CT = {members:[]};
+// Clear every trip-specific field before creating or joining another trip.
+// In particular, settled debts and admin roles must never cross trip boundaries.
+function resetTripScopedState(){
+  S.trip=null;S.me=null;S.meGender='m';S.isAdmin=false;
+  S.adminName='';S.coAdmins=[];S.members=[];S.groups=[];S.expenses=[];
+  S.treasury={total:0,spent:0,contributions:[],holder:null};
+  S.receipts=[];S.memberColors={};S.settledDebts=[];
+  S.inviteToken=null;S.adminToken=null;S.balTab='debts';
+  S.scan={mode:'receipt',items:[],menuSelections:{},menuPaidBy:null};
+  S.assignIdx=null;
+}
 let _sbSyncing  = false;
 // ── Grouped debt store ──────────────────────────────────────────────────────
 // Хранит объекты долга по UUID-ключу, назначаемому при рендере.
@@ -1717,6 +1728,7 @@ async function createTrip(){
   const adminToken=crypto.randomUUID();
   const adminTokenHash=await sha256hex(adminToken);
 
+  resetTripScopedState();
   S.trip={id:tripId,name,dest,currency,secondaryCurrency};
   setCurrency(currency);
   S.members=[...allMembers];
@@ -1831,6 +1843,7 @@ async function handleWebJoin(tripId, token){
   if(token) window._pendingInviteToken=token;
   try{
     if(token){
+      resetTripScopedState();
       S.trip={id:tripId,name:tripId};S.members=[];
       S.isAdmin=false;
       S.inviteToken=token;
@@ -1882,6 +1895,7 @@ async function joinTrip(){
   if(USE_SUPABASE){
     try{
       if(inviteToken){
+        resetTripScopedState();
         S.trip={id:code,name:code};S.members=[];
         S.isAdmin=false;
         S.inviteToken=inviteToken;
@@ -7166,8 +7180,8 @@ function pickGender(hiddenId,btn,val){
 // Запускаем после загрузки всех defer-скриптов (в т.ч. lucide)
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script src="js/receipt-ocr.js?v=1.0.25-47-team" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-47-team" defer></script>
-<script src="js/splitaway-update.js?v=1.0.25-47-team" defer></script>
+<script src="js/receipt-ocr.js?v=1.0.25-48-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-48-team" defer></script>
+<script src="js/splitaway-update.js?v=1.0.25-48-team" defer></script>
 </body>
 </html>
