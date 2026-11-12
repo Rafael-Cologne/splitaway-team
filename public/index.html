@@ -14,16 +14,16 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <!-- lucide v0.474.0 — локальная копия, ISC License, работает офлайн и в APK -->
-<script defer src="/js/lucide.js?v=1.0.25-46-team"></script>
+<script defer src="/js/lucide.js?v=1.0.25-47-team"></script>
 <!-- qrcodejs2 v0.0.2 — локальная копия, MIT License -->
-<script src="/js/qrcode.min.js?v=1.0.25-46-team"></script>
-<script src="/js/jsQR.js?v=1.0.25-46-team"></script>
+<script src="/js/qrcode.min.js?v=1.0.25-47-team"></script>
+<script src="/js/jsQR.js?v=1.0.25-47-team"></script>
 <!-- supabase-js v2.99.1 — локальная копия, MIT License -->
-<script src="/js/supabase.js?v=1.0.25-46-team"></script>
-<script src="/js/sb-config.js?v=1.0.25-46-team"></script>
-<script src="/js/sb-client.js?v=1.0.25-46-team"></script>
+<script src="/js/supabase.js?v=1.0.25-47-team"></script>
+<script src="/js/sb-config.js?v=1.0.25-47-team"></script>
+<script src="/js/sb-client.js?v=1.0.25-47-team"></script>
 <!-- dom-utils.js — безопасная работа с DOM, escHtml, setSafeText -->
-<script src="/js/dom-utils.js?v=1.0.25-46-team"></script>
+<script src="/js/dom-utils.js?v=1.0.25-47-team"></script>
 <!-- i18n fallback: если i18n.js не загрузился (синтаксис-ошибка или старый SW-кэш),
      критические функции не крашат init() и fm() -->
 <script>
@@ -36,9 +36,9 @@ window.setCurrency=function(){};
 window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
-<script src="/js/i18n.js?v=1.0.25-46-team"></script>
-<script src="/js/fx-calculator.js?v=1.0.25-46-team"></script>
-<script src="/js/archive-i18n.js?v=1.0.25-46-team"></script>
+<script src="/js/i18n.js?v=1.0.25-47-team"></script>
+<script src="/js/fx-calculator.js?v=1.0.25-47-team"></script>
+<script src="/js/archive-i18n.js?v=1.0.25-47-team"></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -1765,11 +1765,44 @@ async function createTrip(){
   save();launch();
 }
 
-function renderPickList(){
+async function renderPickList(){
   if(USE_SUPABASE){
-    document.getElementById('ob-pick-trip').textContent=S.trip.id;
-    document.getElementById('ob-pick-list').innerHTML=`<input id="ob-member-name" class="inp" autocomplete="name" placeholder="${escHtml(t('toast_enter_name')||'Your name')}">
-      <button class="btn btn-s btn-fw" onclick="pickName(document.getElementById('ob-member-name').value.trim())">${escHtml(t('btn_join_trip')||'Join')}</button>`;
+    showOb('ob-loading');
+    document.getElementById('ob-loading-msg').textContent=t('ob_loading_msg');
+    document.getElementById('ob-loading-sub').textContent='';
+    document.getElementById('ob-loading-retry').style.display='none';
+    try{
+      const sb=await getSupabase();
+      const {data,error}=await sb.rpc('list_invite_members',{
+        p_invite_token:S.inviteToken,p_device_id:getDeviceId()
+      });
+      if(error)throw error;
+      if(!data?.ok){
+        document.getElementById('ob-loading-msg').textContent=t('toast_trip_not_found_db');
+        document.getElementById('ob-loading-sub').textContent=t('ob_error_check_link');
+        document.getElementById('ob-loading-retry').style.display='';
+        return;
+      }
+      S.trip.name=data.trip_name;
+      document.getElementById('ob-pick-trip').textContent=data.trip_name;
+      document.getElementById('ob-pick-list').innerHTML=(data.members||[]).map(m=>{
+        const takenByOther=m.taken_by_other;
+        return `<button class="btn btn-s btn-fw" data-name="${escHtml(m.name)}"
+          onclick="pickName(this.dataset.name)" style="justify-content:flex-start;gap:11px">
+          <div class="av av-sm" style="background:${ac(m.name)}">${escHtml(m.name[0]||'?')}</div>
+          <span style="font-weight:600;color:${ac(m.name)}">${escHtml(m.name)}</span>
+          ${takenByOther
+            ?`<span style="color:var(--t3);font-size:0.7rem;margin-left:auto">${escHtml(t('badge_taken')||'🔒')}</span>`
+            :`<span style="color:var(--t3);font-size:0.73rem;margin-left:auto">${escHtml(m.gender==='f'?t('gender_f'):t('gender_m'))}</span>`}
+        </button>`;
+      }).join('');
+      showOb('ob-pick');
+    }catch(e){
+      console.warn('[member list]',e);
+      document.getElementById('ob-loading-msg').textContent=t('ob_error_connection');
+      document.getElementById('ob-loading-sub').textContent=t('ob_error_connection_sub');
+      document.getElementById('ob-loading-retry').style.display='';
+    }
     return;
   }
   const myDid=getDeviceId();
@@ -1802,8 +1835,7 @@ async function handleWebJoin(tripId, token){
       S.isAdmin=false;
       S.inviteToken=token;
       localStorage.setItem('sw_invite_'+tripId,token);
-      showOb('ob-pick');
-      renderPickList();
+      await renderPickList();
     } else {
       document.getElementById('ob-loading-msg').textContent=t('toast_trip_not_found');
       document.getElementById('ob-loading-sub').textContent=t('ob_error_check_link');
@@ -1854,7 +1886,7 @@ async function joinTrip(){
         S.isAdmin=false;
         S.inviteToken=inviteToken;
         localStorage.setItem('sw_invite_'+code,inviteToken);
-        showOb('ob-pick');renderPickList();return;
+        await renderPickList();return;
       }
       // Supabase ответил, но поездка не найдена — не искать в localStorage
       toast(t('toast_trip_not_found_db'));
@@ -7134,8 +7166,8 @@ function pickGender(hiddenId,btn,val){
 // Запускаем после загрузки всех defer-скриптов (в т.ч. lucide)
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script src="js/receipt-ocr.js?v=1.0.25-46-team" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-46-team" defer></script>
-<script src="js/splitaway-update.js?v=1.0.25-46-team" defer></script>
+<script src="js/receipt-ocr.js?v=1.0.25-47-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-47-team" defer></script>
+<script src="js/splitaway-update.js?v=1.0.25-47-team" defer></script>
 </body>
 </html>
