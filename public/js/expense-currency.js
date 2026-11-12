@@ -184,18 +184,8 @@
   let schemaReady=false;
   async function backendReady(){
     if(schemaReady)return true;
-    const saved=()=>{try{return localStorage.getItem('sw_exp_fx_schema_ready')==='1'}catch{return false}};
-    try{
-      const sb=await getSupabase();if(!sb)return saved();
-      const [trip,expense]=await Promise.all([
-        sb.from('trips').select('secondary_currency_code').limit(1),
-        sb.from('expenses').select('original_currency_code').limit(1)
-      ]);
-      if(trip.error||expense.error)return false;
-      schemaReady=true;
-      try{localStorage.setItem('sw_exp_fx_schema_ready','1')}catch{}
-      return true;
-    }catch{return saved()}
+    schemaReady=Boolean(S.trip&&S.me&&getMemberKey());
+    return schemaReady;
   }
   window.SplitawayExpenseCurrency={open,resolve,words,backendReady};
   const style=document.createElement('style');style.textContent=`
