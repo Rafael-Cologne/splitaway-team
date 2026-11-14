@@ -14,16 +14,16 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <!-- lucide v0.474.0 — локальная копия, ISC License, работает офлайн и в APK -->
-<script defer src="/js/lucide.js?v=1.0.25-44"></script>
+<script defer src="/js/lucide.js?v=1.0.25-48-team"></script>
 <!-- qrcodejs2 v0.0.2 — локальная копия, MIT License -->
-<script src="/js/qrcode.min.js?v=1.0.25-44"></script>
-<script src="/js/jsQR.js?v=1.0.25-44"></script>
+<script src="/js/qrcode.min.js?v=1.0.25-48-team"></script>
+<script src="/js/jsQR.js?v=1.0.25-48-team"></script>
 <!-- supabase-js v2.99.1 — локальная копия, MIT License -->
-<script src="/js/supabase.js?v=1.0.25-44"></script>
-<script src="/js/sb-config.js?v=1.0.25-44"></script>
-<script src="/js/sb-client.js?v=1.0.25-44"></script>
+<script src="/js/supabase.js?v=1.0.25-48-team"></script>
+<script src="/js/sb-config.js?v=1.0.25-48-team"></script>
+<script src="/js/sb-client.js?v=1.0.25-48-team"></script>
 <!-- dom-utils.js — безопасная работа с DOM, escHtml, setSafeText -->
-<script src="/js/dom-utils.js?v=1.0.25-44"></script>
+<script src="/js/dom-utils.js?v=1.0.25-48-team"></script>
 <!-- i18n fallback: если i18n.js не загрузился (синтаксис-ошибка или старый SW-кэш),
      критические функции не крашат init() и fm() -->
 <script>
@@ -36,9 +36,14 @@ window.setCurrency=function(){};
 window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
-<script src="/js/i18n.js?v=1.0.25-44"></script>
-<script src="/js/fx-calculator.js?v=1.0.25-44"></script>
-<script src="/js/archive-i18n.js?v=1.0.25-44"></script>
+<script src="/js/i18n.js?v=1.0.25-48-team"></script>
+<script src="/js/fx-calculator.js?v=1.0.25-48-team"></script>
+<script src="/js/archive-i18n.js?v=1.0.25-48-team"></script>
+<!-- Splitaway Team: новая главная страница (Travel Hub) -->
+<link rel="stylesheet" href="/css/hub.css?v=1.0.25-49-team">
+<script src="/js/services-config.js?v=1.0.25-49-team"></script>
+<script src="/js/hub-icons.js?v=1.0.25-49-team"></script>
+<script src="/js/hub.js?v=1.0.25-49-team"></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -441,8 +446,12 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
 <body>
 <div class="tw" id="tw"></div>
 
+<!-- ===== HUB: главная страница (рисуется из js/hub.js) ===== -->
+<div id="pg-hub" class="hub" style="display:none"></div>
+
 <!-- ===== ONBOARDING ===== -->
 <div id="pg-ob" class="ob fade-in">
+  <button type="button" class="btn btn-g btn-sm btn-ic ob-hub-back" id="ob-hub-back" onclick="STHub.show()" aria-label="Главная" data-i18n="nav_home" data-i18n-attr="aria-label" style="display:none"><i data-lucide="arrow-left" style="width:15px;height:15px"></i></button>
   <div class="ob-brand" style="display:flex;flex-direction:column;align-items:center;gap:14px">
     <div class="logo" style="background:none;box-shadow:none;padding:0;overflow:hidden"><img src="/icons/app_icon.png" style="width:80px;height:80px;border-radius:22px;display:block"></div>
     <div><div class="logo-txt">Split<span>away</span></div><div id="ob-tagline" style="display:none;color:var(--t2);font-size:0.88rem;margin-top:3px" data-i18n="app_tagline">Smart expense splitting</div></div>
@@ -469,10 +478,6 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
         <i data-lucide="plus-circle" style="width:15px;height:15px"></i>
         <span data-i18n="btn_create_trip">Создать поездку</span>
       </button>
-      <button type="button" class="btn btn-g btn-fw" onclick="openDemoTrip()">
-        <i data-lucide="play-circle" style="width:15px;height:15px"></i>
-        <span data-i18n="btn_try_demo">Посмотреть демо</span>
-      </button>
       <div class="setup-divider" style="display:flex;align-items:center;gap:10px"><div class="div" style="flex:1"></div><span style="color:var(--t3);font-size:0.72rem" data-i18n="divider_or">или</span><div class="div" style="flex:1"></div></div>
       <div class="setup-join-row">
         <div class="iw">
@@ -491,7 +496,6 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
         <button class="btn btn-s btn-fw" onclick="joinTrip()" data-i18n="btn_join_trip">Войти в поездку</button>
         <div style="display:flex;align-items:center;gap:10px"><div class="div" style="flex:1"></div><span style="color:var(--t3);font-size:0.78rem" data-i18n="divider_or">или</span><div class="div" style="flex:1"></div></div>
         <button class="btn btn-p btn-fw" onclick="showOb('ob-create')"><i data-lucide="plus-circle" style="width:15px;height:15px"></i> <span data-i18n="btn_create_trip">Создать поездку</span></button>
-        <button class="btn btn-g btn-fw" onclick="openDemoTrip()"><i data-lucide="play-circle" style="width:15px;height:15px"></i> <span data-i18n="btn_try_demo">Посмотреть демо</span></button>
       </div>
     </div>
     <!-- Create Trip -->
@@ -547,7 +551,10 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
   <div class="page active" id="pg-dash">
     <div id="dash-bg-layer"><img id="dash-bg-dark" src="top.png" alt=""><img id="dash-bg-light" src="top-light.png" alt=""></div>
     <div class="topbar">
-      <div><div class="tb-title" id="app-trip-name"></div><div class="tb-sub" id="app-trip-sub"></div></div>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <button class="btn btn-g btn-sm btn-ic hub-home-btn" type="button" onclick="STHub.show()" aria-label="Главная" data-i18n="nav_home" data-i18n-attr="aria-label"><i data-lucide="layout-grid" style="width:15px;height:15px"></i></button>
+        <div style="min-width:0"><div class="tb-title" id="app-trip-name"></div><div class="tb-sub" id="app-trip-sub"></div></div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="pulse" id="rt-indicator" title="Онлайн" data-i18n="dash_indicator_online" data-i18n-attr="title"></div>
         <button class="btn btn-g btn-sm btn-ic" id="push-btn" onclick="openNotifPanel()" title="Уведомления" data-i18n="title_notifications_default" data-i18n-attr="title" style="position:relative"><i data-lucide="bell" style="width:15px;height:15px"></i><span id="notif-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--red,#e74c3c);pointer-events:none"></span></button>
@@ -1092,6 +1099,17 @@ function isAdm(name){return name===S.adminName||(S.coAdmins||[]).includes(name);
 function isTripAdmin(){return Boolean(S.isAdmin===true);}
 
 let CT = {members:[]};
+// Clear every trip-specific field before creating or joining another trip.
+// In particular, settled debts and admin roles must never cross trip boundaries.
+function resetTripScopedState(){
+  S.trip=null;S.me=null;S.meGender='m';S.isAdmin=false;
+  S.adminName='';S.coAdmins=[];S.members=[];S.groups=[];S.expenses=[];
+  S.treasury={total:0,spent:0,contributions:[],holder:null};
+  S.receipts=[];S.memberColors={};S.settledDebts=[];
+  S.inviteToken=null;S.adminToken=null;S.balTab='debts';
+  S.scan={mode:'receipt',items:[],menuSelections:{},menuPaidBy:null};
+  S.assignIdx=null;
+}
 let _sbSyncing  = false;
 // ── Grouped debt store ──────────────────────────────────────────────────────
 // Хранит объекты долга по UUID-ключу, назначаемому при рендере.
@@ -1468,7 +1486,7 @@ function uid(){return crypto.randomUUID()}
 // Это нужно потому что в Capacitor WebView относительные URL ведут на локальный сервер (которого нет)
 const API_BASE = (()=>{
   try{
-    if(window.Capacitor?.isNativePlatform?.()) return 'https://splitaway.netlify.app';
+    if(window.Capacitor?.isNativePlatform?.()) return TEAM_APP_URL.startsWith('https://')?TEAM_APP_URL:'';
   }catch{}
   return '';
 })();
@@ -1529,6 +1547,10 @@ function units(name){const g=groupOf(name);return g?g.members.length:1}
 // ONBOARDING
 // =======================================================
 function showOb(id){
+  // Splitaway Team: стартовый экран теперь — новая главная страница
+  if(id==='ob-setup'&&window.STHub){STHub.show();return;}
+  const hubBack=document.getElementById('ob-hub-back');
+  if(hubBack)hubBack.style.display=(window.STHub&&(id==='ob-s1'||id==='ob-pick'))?'':'none';
   ['ob-setup','ob-s1','ob-create','ob-pick','ob-loading'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===id?'flex':'none'});
   const onboarding=document.getElementById('pg-ob');
   if(onboarding){
@@ -1722,6 +1744,7 @@ async function createTrip(){
   const adminToken=crypto.randomUUID();
   const adminTokenHash=await sha256hex(adminToken);
 
+  resetTripScopedState();
   S.trip={id:tripId,name,dest,currency,secondaryCurrency};
   setCurrency(currency);
   S.members=[...allMembers];
@@ -1754,6 +1777,11 @@ async function createTrip(){
         if(data?.error)throw new Error(data.error);
         S.inviteToken=data.invite_token;
         console.log('[SB] Trip created (invite_token set)');
+        const claim=await sb.rpc('claim_member_device',{
+          p_invite_token:S.inviteToken,p_member_name:admin,p_device_id:getDeviceId()
+        });
+        if(claim.error||!claim.data?.member_key)throw claim.error||new Error('Admin member key unavailable');
+        setMemberKey(claim.data.member_key);
       }
     }catch(e){
       console.warn('[SB] create_trip RPC error:',e.message||e);
@@ -1765,7 +1793,46 @@ async function createTrip(){
   save();launch();
 }
 
-function renderPickList(){
+async function renderPickList(){
+  if(USE_SUPABASE){
+    showOb('ob-loading');
+    document.getElementById('ob-loading-msg').textContent=t('ob_loading_msg');
+    document.getElementById('ob-loading-sub').textContent='';
+    document.getElementById('ob-loading-retry').style.display='none';
+    try{
+      const sb=await getSupabase();
+      const {data,error}=await sb.rpc('list_invite_members',{
+        p_invite_token:S.inviteToken,p_device_id:getDeviceId()
+      });
+      if(error)throw error;
+      if(!data?.ok){
+        document.getElementById('ob-loading-msg').textContent=t('toast_trip_not_found_db');
+        document.getElementById('ob-loading-sub').textContent=t('ob_error_check_link');
+        document.getElementById('ob-loading-retry').style.display='';
+        return;
+      }
+      S.trip.name=data.trip_name;
+      document.getElementById('ob-pick-trip').textContent=data.trip_name;
+      document.getElementById('ob-pick-list').innerHTML=(data.members||[]).map(m=>{
+        const takenByOther=m.taken_by_other;
+        return `<button class="btn btn-s btn-fw" data-name="${escHtml(m.name)}"
+          onclick="pickName(this.dataset.name)" style="justify-content:flex-start;gap:11px">
+          <div class="av av-sm" style="background:${ac(m.name)}">${escHtml(m.name[0]||'?')}</div>
+          <span style="font-weight:600;color:${ac(m.name)}">${escHtml(m.name)}</span>
+          ${takenByOther
+            ?`<span style="color:var(--t3);font-size:0.7rem;margin-left:auto">${escHtml(t('badge_taken')||'🔒')}</span>`
+            :`<span style="color:var(--t3);font-size:0.73rem;margin-left:auto">${escHtml(m.gender==='f'?t('gender_f'):t('gender_m'))}</span>`}
+        </button>`;
+      }).join('');
+      showOb('ob-pick');
+    }catch(e){
+      console.warn('[member list]',e);
+      document.getElementById('ob-loading-msg').textContent=t('ob_error_connection');
+      document.getElementById('ob-loading-sub').textContent=t('ob_error_connection_sub');
+      document.getElementById('ob-loading-retry').style.display='';
+    }
+    return;
+  }
   const myDid=getDeviceId();
   document.getElementById('ob-pick-trip').textContent=S.trip.name;
   document.getElementById('ob-pick-list').innerHTML=_sortedMembers().map(m=>{
@@ -1784,25 +1851,20 @@ function renderPickList(){
 // ── ПРИСОЕДИНЕНИЕ ПО QR/ССЫЛКЕ — плавный flow без мигания формы ──
 async function handleWebJoin(tripId, token){
   tripId=tripId.trim().toUpperCase();
+  token=token||localStorage.getItem('sw_invite_'+tripId);
   showOb('ob-loading');
   document.getElementById('ob-loading-msg').textContent=t('ob_loading_msg');
   document.getElementById('ob-loading-sub').textContent='';
   document.getElementById('ob-loading-retry').style.display='none';
   if(token) window._pendingInviteToken=token;
   try{
-    const ok=await loadFromSupabase(tripId);
-    if(ok){
+    if(token){
+      resetTripScopedState();
+      S.trip={id:tripId,name:tripId};S.members=[];
       S.isAdmin=false;
-      if(token){
-        S.inviteToken=token;
-        localStorage.setItem('sw_invite_'+tripId,token);
-      } else {
-        // Проверяем localStorage (повторный визит)
-        const cached=localStorage.getItem('sw_invite_'+tripId);
-        if(cached)S.inviteToken=cached;
-      }
-      showOb('ob-pick');
-      renderPickList();
+      S.inviteToken=token;
+      localStorage.setItem('sw_invite_'+tripId,token);
+      await renderPickList();
     } else {
       document.getElementById('ob-loading-msg').textContent=t('toast_trip_not_found');
       document.getElementById('ob-loading-sub').textContent=t('ob_error_check_link');
@@ -1822,44 +1884,21 @@ async function handleWebJoin(tripId, token){
 // экране приветствия открывает поездку на том языке, который сейчас
 // выбран (getLang()). Открытие идёт тем же путём, что и обычная
 // ссылка-приглашение (handleWebJoin), никакой новой логики входа.
-const DEMO_TRIPS={
-  en:{id:'DEMO-EN',token:'3e87747b-0759-4af3-b132-19cec6056527'},
-  ru:{id:'DEMO-RU',token:'77a1b0d6-86df-477a-9bcd-ec054db8df21'},
-  de:{id:'DEMO-DE',token:'ec64eb72-a193-43a6-b915-56c724bb813a'},
-  es:{id:'DEMO-ES',token:'2554e20d-12df-4ab7-ae43-75ec5affaa4b'},
-  fr:{id:'DEMO-FR',token:'115e8d4c-5b69-41a3-9500-9c439ba2da73'},
-  pt:{id:'DEMO-PT',token:'088cba83-7ca9-4110-aa87-c061d744688c'},
-  it:{id:'DEMO-IT',token:'73e4e393-abe7-4eab-b7f9-0362396909f8'}
-};
+const DEMO_TRIPS={};
 function isDemoTrip(id){return!!id&&Object.values(DEMO_TRIPS).some(d=>d.id===id);}
 function openDemoTrip(){
-  const d=DEMO_TRIPS[getLang()]||DEMO_TRIPS.en;
-  handleWebJoin(d.id,d.token);
+  toast(t('toast_trip_not_found_db'));
 }
 // Сбрасывает ВСЕ демо-поездки на сервере обратно к исходному состоянию
 // (см. RPC reset_demo_trip — трогает только 7 фиксированных demo id,
 // ни одну реальную поездку затронуть не может). Вызывается при выходе
 // из демо-поездки; ошибки намеренно игнорируются (best-effort).
 async function resetDemoTrip(){
-  if(!USE_SUPABASE)return;
-  try{
-    const sb=await getSupabase();
-    if(sb)await sb.rpc('reset_demo_trip');
-  }catch(e){console.warn('[Demo] reset error:',e)}
+  return;
 }
 // Подстраховка на случай, если посетитель просто закрывает вкладку/
 // приложение, не нажимая «Выйти» — best-effort запрос с keepalive,
 // чтобы он успел уйти даже во время выгрузки страницы.
-window.addEventListener('pagehide',()=>{
-  if(!isDemoTrip(S.trip?.id))return;
-  try{
-    fetch(SUPABASE_URL+'/rest/v1/rpc/reset_demo_trip',{
-      method:'POST',keepalive:true,
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},
-      body:'{}'
-    }).catch(()=>{});
-  }catch(e){}
-});
 async function joinTrip(){
   const code=document.getElementById('ob-code').value.trim().toUpperCase();
   if(!code){toast(t('toast_enter_trip_code'));return}
@@ -1871,16 +1910,13 @@ async function joinTrip(){
   // 1. Supabase — синхронизация между устройствами
   if(USE_SUPABASE){
     try{
-      const ok=await loadFromSupabase(code);
-      if(ok){
+      if(inviteToken){
+        resetTripScopedState();
+        S.trip={id:code,name:code};S.members=[];
         S.isAdmin=false;
-        if(inviteToken){
-          S.inviteToken=inviteToken;
-          localStorage.setItem('sw_invite_'+code,inviteToken);
-        } else {
-          toast(t('toast_invite_only')||'ℹ️');
-        }
-        showOb('ob-pick');renderPickList();return;
+        S.inviteToken=inviteToken;
+        localStorage.setItem('sw_invite_'+code,inviteToken);
+        await renderPickList();return;
       }
       // Supabase ответил, но поездка не найдена — не искать в localStorage
       toast(t('toast_trip_not_found_db'));
@@ -1908,6 +1944,32 @@ async function joinTrip(){
   showOb('ob-pick');renderPickList();
 }
 async function pickName(name){
+  if(USE_SUPABASE){
+    if(!name){toast(t('toast_enter_name'));return;}
+    if(!S.inviteToken){toast(t('toast_invite_only'));return;}
+    try{
+      const sb=await getSupabase();
+      const {data,error}=await sb.rpc('claim_member_device',{
+        p_invite_token:S.inviteToken,p_member_name:name,p_device_id:getDeviceId()
+      });
+      if(error)throw error;
+      if(!data?.ok){
+        const code=data?.error||'';
+        toast(code==='name_taken'?t('toast_name_taken'):
+          code==='invalid_invite_token'||code==='member_not_found'?t('toast_trip_not_found_db'):
+          t('toast_sync_failed'));
+        return;
+      }
+      S.me=name;
+      const memberKey=data.member_key||getMemberKey();
+      if(!memberKey){toast('Member key unavailable. Ask the trip admin to release this name, then join again.');return;}
+      setMemberKey(memberKey);
+      if(!await loadFromSupabase(S.trip.id)){toast(t('toast_sync_failed'));return;}
+      S.meGender=S.members.find(m=>m.name===name)?.gender||'m';
+      S.isAdmin=isAdm(name);
+      saveLocal();launch();return;
+    }catch(e){console.warn('[member login]',e);toast(t('toast_sync_failed'));return;}
+  }
   const myDid=getDeviceId();
   const member=S.members.find(m=>m.name===name);
   if(!member)return;
@@ -5999,7 +6061,7 @@ function tripURL(){
     || location.hostname === 'localhost'
     || location.hostname === '127.0.0.1';
   const base = (isCapacitor || isLocal)
-    ? 'https://splitaway.netlify.app'
+    ? (TEAM_APP_URL.startsWith('https://')?TEAM_APP_URL:location.origin)
     : (location.origin + location.pathname.replace(/\/[^/]*$/, '/'));
   let url = base + '?trip=' + encodeURIComponent(S.trip.id);
   if(S.inviteToken) url += '&token=' + encodeURIComponent(S.inviteToken);
@@ -6155,7 +6217,7 @@ function ensureUUID(id){
 
 // Немедленная запись одного расхода в Supabase (не ждёт debounce sbSync)
 async function sbUpsertExpense(exp){
-  if(!S.inviteToken||!S.trip)return;
+  if(!S.inviteToken||!getMemberKey()||!S.trip)return;
   try{
     const sb=await getSupabase();
     if(!sb)return;
@@ -6206,7 +6268,7 @@ async function sbUpsertExpense(exp){
 
 // Немедленное удаление одного расхода из Supabase
 async function sbDeleteExpense(expId){
-  if(!S.inviteToken||!S.trip)return;
+  if(!S.inviteToken||!getMemberKey()||!S.trip)return;
   try{
     const sb=await getSupabase();
     if(!sb)return;
@@ -6233,6 +6295,7 @@ async function sbDeleteExpense(expId){
 async function sbSync(){
   _syncDirty=false;
   if(!S.trip)return true;   // нет поездки — localStorage достаточно
+  if(USE_SUPABASE&&(!S.inviteToken||!getMemberKey()))return false;
   // Пока стартовая loadFromSupabase() после returning-user boot ещё не
   // завершилась — ждём (не дольше 5с), а не синхронизируем прямо сейчас:
   // S сейчас может быть устаревшим localStorage-кэшем, и full-replace sync
@@ -6296,6 +6359,7 @@ async function sbSync(){
       for(const e of S.expenses.filter(item=>item.originalCurrency)){
         const {data:fxData,error:fxError}=await sb.rpc('upsert_expense_with_currency',{
           p_invite_token:S.inviteToken,p_expense:{
+            member_key:getMemberKey(),admin_token:S.adminToken||null,
             id:e.id,name:e.name,amount:e.amount,comment:e.comment||'',date:e.date||'',
             paid_by:e.paidBy,participants:e.participants||[],from_treasury:!!e.fromTreasury,
             items:e.items||[],created_by:e.createdBy||S.me||'',pair_reps:e.pairReps||null,
@@ -6427,30 +6491,20 @@ async function syncToSupabase(){await sbSync();}
 // ============================================================
 // ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE
 // ============================================================
+let lastMemberLoadReason=null;
 async function loadFromSupabase(tripId){
+  lastMemberLoadReason=null;
   const sb=await getSupabase();
-  if(!sb)return false;
+  if(!sb){lastMemberLoadReason='connection';return false;}
+  if(!S.me||!getMemberKey()){lastMemberLoadReason='missing_member_key';return false;}
   try{
-    // 1.0.25: защищённая загрузка по ключу приглашения (миграция 022a); прямое чтение — только запасной путь
-    const _tok=S.inviteToken||window._pendingInviteToken||localStorage.getItem('sw_invite_'+tripId)||null;
-    let _rpcLoad=null;
-    if(_tok){
-      const{data:_d,error:_e}=await sb.rpc('load_trip_data',{p_invite_token:_tok});
-      if(!_e&&_d&&!_d.error&&_d.trip&&_d.trip.id===tripId)_rpcLoad=_d;
-      else if(_d?.error&&/invalid_invite_token/.test(_d.error))return false;
-    }
-    if(_rpcLoad&&_rpcLoad.signal_topic)window._tripSignalTopic=_rpcLoad.signal_topic;
-    const[tRes,mRes,gRes,eRes,trRes,tokRes]=_rpcLoad?[
-      {data:_rpcLoad.trip},{data:_rpcLoad.members||[]},{data:_rpcLoad.groups||[]},{data:_rpcLoad.expenses||[]},
-      {data:_rpcLoad.treasury||null},{data:{invite_token:_rpcLoad.invite_token}}
-    ]:await Promise.all([
-      sb.from('trips').select('*').eq('id',tripId).single(),
-      sb.from('members').select('*').eq('trip_id',tripId).order('created_at'),
-      sb.from('groups').select('*').eq('trip_id',tripId).order('created_at'),
-      sb.from('expenses').select('*').eq('trip_id',tripId).order('created_at'),
-      sb.from('treasury').select('*').eq('trip_id',tripId).single(),
-      sb.from('trip_tokens').select('invite_token').eq('trip_id',tripId).single()
-    ]);
+    const {data,error}=await sb.rpc('load_member_trip_data',{
+      p_trip_id:tripId,p_member_name:S.me,p_member_key:getMemberKey()
+    });
+    if(error){lastMemberLoadReason='connection';return false;}
+    if(data?.error||!data?.trip){lastMemberLoadReason=data?.error||'trip_not_found';return false;}
+    const tRes={data:data.trip},mRes={data:data.members},gRes={data:data.groups};
+    const eRes={data:data.expenses},trRes={data:data.treasury};
     if(!tRes.data)return false;
     const _prevCur=S.trip&&S.trip.id===tRes.data.id?S.trip.currency:null;
     S.trip={id:tRes.data.id,name:tRes.data.name,dest:tRes.data.dest,currency:tRes.data.currency_code||null,
@@ -6495,16 +6549,13 @@ async function loadFromSupabase(tripId){
     // (fallback на holder из localStorage убран: мог воскрешать уже сброшенного на другом устройстве holder)
     // Автоматически устанавливаем invite_token если он отсутствует —
     // legacy поездки (созданные до trip_tokens) и переустановка APK
-    if(!S.inviteToken&&tokRes.data?.invite_token){
-      S.inviteToken=tokRes.data.invite_token;
-      localStorage.setItem('sw_invite_'+tripId,S.inviteToken);
-      console.log('[SB] invite_token восстановлен из trip_tokens');
-    }
+    // The invite token is never read from the database by an anonymous client.
     _lastRemoteRefreshAt=Date.now(); // фиксируем время успешной загрузки
     saveLocal(); // кэшируем в localStorage
     return true;
   }catch(err){
     console.warn('[SB] Load error:',err.message||err);
+    lastMemberLoadReason='connection';
     return false;
   }
 }
@@ -6634,12 +6685,16 @@ function _startFallbackPolling(){
     if(_isRemoteLoading||_sbSyncing||_settlePending)return;
     console.log('[RT] polling: fallback refresh');
     performRemoteRefresh('poll-fallback');
-  },60000); // раз в 60 секунд, не 20
+  },20000); // member-key RPC; no direct table subscription
   console.log('[RT] polling enabled — realtime disconnected');
 }
 
 async function startRealtime(){
   if(!USE_SUPABASE||!S.trip)return;
+  // Direct Postgres change streams would require row SELECT access and could
+  // expose trip data. Refresh through the member-key RPC instead.
+  _startFallbackPolling();
+  return;
   const sb=await getSupabase();
   if(!sb)return;
   // Убираем предыдущий channel
@@ -6985,12 +7040,14 @@ function _bindAndroidBack(){
       const np=document.getElementById('notif-panel');
       if(np&&np.classList.contains('open')&&typeof closeNotifPanel==='function'){closeNotifPanel();return;}
       const dash=document.getElementById('pg-dash');
-      if(S.trip&&dash&&!dash.classList.contains('active')){document.querySelectorAll('.ni')[0]?.click();return;}
+      const appVisible=document.getElementById('pg-app')?.style.display!=='none';
+      if(appVisible&&S.trip&&dash&&!dash.classList.contains('active')){document.querySelectorAll('.ni')[0]?.click();return;}
+      if(window.STHub&&STHub.handleBack())return; // Splitaway Team: назад → главная
       if(app.minimizeApp)app.minimizeApp();else if(app.exitApp)app.exitApp();
     });
   }catch(e){console.warn('[back]',e);}
 }
-function init(){
+async function init(){
   _bindAndroidBack();
   // Bind before URL/local-session branches can return. Rebinding stays idempotent.
   document.removeEventListener('click', handleDebtAction);
@@ -7054,36 +7111,36 @@ function init(){
         // Восстанавливаем токены из localStorage (не хранятся в основном blob)
         S.inviteToken=localStorage.getItem('sw_invite_'+last)||null;
         S.adminToken=localStorage.getItem('sw_admin_'+last)||null;
-        launch(); // startRealtime() вызывается внутри launch()
-        // Обновляем из Supabase в фоне (получаем свежие данные от других)
-        if(USE_SUPABASE){
-          const me=S.me,savedAdmin=S.isAdmin,myReceipts=S.receipts||[];
-          const savedInvite=S.inviteToken,savedAdmin2=S.adminToken;
-          const _initTripId=S.trip.id;
-          _initialLoadPending=true; // блокируем sbSync() пока этот load не завершится
-          loadFromSupabase(_initTripId).then(ok=>{
-            _initialLoadPending=false;
-            if(ok){
-              S.me=me;
-              S.meGender=S.members.find(m=>m.name===me)?.gender||'m';
-              S.isAdmin=isAdm(S.me); // пересчитываем по свежим S.adminName/S.coAdmins из loadFromSupabase, а не восстанавливаем устаревший снипок
-              S.inviteToken=savedInvite;
-              S.adminToken=savedAdmin2;
-              if(!S.receipts||!S.receipts.length)S.receipts=myReceipts;
-              renderAll();
-            } else {
-              // Поездка удалена в Supabase — чистим кэш и уходим на онбординг
-              localStorage.removeItem('sw_'+_initTripId);
-              localStorage.removeItem('sw_invite_'+_initTripId);
-              localStorage.removeItem('sw_admin_'+_initTripId);
-              localStorage.removeItem('sw_last');
-              S.trip=null;
-              stopRealtime?.();
-              toast(t('toast_trip_deleted_by_admin'));
-              setTimeout(()=>{ location.reload(); },1500);
-            }
-          }).catch(()=>{_initialLoadPending=false;});
+        if(USE_SUPABASE&&!getMemberKey()){
+          // A cached trip from the old project has no key for this database.
+          // Preserve its local copy but stop restoring it on every launch.
+          localStorage.removeItem('sw_last');
+          S.trip=null;S.members=[];S.groups=[];S.expenses=[];
+          showOb('ob-setup');renderFirstRunPreferences();return;
         }
+        // Verify the personal key before any cached trip data is displayed.
+        if(USE_SUPABASE){
+          const _initTripId=S.trip.id;
+          showOb('ob-loading');
+          const ok=await loadFromSupabase(_initTripId);
+          if(!ok){
+            if(lastMemberLoadReason==='member_key_invalid'||lastMemberLoadReason==='trip_not_found'){
+              // The personal key belongs to the previous project or the trip was removed.
+              // Keep the local archive, but do not display it or retry at startup.
+              localStorage.removeItem('sw_last');
+            }
+            S.trip=null;S.members=[];S.groups=[];S.expenses=[];
+            showOb('ob-setup');
+            renderFirstRunPreferences();
+            if(lastMemberLoadReason==='connection')toast(t('toast_sync_failed'));
+            return;
+          }
+          S.meGender=S.members.find(m=>m.name===S.me)?.gender||'m';
+          S.isAdmin=isAdm(S.me);
+        }
+        launch(); // startRealtime() вызывается внутри launch()
+        // Splitaway Team: после запуска показываем новую главную страницу
+        if(!action&&window.STHub)STHub.show();
         // Открыть форму добавления если пришли через shortcut
         if(action==='add-expense')setTimeout(()=>openAddExp(),400);
         return;
@@ -7103,7 +7160,7 @@ function init(){
       try{
         const u=new URL(data.url);
         // Поддерживаем обе схемы:
-        // https://splitaway.netlify.app?trip=XXX&token=YYY
+        // https://TEAM_APP_URL?trip=XXX&token=YYY
         // splitaway://trip?id=XXX&token=YYY
         let tripId=u.searchParams.get('trip')||u.searchParams.get('id')||null;
         const token=u.searchParams.get('token')||null;
@@ -7143,8 +7200,8 @@ function pickGender(hiddenId,btn,val){
 // Запускаем после загрузки всех defer-скриптов (в т.ч. lucide)
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script src="js/receipt-ocr.js?v=1.0.25-44" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-44" defer></script>
-<script src="js/splitaway-update.js?v=1.0.25-44" defer></script>
+<script src="js/receipt-ocr.js?v=1.0.25-48-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-48-team" defer></script>
+<script src="js/splitaway-update.js?v=1.0.25-48-team" defer></script>
 </body>
 </html>

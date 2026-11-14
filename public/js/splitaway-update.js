@@ -21,7 +21,7 @@ function queueExpenseAvatarSync(expense){
   try{localStorage.setItem(avatarPendingKey(),JSON.stringify(pending))}catch(error){console.warn('Avatar queue could not be saved',error)}
 }
 async function flushExpenseAvatarSync(){
-  if(_avatarSyncBusy||_avatarCloudUnavailable||!S.inviteToken)return;
+  if(_avatarSyncBusy||_avatarCloudUnavailable||!S.inviteToken||!getMemberKey())return;
   const pending=readAvatarPending();if(!Object.keys(pending).length)return;
   _avatarSyncBusy=true;
   try{
