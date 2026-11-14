@@ -1,0 +1,108 @@
+/* ============================================================
+   Splitaway Team — главная страница (Travel Hub)
+   Использует токены темы приложения: --bg, --text, --t2, --accent …
+   ============================================================ */
+.hub{
+  --hub-card:var(--bg3);--hub-card-b:var(--b1);--hub-shadow:none;
+  --hub-hero:linear-gradient(135deg,#8E80FF 0%,#5B4BEA 100%);
+  --hub-soft:rgba(124,108,255,.16);
+  display:flex;flex-direction:column;min-height:100dvh;background:var(--bg);color:var(--text);
+}
+[data-theme=light] .hub{
+  --hub-card:#fff;--hub-card-b:rgba(30,30,80,.07);
+  --hub-shadow:0 1px 2px rgba(30,30,80,.05),0 6px 18px rgba(30,30,80,.05);
+  --hub-soft:rgba(91,75,234,.09);
+}
+.hub button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hub-tile,.hub-pill,.hub-qa-btn,.hub-row,.hub-icbtn{color:var(--text)}
+.hub-wrap{width:100%;max-width:560px;margin:0 auto;padding:calc(var(--st) + 14px) 16px calc(var(--nh) + var(--sb) + 22px)}
+
+/* Шапка */
+.hub-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.hub-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.hub-logo{width:42px;height:42px;border-radius:13px;display:block;box-shadow:var(--hub-shadow)}
+.hub-brand-name{font-size:1.18rem;font-weight:800;letter-spacing:-.01em;line-height:1.15}
+.hub-brand-sub{font-size:.76rem;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-brand>div{min-width:0}
+.hub-hd-act{display:flex;gap:8px;flex-shrink:0}
+.hub-icbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);display:flex;align-items:center;justify-content:center;padding:0}
+.hub-icbtn svg{width:19px;height:19px}
+.hub-icbtn.on{background:var(--accent);color:#fff;border-color:transparent}
+.hub-icbtn-sp{width:42px;flex-shrink:0}
+
+/* Баннер «Создать поездку» */
+.hub-hero{width:100%;display:flex;align-items:center;gap:14px;padding:18px 16px;border:0;border-radius:22px;background:var(--hub-hero);color:#fff;text-align:left;box-shadow:0 10px 26px rgba(91,75,234,.28)}
+.hub-hero-ic{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hub-hero-ic svg{width:24px;height:24px}
+.hub-hero-txt{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.hub-hero-ttl{font-size:1.08rem;font-weight:800}
+.hub-hero-sub{font-size:.8rem;opacity:.88;line-height:1.3}
+.hub-hero-plus{width:40px;height:40px;border-radius:50%;background:#fff;color:#5B4BEA;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hub-hero-plus svg{width:20px;height:20px;stroke-width:2.6}
+
+.hub-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.hub-pill{display:flex;align-items:center;gap:9px;padding:13px 12px;border-radius:16px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);font-size:.82rem;font-weight:600;text-align:left;line-height:1.2}
+.hub-pill svg{width:19px;height:19px;color:var(--accent);flex-shrink:0}
+
+/* Карточка активной поездки */
+.hub-trip{width:100%;display:flex;align-items:center;gap:13px;padding:16px;border:0;border-radius:22px;background:var(--hub-hero);color:#fff;text-align:left;box-shadow:0 10px 26px rgba(91,75,234,.28)}
+.hub-trip-ic{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hub-trip-ic svg{width:23px;height:23px}
+.hub-trip-txt{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.hub-trip-name{font-size:1.2rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-trip-sub{font-size:.8rem;opacity:.9}
+.hub-trip-go{width:36px;height:36px;border-radius:50%;background:#fff;color:#5B4BEA;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hub-trip-go svg{width:20px;height:20px}
+.hub-qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.hub-qa-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:16px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);font-size:.76rem;font-weight:600;line-height:1.2;text-align:center}
+.hub-qa-btn svg{width:22px;height:22px;color:var(--accent)}
+
+/* Сервисы */
+.hub-sec-hd{font-size:1rem;font-weight:800;margin:24px 2px 12px;scroll-margin-top:16px}
+.hub-search{display:flex;align-items:center;gap:9px;padding:0 13px;height:44px;border-radius:14px;border:1px solid var(--hub-card-b);background:var(--hub-card);margin-bottom:12px}
+.hub-search svg{width:17px;height:17px;color:var(--t2);flex-shrink:0}
+.hub-search input{flex:1;border:0;background:transparent;color:var(--text);font:inherit;font-size:16px;outline:none;min-width:0}
+.hub-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hub-tile{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;padding:12px 3px 10px;min-height:92px;border-radius:18px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);transition:transform .12s ease}
+.hub-tile:active,.hub-pill:active,.hub-qa-btn:active,.hub-row:active,.hub-hero:active,.hub-trip:active{transform:scale(.96)}
+.hub-ico{width:40px;height:40px;display:block}
+.hub-lbl{font-size:.68rem;font-weight:600;line-height:1.15;text-align:center;letter-spacing:-.01em;overflow-wrap:break-word;hyphens:manual}
+.hub-empty{padding:26px 10px;text-align:center;color:var(--t2);font-size:.86rem}
+
+/* Экран «Поездки» */
+.hub-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.hub-title-row h2{font-size:1.15rem;font-weight:800;margin:0}
+.hub-row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:10px;border-radius:18px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);text-align:left}
+.hub-row-ic{width:42px;height:42px;border-radius:13px;background:var(--hub-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hub-row-ic svg{width:21px;height:21px}
+.hub-row-accent .hub-row-ic{background:var(--accent);color:#fff}
+.hub-row-txt{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.hub-row-ttl{font-size:.93rem;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.hub-row-sub{font-size:.76rem;color:var(--t2)}
+.hub-chev{width:18px;height:18px;color:var(--t3);flex-shrink:0}
+.hub-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--hub-soft);color:var(--accent);font-size:.66rem;font-weight:700;vertical-align:middle}
+
+/* Нижнее меню */
+.hub-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nh) + var(--sb));padding-bottom:var(--sb);background:rgba(16,16,24,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--b1)}
+[data-theme=light] .hub-nav{background:rgba(255,255,255,.95)}
+.hub-nav-in{max-width:560px;height:100%;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.hub-ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:var(--t2);font-size:.66rem;font-weight:600;position:relative}
+.hub-ni svg{width:22px;height:22px}
+.hub-ni.on{color:var(--accent)}
+.hub-ni.on::after{content:"";position:absolute;bottom:7px;width:22px;height:3px;border-radius:3px;background:var(--accent)}
+
+/* Профиль */
+.hub-sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hub-sheet-lbl{font-size:.78rem;font-weight:700;color:var(--t2);margin:14px 0 8px;text-align:left}
+.hub-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hub-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:999px;border:1px solid var(--b2);background:transparent;color:var(--text);font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
+.hub-chip svg{width:15px;height:15px}
+.hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Кнопка «На главную» в разделе расходов и на экранах онбординга */
+.hub-home-btn{flex-shrink:0}
+.ob-hub-back{position:absolute;top:calc(var(--st) + 14px);left:16px;z-index:5}
+#pg-ob{position:relative}
+
+@media (max-width:350px){.hub-grid{grid-template-columns:repeat(3,1fr)}.hub-row2{grid-template-columns:1fr}}
+@media (min-width:700px){.hub-wrap{padding-top:calc(var(--st) + 28px)}.hub-tile{min-height:104px}.hub-ico{width:46px;height:46px}.hub-lbl{font-size:.76rem}}

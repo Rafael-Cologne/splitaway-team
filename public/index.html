@@ -39,6 +39,11 @@ window.applyTranslations=function(){};
 <script src="/js/i18n.js?v=1.0.25-48-team"></script>
 <script src="/js/fx-calculator.js?v=1.0.25-48-team"></script>
 <script src="/js/archive-i18n.js?v=1.0.25-48-team"></script>
+<!-- Splitaway Team: новая главная страница (Travel Hub) -->
+<link rel="stylesheet" href="/css/hub.css?v=1.0.25-49-team">
+<script src="/js/services-config.js?v=1.0.25-49-team"></script>
+<script src="/js/hub-icons.js?v=1.0.25-49-team"></script>
+<script src="/js/hub.js?v=1.0.25-49-team"></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -441,8 +446,12 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
 <body>
 <div class="tw" id="tw"></div>
 
+<!-- ===== HUB: главная страница (рисуется из js/hub.js) ===== -->
+<div id="pg-hub" class="hub" style="display:none"></div>
+
 <!-- ===== ONBOARDING ===== -->
 <div id="pg-ob" class="ob fade-in">
+  <button type="button" class="btn btn-g btn-sm btn-ic ob-hub-back" id="ob-hub-back" onclick="STHub.show()" aria-label="Главная" data-i18n="nav_home" data-i18n-attr="aria-label" style="display:none"><i data-lucide="arrow-left" style="width:15px;height:15px"></i></button>
   <div class="ob-brand" style="display:flex;flex-direction:column;align-items:center;gap:14px">
     <div class="logo" style="background:none;box-shadow:none;padding:0;overflow:hidden"><img src="/icons/app_icon.png" style="width:80px;height:80px;border-radius:22px;display:block"></div>
     <div><div class="logo-txt">Split<span>away</span></div><div id="ob-tagline" style="display:none;color:var(--t2);font-size:0.88rem;margin-top:3px" data-i18n="app_tagline">Smart expense splitting</div></div>
@@ -542,7 +551,10 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
   <div class="page active" id="pg-dash">
     <div id="dash-bg-layer"><img id="dash-bg-dark" src="top.png" alt=""><img id="dash-bg-light" src="top-light.png" alt=""></div>
     <div class="topbar">
-      <div><div class="tb-title" id="app-trip-name"></div><div class="tb-sub" id="app-trip-sub"></div></div>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <button class="btn btn-g btn-sm btn-ic hub-home-btn" type="button" onclick="STHub.show()" aria-label="Главная" data-i18n="nav_home" data-i18n-attr="aria-label"><i data-lucide="layout-grid" style="width:15px;height:15px"></i></button>
+        <div style="min-width:0"><div class="tb-title" id="app-trip-name"></div><div class="tb-sub" id="app-trip-sub"></div></div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="pulse" id="rt-indicator" title="Онлайн" data-i18n="dash_indicator_online" data-i18n-attr="title"></div>
         <button class="btn btn-g btn-sm btn-ic" id="push-btn" onclick="openNotifPanel()" title="Уведомления" data-i18n="title_notifications_default" data-i18n-attr="title" style="position:relative"><i data-lucide="bell" style="width:15px;height:15px"></i><span id="notif-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--red,#e74c3c);pointer-events:none"></span></button>
@@ -1535,6 +1547,10 @@ function units(name){const g=groupOf(name);return g?g.members.length:1}
 // ONBOARDING
 // =======================================================
 function showOb(id){
+  // Splitaway Team: стартовый экран теперь — новая главная страница
+  if(id==='ob-setup'&&window.STHub){STHub.show();return;}
+  const hubBack=document.getElementById('ob-hub-back');
+  if(hubBack)hubBack.style.display=(window.STHub&&(id==='ob-s1'||id==='ob-pick'))?'':'none';
   ['ob-setup','ob-s1','ob-create','ob-pick','ob-loading'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===id?'flex':'none'});
   const onboarding=document.getElementById('pg-ob');
   if(onboarding){
@@ -7024,7 +7040,9 @@ function _bindAndroidBack(){
       const np=document.getElementById('notif-panel');
       if(np&&np.classList.contains('open')&&typeof closeNotifPanel==='function'){closeNotifPanel();return;}
       const dash=document.getElementById('pg-dash');
-      if(S.trip&&dash&&!dash.classList.contains('active')){document.querySelectorAll('.ni')[0]?.click();return;}
+      const appVisible=document.getElementById('pg-app')?.style.display!=='none';
+      if(appVisible&&S.trip&&dash&&!dash.classList.contains('active')){document.querySelectorAll('.ni')[0]?.click();return;}
+      if(window.STHub&&STHub.handleBack())return; // Splitaway Team: назад → главная
       if(app.minimizeApp)app.minimizeApp();else if(app.exitApp)app.exitApp();
     });
   }catch(e){console.warn('[back]',e);}
@@ -7121,6 +7139,8 @@ async function init(){
           S.isAdmin=isAdm(S.me);
         }
         launch(); // startRealtime() вызывается внутри launch()
+        // Splitaway Team: после запуска показываем новую главную страницу
+        if(!action&&window.STHub)STHub.show();
         // Открыть форму добавления если пришли через shortcut
         if(action==='add-expense')setTimeout(()=>openAddExp(),400);
         return;
