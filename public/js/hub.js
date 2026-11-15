@@ -82,6 +82,7 @@
   let query = '';         // поиск по сервисам
   let searchOpen = false;
   let moduleOpen = null;  // id открытого модуля или null
+  let moduleBack = null;  // свой обработчик «назад» у экрана модуля (необязательно)
 
   // Реестр модулей: id сервиса → функция открытия (см. registerService)
   const HANDLERS = {};
@@ -94,7 +95,7 @@
     const hub = $('pg-hub'), ob = $('pg-ob'), app = $('pg-app'), mod = $('pg-module');
     if (hub) hub.style.display = layer === 'hub' ? 'flex' : 'none';
     if (mod) mod.style.display = layer === 'module' ? 'flex' : 'none';
-    if (layer !== 'module') moduleOpen = null;
+    if (layer !== 'module') { moduleOpen = null; moduleBack = null; }
     if (ob) ob.style.display = layer === 'ob' ? '' : 'none';
     if (app) app.style.display = layer === 'app' ? 'flex' : 'none';
     window.scrollTo(0, 0);
@@ -185,7 +186,7 @@
   }
 
   // Полноэкранный экран модуля: шапка «назад + заголовок», модуль рисует только содержимое
-  function openScreen({ id, title, render: draw, action }) {
+  function openScreen({ id, title, render: draw, action, onBack }) {
     let layer = $('pg-module');
     if (!layer) {
       layer = document.createElement('div');
@@ -193,6 +194,7 @@
       document.body.appendChild(layer);
     }
     moduleOpen = id || 'module';
+    layer.dataset.module = id || '';
     layer.innerHTML =
       '<div class="hub-wrap mod-wrap"><div class="hub-title-row">' +
       `<button class="hub-icbtn" type="button" data-hub="mod-back" aria-label="${esc(tx('back'))}"><i data-lucide="chevron-left"></i></button>` +
@@ -201,6 +203,7 @@
       '</div><div class="mod-body" id="mod-body"></div></div>';
     setLayer('module');
     moduleOpen = id || 'module';
+    moduleBack = typeof onBack === 'function' ? onBack : null;
     const body = $('mod-body');
     const api = {
       body,
@@ -390,7 +393,7 @@
       case 'search':
         searchOpen = !searchOpen; if (!searchOpen) query = '';
         view = 'home'; render(); break;
-      case 'mod-back': show('home'); break;
+      case 'mod-back': if (moduleBack) moduleBack(); else show('home'); break;
       case 'close-profile': if (typeof closeModal === 'function') closeModal('m-hub-profile'); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
@@ -405,7 +408,7 @@
 
   // Кнопка «Назад» на Android: вернуться на главную, а не закрыть приложение
   function handleBack() {
-    if (moduleOpen) { show('home'); return true; }
+    if (moduleOpen) { if (moduleBack) moduleBack(); else show('home'); return true; }
     const hub = $('pg-hub');
     if (hub && hub.style.display !== 'none') {
       if (view !== 'home') { view = 'home'; render(); return true; }

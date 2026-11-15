@@ -100,7 +100,7 @@
 .hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* Кнопка «На главную» в разделе расходов и на экранах онбординга */
-.hub-home-btn{flex-shrink:0}
+.hub-home-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding-left:9px;padding-right:13px;font-weight:700;color:var(--accent)}
 .ob-hub-back{position:absolute;top:calc(var(--st) + 14px);left:16px;z-index:5}
 #pg-ob{position:relative}
 

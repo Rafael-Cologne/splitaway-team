@@ -35,7 +35,8 @@
     //   ctx.store     — хранилище модуля на этом устройстве: ctx.store.get('ключ', поУмолчанию) / ctx.store.set('ключ', значение)
     //   ctx.supabase  — база данных: const sb = await ctx.supabase();  (новые таблицы — только через Александра)
     //   ctx.toast('текст') — короткое сообщение внизу экрана
-    //   ctx.openScreen({ title, render, action }) — открыть экран модуля
+    //   ctx.openScreen({ title, render, action, onBack }) — открыть экран модуля
+    //                 (onBack — своя кнопка «назад», например к предыдущему экрану модуля)
     //   ctx.close()   — вернуться на главную
 
     ctx.openScreen({
