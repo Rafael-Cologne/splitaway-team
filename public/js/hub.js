@@ -195,11 +195,13 @@
     }
     moduleOpen = id || 'module';
     layer.dataset.module = id || '';
+    // action — одна кнопка справа или массив кнопок: [{ icon, label, cls, onClick }]
+    const acts = Array.isArray(action) ? action.filter(Boolean) : (action ? [action] : []);
     layer.innerHTML =
       '<div class="hub-wrap mod-wrap"><div class="hub-title-row">' +
-      `<button class="hub-icbtn" type="button" data-hub="mod-back" aria-label="${esc(tx('back'))}"><i data-lucide="chevron-left"></i></button>` +
+      `<button class="hub-icbtn st-back" type="button" data-hub="mod-back" aria-label="${esc(tx('back'))}"><i data-lucide="chevron-left"></i></button>` +
       `<h2 id="mod-title">${esc(title || '')}</h2>` +
-      (action ? `<button class="hub-icbtn" type="button" id="mod-action" aria-label="${esc(action.label || '')}"><i data-lucide="${esc(action.icon || 'plus')}"></i></button>` : '<span class="hub-icbtn-sp"></span>') +
+      (acts.length ? '<div class="mod-acts">' + acts.map((a, i) => `<button class="hub-icbtn ${esc(a.cls || '')}" type="button" id="${i ? 'mod-action-' + (i + 1) : 'mod-action'}" aria-label="${esc(a.label || '')}"><i data-lucide="${esc(a.icon || 'plus')}"></i></button>`).join('') + '</div>' : '<span class="hub-icbtn-sp"></span>') +
       '</div><div class="mod-body" id="mod-body"></div></div>';
     setLayer('module');
     moduleOpen = id || 'module';
@@ -211,7 +213,7 @@
       refresh: () => { body.innerHTML = ''; draw && draw(body, api); icons(layer); },
       close: () => show('home')
     };
-    if (action && typeof action.onClick === 'function') $('mod-action').addEventListener('click', () => action.onClick(api));
+    acts.forEach((a, i) => { if (typeof a.onClick === 'function') $(i ? 'mod-action-' + (i + 1) : 'mod-action').addEventListener('click', () => a.onClick(api)); });
     if (draw) draw(body, api);
     icons(layer);
     return api;
@@ -270,6 +272,30 @@
       `</div><div class="hub-sheet-lbl">${esc(tx('language'))}</div><div class="hub-chips">` +
       LANGS.map(([code, name]) => `<button class="hub-chip${cur === code ? ' on' : ''}" type="button" data-hub="lang" data-v="${code}">${esc(name)}</button>`).join('') +
       '</div>';
+    if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
+    icons(ov);
+  }
+
+  // «Ещё»: профиль и настройки, сохранённое, все сервисы (то же окно снизу, что и профиль)
+  function openMore() {
+    let ov = $('m-hub-profile');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.className = 'ov'; ov.id = 'm-hub-profile';
+      ov.innerHTML = '<div class="mdl hub-sheet"></div>';
+      document.body.appendChild(ov);
+    }
+    const rows = [
+      ['profile', 'user', 'Профиль и настройки', 'Язык и тема'],
+      ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
+      ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
+      hasTrip() ? ['invite', 'qr-code', 'Пригласить в поездку', 'Код и QR'] : null
+    ].filter(Boolean);
+    ov.firstChild.innerHTML =
+      '<div class="mdl-handle"></div>' +
+      `<div class="hub-sheet-hd"><div class="mdl-title">Ещё</div>` +
+      `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x" style="width:15px;height:15px"></i></button></div>` +
+      rows.map(([v, ic, t, sub]) => rowHtml('more', v, ic, esc(t), sub)).join('');
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
     icons(ov);
   }
@@ -346,10 +372,11 @@
       `<div class="hub-sec-hd">${esc(tx('on_device'))}</div>` + rows;
   }
 
+  // Нижнее меню: всегда на русском (решение команды). Календарь и Расходы — то, что открывают в поездке чаще всего.
   function navHtml() {
     const items = [
-      ['home', 'home', tx('home')], ['trips', 'plane', tx('trips')], ['services', 'layout-grid', tx('services')],
-      ['saved', 'bookmark', tx('saved')], ['profile', 'user', tx('profile')]
+      ['home', 'house', 'Главная'], ['trips', 'plane', 'Поездки'], ['calendar', 'calendar-days', 'Календарь'],
+      ['expenses', 'wallet', 'Расходы'], ['more', 'ellipsis', 'Ещё']
     ];
     const active = view === 'trips' ? 'trips' : 'home';
     return '<nav class="hub-nav"><div class="hub-nav-in">' +
@@ -399,9 +426,16 @@
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
       case 'nav':
         if (v === 'home' || v === 'trips') { view = v; render(); window.scrollTo(0, 0); }
-        else if (v === 'services') { view = 'home'; render(); $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-        else if (v === 'saved') say(tx('saved') + ' — ' + tx('soon'));
-        else if (v === 'profile') openProfile();
+        else if (v === 'calendar') openService('calendar');
+        else if (v === 'expenses') openExpenses('pg-dash');
+        else if (v === 'more') openMore();
+        break;
+      case 'more':
+        if (typeof closeModal === 'function') closeModal('m-hub-profile');
+        if (v === 'profile') setTimeout(openProfile, 60);
+        else if (v === 'saved') say('Сохранённое — ' + tx('soon'));
+        else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
+        else if (v === 'invite' && typeof openQR === 'function') openQR();
         break;
     }
   });

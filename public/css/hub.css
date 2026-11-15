@@ -100,7 +100,10 @@
 .hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* Кнопка «На главную» в разделе расходов и на экранах онбординга */
-.hub-home-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding-left:9px;padding-right:13px;font-weight:700;color:var(--accent)}
+/* Единая кнопка «назад» для всех плиток: круглая, со стрелкой, всегда слева вверху */
+.st-back{width:42px;height:42px;flex-shrink:0;border-radius:50%;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);color:var(--text);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:inherit}
+.st-back svg{width:19px;height:19px}
+#pg-dash .topbar .st-back{margin-left:-4px}
 .ob-hub-back{position:absolute;top:calc(var(--st) + 14px);left:16px;z-index:5}
 #pg-ob{position:relative}
 
@@ -144,3 +147,5 @@
 /* Пустое состояние */
 .st-empty{padding:34px 16px;text-align:center;color:var(--t2);font-size:.88rem}
 .st-empty svg{width:40px;height:40px;color:var(--t3);margin-bottom:8px}
+
+.mod-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
