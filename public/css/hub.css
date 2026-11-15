@@ -106,3 +106,41 @@
 
 @media (max-width:350px){.hub-grid{grid-template-columns:repeat(3,1fr)}.hub-row2{grid-template-columns:1fr}}
 @media (min-width:700px){.hub-wrap{padding-top:calc(var(--st) + 28px)}.hub-tile{min-height:104px}.hub-ico{width:46px;height:46px}.hub-lbl{font-size:.76rem}}
+
+/* ============================================================
+   Экран модуля (Гид, Рядом, Календарь, Погода, Чек-лист …)
+   и общий набор элементов, чтобы все модули выглядели одинаково.
+   Используйте эти классы в своих модулях вместо своих стилей.
+   ============================================================ */
+.mod-layer{position:relative}
+.mod-wrap{padding-bottom:calc(var(--sb) + 28px)}
+.mod-body{display:flex;flex-direction:column;gap:12px}
+
+/* Карточка */
+.st-card{padding:16px;border-radius:18px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow)}
+.st-card-title{font-size:.95rem;font-weight:700;margin-bottom:6px}
+.st-muted{color:var(--t2);font-size:.82rem;line-height:1.4}
+.st-section{font-size:.95rem;font-weight:800;margin:10px 2px 2px}
+
+/* Кнопки */
+.st-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border:0;border-radius:14px;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:.9rem;cursor:pointer}
+.st-btn svg{width:18px;height:18px}
+.st-btn-g{background:var(--hub-card);color:var(--text);border:1px solid var(--hub-card-b);box-shadow:var(--hub-shadow)}
+.st-btn-fw{width:100%}
+.st-btn:disabled{opacity:.5;cursor:default}
+
+/* Поле ввода */
+.st-input{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--hub-card-b);background:var(--hub-card);color:var(--text);font:inherit;font-size:16px;outline:none}
+.st-input:focus{border-color:var(--accent)}
+
+/* Строка списка */
+.st-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow)}
+.st-row-ic{width:40px;height:40px;border-radius:12px;background:var(--hub-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st-row-ic svg{width:20px;height:20px}
+.st-row-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st-row-ttl{font-weight:700;font-size:.92rem}
+.st-row-sub{font-size:.76rem;color:var(--t2)}
+
+/* Пустое состояние */
+.st-empty{padding:34px 16px;text-align:center;color:var(--t2);font-size:.88rem}
+.st-empty svg{width:40px;height:40px;color:var(--t3);margin-bottom:8px}

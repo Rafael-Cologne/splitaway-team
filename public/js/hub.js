@@ -81,14 +81,20 @@
   let view = 'home';      // 'home' | 'trips'
   let query = '';         // поиск по сервисам
   let searchOpen = false;
+  let moduleOpen = null;  // id открытого модуля или null
+
+  // Реестр модулей: id сервиса → функция открытия (см. registerService)
+  const HANDLERS = {};
 
   const $ = id => document.getElementById(id);
   const hasTrip = () => typeof S !== 'undefined' && !!S.trip && !!S.trip.id && Array.isArray(S.members) && S.members.length > 0;
 
   // ---------- Переключение слоёв: хаб / онбординг / раздел расходов ----------
   function setLayer(layer) {
-    const hub = $('pg-hub'), ob = $('pg-ob'), app = $('pg-app');
+    const hub = $('pg-hub'), ob = $('pg-ob'), app = $('pg-app'), mod = $('pg-module');
     if (hub) hub.style.display = layer === 'hub' ? 'flex' : 'none';
+    if (mod) mod.style.display = layer === 'module' ? 'flex' : 'none';
+    if (layer !== 'module') moduleOpen = null;
     if (ob) ob.style.display = layer === 'ob' ? '' : 'none';
     if (app) app.style.display = layer === 'app' ? 'flex' : 'none';
     window.scrollTo(0, 0);
@@ -130,12 +136,89 @@
     currency: () => window.SplitawayFx?.openCalculator?.()
   };
 
+  // Сервис активен, если модуль зарегистрировался сам или у него встроенный маршрут
+  const isActive = s => !!HANDLERS[s.id] || (s.status === 'active' && !!ROUTES[s.route]);
+
   function openService(id) {
     const s = (window.ST_SERVICES || []).find(x => x.id === id);
     if (!s) return;
-    if (s.status !== 'active' || !ROUTES[s.route]) { say(svcTitle(s) + ' — ' + tx('soon')); return; }
+    if (!isActive(s)) { say(svcTitle(s) + ' — ' + tx('soon')); return; }
     if (s.requiresTrip && !hasTrip()) { say(tx('need_trip')); show('trips'); return; }
+    if (HANDLERS[s.id]) { HANDLERS[s.id](moduleContext(s)); return; }
     ROUTES[s.route]();
+  }
+
+  // ---------- «Розетка» для модулей ----------
+  // Модуль (js/modules/<id>.js) подключается одной строкой:
+  //   STHub.registerService('guide', ctx => ctx.openScreen({ render: body => { ... } }));
+  function registerService(id, handler) {
+    if (typeof handler !== 'function') return;
+    HANDLERS[id] = handler;
+    const hub = $('pg-hub');
+    if (hub && hub.style.display !== 'none') render();
+  }
+
+  // Небольшое хранилище модуля для текущей поездки (только на этом устройстве)
+  function moduleStore(moduleId) {
+    const key = name => 'st_mod_' + moduleId + '_' + (hasTrip() ? S.trip.id : 'none') + '_' + name;
+    return {
+      get(name, fallback) { try { const v = localStorage.getItem(key(name)); return v == null ? fallback : JSON.parse(v); } catch (_) { return fallback; } },
+      set(name, value) { try { localStorage.setItem(key(name), JSON.stringify(value)); } catch (_) {} }
+    };
+  }
+
+  // Всё, что модуль получает при открытии
+  function moduleContext(s) {
+    return {
+      id: s.id,
+      title: svcTitle(s),
+      trip: hasTrip() ? S.trip : null,
+      members: hasTrip() ? S.members.slice() : [],
+      me: hasTrip() ? S.me : null,
+      lang: lang(),
+      toast: say,
+      store: moduleStore(s.id),
+      supabase: () => (typeof getSupabase === 'function' ? getSupabase() : Promise.resolve(null)), // async: const sb = await ctx.supabase()
+      openScreen: opts => openScreen(Object.assign({ id: s.id, title: svcTitle(s) }, opts || {})),
+      close: () => show('home')
+    };
+  }
+
+  // Полноэкранный экран модуля: шапка «назад + заголовок», модуль рисует только содержимое
+  function openScreen({ id, title, render: draw, action }) {
+    let layer = $('pg-module');
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'pg-module'; layer.className = 'hub mod-layer'; layer.style.display = 'none';
+      document.body.appendChild(layer);
+    }
+    moduleOpen = id || 'module';
+    layer.innerHTML =
+      '<div class="hub-wrap mod-wrap"><div class="hub-title-row">' +
+      `<button class="hub-icbtn" type="button" data-hub="mod-back" aria-label="${esc(tx('back'))}"><i data-lucide="chevron-left"></i></button>` +
+      `<h2 id="mod-title">${esc(title || '')}</h2>` +
+      (action ? `<button class="hub-icbtn" type="button" id="mod-action" aria-label="${esc(action.label || '')}"><i data-lucide="${esc(action.icon || 'plus')}"></i></button>` : '<span class="hub-icbtn-sp"></span>') +
+      '</div><div class="mod-body" id="mod-body"></div></div>';
+    setLayer('module');
+    moduleOpen = id || 'module';
+    const body = $('mod-body');
+    const api = {
+      body,
+      setTitle: t => { const h = $('mod-title'); if (h) h.textContent = t; },
+      refresh: () => { body.innerHTML = ''; draw && draw(body, api); icons(layer); },
+      close: () => show('home')
+    };
+    if (action && typeof action.onClick === 'function') $('mod-action').addEventListener('click', () => action.onClick(api));
+    if (draw) draw(body, api);
+    icons(layer);
+    return api;
+  }
+
+  // Подключить CSS модуля один раз
+  function addStyles(id, css) {
+    if (document.getElementById('st-css-' + id)) return;
+    const el = document.createElement('style'); el.id = 'st-css-' + id; el.textContent = css;
+    document.head.appendChild(el);
   }
 
   // ---------- Поездки, сохранённые на этом устройстве ----------
@@ -191,7 +274,7 @@
   // ---------- Разметка ----------
   function tileHtml(s) {
     const icon = (window.ST_ICONS || {})[s.icon] || '';
-    const soon = s.status !== 'active' ? ' soon' : '';
+    const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
       `<span class="hub-ico">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
   }
@@ -307,6 +390,7 @@
       case 'search':
         searchOpen = !searchOpen; if (!searchOpen) query = '';
         view = 'home'; render(); break;
+      case 'mod-back': show('home'); break;
       case 'close-profile': if (typeof closeModal === 'function') closeModal('m-hub-profile'); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
@@ -321,6 +405,7 @@
 
   // Кнопка «Назад» на Android: вернуться на главную, а не закрыть приложение
   function handleBack() {
+    if (moduleOpen) { show('home'); return true; }
     const hub = $('pg-hub');
     if (hub && hub.style.display !== 'none') {
       if (view !== 'home') { view = 'home'; render(); return true; }
@@ -330,5 +415,5 @@
     return true;
   }
 
-  window.STHub = { show, render, openExpenses, openService, handleBack };
+  window.STHub = { show, render, openExpenses, openService, handleBack, registerService, openScreen, addStyles };
 })();
