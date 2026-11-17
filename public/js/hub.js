@@ -302,7 +302,9 @@
 
   // ---------- Разметка ----------
   function tileHtml(s) {
-    const icon = (window.ST_ICONS || {})[s.icon] || '';
+    // Иконки плиток — картинки из макета (public/img/hub/<icon>.webp); старый SVG — если картинки нет
+    const svg = (window.ST_ICONS || {})[s.icon] || '';
+    const icon = `<img src="/img/hub/${esc(s.icon)}.webp" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
     const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
       `<span class="hub-ico">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
