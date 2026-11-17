@@ -425,6 +425,7 @@
             selected = b.dataset.day; month = selected.slice(0, 7); openDay();
           }));
           onSwipe(body.querySelector('#cal-month'), () => { shiftMonth(1); screen.refresh(); }, () => { shiftMonth(-1); screen.refresh(); });
+          if (window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.cal-trip-art img'), ctx.trip, { width: 300 }); // фото места поездки
         }
       });
     }

@@ -375,6 +375,7 @@
           `;
           body.querySelectorAll('[data-f]').forEach(x => x.addEventListener('click', () => { filter = x.dataset.f; screen.refresh(); }));
           body.querySelector('[data-a="trip"]').addEventListener('click', () => STHub.show('trips'));
+          if (window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.bk-trip img'), ctx.trip, { width: 400 }); // фото места поездки
           body.querySelector('[data-a="add"]')?.addEventListener('click', () => openForm(null, openList));
           body.querySelectorAll('[data-id]').forEach(x => x.addEventListener('click', () => openItem(x.dataset.id)));
         }

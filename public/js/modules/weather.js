@@ -115,6 +115,10 @@
     .wx-desc{font-size:1.25rem;font-weight:700;margin-top:8px}
     .wx-mm{font-size:1.15rem;font-weight:700;margin-top:6px;display:flex;gap:16px}
     .wx-hero.sm{min-height:200px}
+    .wx-hero>img.place{object-position:center 60%}
+    .wx-hero.night>img.place{filter:brightness(.42) saturate(.75) contrast(1.05)}
+    .wx-hero.rain>img.place{filter:saturate(.45) brightness(.78)}
+    .wx-credit{position:absolute;right:12px;bottom:7px;z-index:2;font-size:.6rem;color:rgba(255,255,255,.82);text-shadow:0 1px 3px rgba(0,0,0,.6)}
     .wx-hero.sm .wx-temp{font-size:3.6rem}
     /* показатели */
     .wx-stats{display:grid;grid-template-columns:repeat(4,1fr);padding:12px 4px}
@@ -446,7 +450,10 @@
       const temp = isNow ? f.current.temperature_2m : D.temperature_2m_max[i];
       const sub = isNow ? 'Сейчас, ' + dayLong(d) + ', ' + hhmm(f.current.time) : dayLong(d);
       const kind = heroImg(code, day);
-      return `<div class="wx-hero ${kind}${small ? ' sm' : ''}"><img src="/img/weather/${kind}.jpg" alt="">
+      // фото выбранного места (Wikimedia Commons); пока ищем или если не нашли — общая картинка по погоде
+      const ph = window.STPlacePhoto ? STPlacePhoto.peek(loc.name, { lat: loc.lat, lon: loc.lon, prefer: 'photo', width: 1100 }) : null;
+      return `<div class="wx-hero ${kind}${small ? ' sm' : ''}"><img src="${ph ? esc(ph.url) : '/img/weather/' + kind + '.jpg'}" class="${ph ? 'place' : ''}" alt="">
+        <span class="wx-credit">${ph ? esc(ph.credit) : ''}</span>
         <div class="wx-hero-in">
           <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
           <div class="wx-now">${esc(sub)}${f.offline ? ' · нет сети' : ''}</div>
@@ -542,7 +549,21 @@
       }));
       body.querySelectorAll('[data-a="add"]').forEach(b => b.addEventListener('click', () => citySheet(scr, true)));
     }
+    // Подставить фото места в карточку погоды и фото поездки в карточку поездки
+    function fillPhotos(body) {
+      if (!window.STPlacePhoto || !loc) return;
+      STPlacePhoto.tripImg(body.querySelector('.wx-trip img'), trip, { width: 400 });
+      const img = body.querySelector('.wx-hero > img');
+      if (!img || img.classList.contains('place')) return;
+      const l = loc;
+      STPlacePhoto.photo(l.name, { lat: l.lat, lon: l.lon, prefer: 'photo', width: 1100 }).then(r => {
+        if (!r || l !== loc || !img.isConnected) return;
+        img.src = r.url; img.classList.add('place');
+        const c = img.parentNode.querySelector('.wx-credit'); if (c) c.textContent = r.credit;
+      });
+    }
     function bindCommon(body, scr) {
+      fillPhotos(body);
       bindChips(body, scr);
       body.querySelectorAll('[data-a="city"]').forEach(b => b.addEventListener('click', () => citySheet(scr)));
       body.querySelector('[data-a="retry"]')?.addEventListener('click', () => { f = null; err = null; scr.refresh(); load(true, scr); });
@@ -641,6 +662,7 @@
           body.innerHTML = `${hero(cur, true)}
             <div class="wx-card wx-tabs">${tabs.map(([k, t]) => `<button class="wx-tab${mode === k ? ' on' : ''}" type="button" data-tab="${k}">${esc(t)}</button>`).join('')}</div>
             ${content}<div style="height:10px"></div>`;
+          fillPhotos(body);
           body.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { mode = b.dataset.tab; screen.refresh(); }));
           body.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { cur = +b.dataset.day; mode = 'day'; screen.refresh(); window.scrollTo(0, 0); }));
           if (mode === 'radar') radar(body.querySelector('#wx-radar'));
