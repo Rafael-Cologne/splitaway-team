@@ -304,7 +304,7 @@
   function tileHtml(s) {
     // Иконки плиток — картинки из макета (public/img/hub/<icon>.webp); старый SVG — если картинки нет
     const svg = (window.ST_ICONS || {})[s.icon] || '';
-    const icon = `<img src="/img/hub/${esc(s.icon)}.webp" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
+    const icon = `<img src="/img/hub/${esc(s.icon)}.webp?v=2" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
     const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
       `<span class="hub-ico">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
@@ -330,12 +330,12 @@
   }
   function fillTripPhoto() {
     const el = $('hub-trip-ph');
-    if (!el || el.classList.contains('on') || !window.STPlacePhoto || !hasTrip()) return;
+    if (!el || el.dataset.photo || !window.STPlacePhoto || !hasTrip()) return;
     const id = S.trip.id;
     STPlacePhoto.forTrip(S.trip, { width: 900 }).then(r => {
       if (!r || !hasTrip() || S.trip.id !== id) return;
       const img = new Image();
-      img.onload = () => { const e = $('hub-trip-ph'); if (e) { e.style.backgroundImage = `url('${r.url}')`; e.classList.add('on'); } };
+      img.onload = () => { const e = $('hub-trip-ph'); if (e) { e.style.backgroundImage = `url('${r.url}')`; e.dataset.photo = '1'; } };
       img.src = r.url;
     });
   }
@@ -350,7 +350,8 @@
       const ph = window.STPlacePhoto ? STPlacePhoto.peekTrip(t, { width: 900 }) : null;
       top =
         '<button class="hub-trip2" type="button" data-hub="open-trip">' +
-        `<span class="hub-trip2-ph${ph ? ' on' : ''}" id="hub-trip-ph"${ph ? ` style="background-image:url('${esc(ph.url)}')"` : ''}></span>` +
+        // фото места; если места нет (поездка «Тест») — нейтральная абстрактная картинка
+        `<span class="hub-trip2-ph on" id="hub-trip-ph"${ph ? ' data-photo="1"' : ''} style="background-image:url('${ph ? esc(ph.url) : '/img/trips/abstract.jpg'}')"></span>` +
         `<span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>${esc(tx('current_trip'))}</span>` +
         `<span class="hub-trip2-name">${esc(t.name)}</span>` +
         `<span class="hub-trip2-meta">${d ? '<i data-lucide="calendar-days"></i>' : ''}${meta.map(esc).join(' <b>•</b> ')}</span></span>` +
@@ -420,7 +421,7 @@
       ? `<button class="hub-icbtn" type="button" data-hub="bell" aria-label="${esc(tx('notifications'))}"><i data-lucide="bell"></i></button>` : '';
     root.innerHTML =
       '<div class="hub-wrap"><header class="hub-hd">' +
-      `<div class="hub-brand"><img src="/icons/app_icon.png" alt="" class="hub-logo"><div><div class="hub-brand-name">${esc(tx('brand'))}</div><div class="hub-brand-sub">${esc(tx('tagline'))}</div></div></div>` +
+      `<div class="hub-brand"><img src="/icons/splitaway-team.svg" alt="" class="hub-logo"><div><div class="hub-brand-name">${esc(tx('brand'))}</div><div class="hub-brand-sub">${esc(tx('tagline'))}</div></div></div>` +
       `<div class="hub-hd-act"><button class="hub-icbtn${searchOpen ? ' on' : ''}" type="button" data-hub="search" aria-label="${esc(tx('search'))}"><i data-lucide="search"></i></button>${bell}</div>` +
       `</header><main class="hub-main">${view === 'trips' ? tripsHtml() : homeHtml()}</main></div>` + navHtml();
     icons(root);

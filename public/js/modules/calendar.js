@@ -376,7 +376,7 @@
       const n = ctx.members.length;
       const sub = dates ? rangeLabel(dates.start, dates.end) : 'Укажите даты поездки';
       return `<button class="cal-card cal-trip" type="button" data-a="dates">
-        <div class="cal-trip-art"><img src="/img/trips/beach.jpg" alt=""></div>
+        <div class="cal-trip-art"><img src="/img/trips/abstract.jpg" alt=""></div>
         <div><div class="cal-trip-name">${esc(t.name || 'Поездка')}</div>
         <div class="cal-trip-sub${dates ? '' : ' need'}">${esc(sub)}${n ? ' · ' + n + ' ' + plural(n, 'участник', 'участника', 'участников') : ''}</div></div>
         <i data-lucide="chevron-down" class="cal-chev"></i></button>`;

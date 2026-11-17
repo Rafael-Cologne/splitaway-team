@@ -72,6 +72,27 @@
     { id: 'other', name: 'Другое', icon: 'paperclip' }
   ];
   const docKind = id => DOC_KINDS.find(k => k.id === id) || DOC_KINDS[DOC_KINDS.length - 1];
+  // Документ = один файл со своим названием. Старые группы («Посадочные талоны» с несколькими файлами) делим на отдельные документы.
+  function normDocs(b) {
+    b.docs = (b.docs || []).flatMap(d => {
+      const files = d.files || [], base = d.title || docKind(d.kind).name;
+      if (files.length <= 1) return files.length ? [Object.assign(d, { title: base })] : [];
+      return files.map((f, i) => ({ id: i ? uid() : d.id, kind: d.kind, title: base + ' ' + (i + 1), files: [f] }));
+    });
+    return b.docs;
+  }
+  const docSuggest = (catId, kind) => kind === 'boarding' ? 'Посадочный талон'
+    : ({ flight: 'Электронный билет', stay: 'Подтверждение брони', transport: 'Подтверждение брони', ticket: 'Билет' })[catId] || 'Документ';
+  const nameFromFile = n => String(n || '').replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+  const isPdf = f => f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name || ''));
+  const isImg = f => f && /^image\//.test(f.type || '');
+  let pdfP = null;
+  const pdfLib = () => window.pdfjsLib ? Promise.resolve(window.pdfjsLib) : (pdfP || (pdfP = new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.src = '/vendor/pdfjs/pdf.min.js';
+    sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js'; ok(window.pdfjsLib); };
+    sc.onerror = () => { pdfP = null; no(new Error('pdf')); };
+    document.head.appendChild(sc);
+  })));
   const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'PLN', 'CZK', 'TRY', 'RUB'];
 
   // ---------- Файлы документов: IndexedDB ----------
@@ -224,7 +245,13 @@
     .bk-q span:first-child{width:42px;height:42px;border-radius:13px;background:var(--bk-soft);color:var(--bk-ac);display:flex;align-items:center;justify-content:center}
     .bk-q svg{width:21px;height:21px}
     .bk-h3{font-size:1.3rem;font-weight:800;margin:12px 4px 0}
-    .bk-doc{display:flex;align-items:center;gap:16px;padding:12px 16px 12px 14px}
+    .bk-doc{padding:0;overflow:hidden}
+    .bk-doc-row{display:flex;align-items:center;gap:14px;padding:12px 8px 12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .bk-doc.open .bk-doc-row{border-bottom:1px solid var(--bk-line)}
+    .bk-doc-view{padding:10px;display:flex;flex-direction:column;gap:10px;background:var(--bk-soft)}
+    .bk-doc-view[hidden]{display:none}
+    .bk-doc-view img,.bk-doc-view canvas{width:100%;height:auto;border-radius:12px;display:block;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .bk-doc-view .st-muted{text-align:center;padding:14px 8px;font-size:.86rem}
     .bk-doc-ic{width:62px;height:54px;border-radius:14px;background:var(--bk-soft);color:var(--bk-ac);display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .bk-doc-ic svg{width:28px;height:28px;stroke-width:2}
     .bk-doc .bk-txt b{font-weight:800}
@@ -312,7 +339,7 @@
       const t = ctx.trip || {}, d = tripDates(), n = ctx.members.length;
       const yr = d ? ' ' + parse(d.end).getFullYear() : '';
       return `<button class="bk-card bk-trip" type="button" data-a="trip">
-        <img src="${IMG}trip-coast.jpg" alt="">
+        <img src="/img/trips/abstract.jpg" alt="">
         <div class="bk-trip-txt"><b>${esc(t.name || 'Поездка')}</b>
           <div class="bk-meta"><i data-lucide="calendar"></i>${d ? esc(rangeLabel(d.start, d.end) + yr) : 'Даты не указаны'}</div>
           <div class="bk-meta"><i data-lucide="users"></i>${n} ${plural(n, 'участник', 'участника', 'участников')}</div>
@@ -414,9 +441,49 @@
     }
 
     function docsSub(d) {
-      const types = d.files.map(f => f.type === 'application/pdf' ? 'PDF' : f.type.startsWith('image/') ? 'Фото' : 'Файл');
-      const t = types.every(x => x === types[0]) ? types[0] : 'Файлы';
-      return t + ' · ' + d.files.length + ' ' + plural(d.files.length, 'файл', 'файла', 'файлов');
+      const f = d.files[0] || {};
+      return (isPdf(f) ? 'PDF' : isImg(f) ? 'Фото' : 'Файл') + (f.size ? ' · ' + fileSize(f.size) : '');
+    }
+    const docIcon = d => { const f = d.files[0]; return isPdf(f) ? 'file-text' : isImg(f) ? 'image' : 'paperclip'; };
+
+    // Нажатие на документ — открыть просмотр под ним, повторное — закрыть
+    async function toggleDoc(card, d) {
+      const view = card.querySelector('.bk-doc-view');
+      if (card.classList.contains('open')) {
+        card.classList.remove('open'); view.hidden = true; view.innerHTML = '';
+        if (card._url) { URL.revokeObjectURL(card._url); card._url = null; }
+        return;
+      }
+      card.classList.add('open'); view.hidden = false;
+      const token = card._t = (card._t || 0) + 1;
+      view.innerHTML = '<div class="st-muted">Открываю…</div>';
+      const f = d.files[0];
+      let blob;
+      try { blob = await getFile(f); } catch (_) { view.innerHTML = '<div class="st-muted">Файл не найден на этом устройстве</div>'; return; }
+      if (card._t !== token || !card.classList.contains('open')) return;
+      if (isImg(f) || /^image\//.test(blob.type || '')) {
+        card._url = URL.createObjectURL(blob);
+        view.innerHTML = `<img src="${card._url}" alt="${esc(d.title)}">`;
+      } else if (isPdf(f)) {
+        try {
+          const lib = await pdfLib();
+          const doc = await lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
+          if (card._t !== token || !card.classList.contains('open')) return;
+          view.innerHTML = '';
+          const w = Math.max(240, view.clientWidth - 20), dpr = Math.min(2, window.devicePixelRatio || 1), n = Math.min(doc.numPages, 10);
+          for (let i = 1; i <= n; i++) {
+            const page = await doc.getPage(i);
+            const vp = page.getViewport({ scale: w / page.getViewport({ scale: 1 }).width * dpr });
+            const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height;
+            await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+            if (card._t !== token || !card.classList.contains('open')) return;
+            view.appendChild(c);
+          }
+          if (doc.numPages > n) view.insertAdjacentHTML('beforeend', `<div class="st-muted">Показаны первые ${n} страниц из ${doc.numPages}. Скачайте файл, чтобы увидеть всё.</div>`);
+        } catch (_) { view.innerHTML = '<div class="st-muted">Не получилось показать PDF — скачайте файл</div>'; }
+      } else {
+        view.innerHTML = '<div class="st-muted">Просмотр недоступен — скачайте файл</div>';
+      }
     }
 
     async function getFile(f) {
@@ -450,7 +517,7 @@
         ],
         render(body, screen) {
           const c = cat(b.cat);
-          b.docs = b.docs || [];
+          normDocs(b);
           const logo = b.cat === 'flight' && b.provider
             ? `<div class="bk-logo" style="background:hsl(${hueOf(b.provider)},68%,46%)">${esc(initials(b.provider))}</div>`
             : `<div class="bk-logo" style="background:${c.bg};color:${c.color}"><i data-lucide="${c.icon}"></i></div>`;
@@ -478,10 +545,13 @@
             </div>
             ${rows.length ? `<div class="bk-card bk-rows">${rows.join('')}</div>` : ''}
             <div class="bk-h3">Документы</div>
-            ${b.docs.map(d => { const k = docKind(d.kind); return `<div class="bk-card bk-doc" data-doc="${d.id}" role="button" tabindex="0">
-                <span class="bk-doc-ic"><i data-lucide="${k.icon}"></i></span>
-                <span class="bk-txt"><b>${esc(d.title || k.name)}</b><span class="bk-sub">${esc(docsSub(d))}</span></span>
-                <button class="bk-dl" type="button" data-dl="${d.id}" aria-label="Скачать"><i data-lucide="download"></i></button></div>`; }).join('')}
+            ${b.docs.map(d => `<div class="bk-card bk-doc" data-doc="${d.id}">
+                <div class="bk-doc-row" role="button" tabindex="0" aria-expanded="false">
+                  <span class="bk-doc-ic"><i data-lucide="${docIcon(d)}"></i></span>
+                  <span class="bk-txt"><b>${esc(d.title)}</b><span class="bk-sub">${esc(docsSub(d))}</span></span>
+                  <button class="bk-dl" type="button" data-dl aria-label="Скачать"><i data-lucide="download"></i></button>
+                  <button class="bk-dl" type="button" data-more aria-label="Переименовать или удалить"><i data-lucide="more-vertical"></i></button>
+                </div><div class="bk-doc-view" hidden></div></div>`).join('')}
             <button class="bk-adddoc" type="button" data-a="adddoc"><i data-lucide="plus"></i>Добавить документ</button>
             <div style="height:20px"></div>
           `;
@@ -491,18 +561,24 @@
             const v = e.currentTarget.dataset.copy;
             (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => ctx.toast('Номер скопирован'), () => ctx.toast(v));
           });
-          body.querySelectorAll('[data-doc]').forEach(x => x.addEventListener('click', e => {
-            const d = b.docs.find(y => y.id === x.dataset.doc); if (!d) return;
-            if (e.target.closest('[data-dl]')) { download(d.files); return; }
-            docSheet(b, d, screen);
-          }));
-          body.querySelector('[data-a="adddoc"]').addEventListener('click', () => addDocSheet(b, null, screen));
+          body.querySelectorAll('.bk-doc').forEach(card => {
+            const d = b.docs.find(y => y.id === card.dataset.doc); if (!d) return;
+            const row = card.querySelector('.bk-doc-row');
+            const tg = () => { toggleDoc(card, d); row.setAttribute('aria-expanded', card.classList.contains('open')); };
+            row.addEventListener('click', e => { if (e.target.closest('[data-dl],[data-more]')) return; tg(); });
+            row.addEventListener('keydown', e => { if (e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tg(); } });
+            card.querySelector('[data-dl]').addEventListener('click', () => download(d.files));
+            card.querySelector('[data-more]').addEventListener('click', () => docMenu(b, d, screen));
+          });
+          body.querySelector('[data-a="adddoc"]').addEventListener('click', () => addDocSheet(b, screen));
           body.querySelector('[data-map2]')?.addEventListener('click', () => window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(b.placeTo), '_blank'));
           // Быстрые действия
           body.querySelector('[data-q="ticket"]').addEventListener('click', () => {
             const d = b.docs.find(x => ['boarding', 'ticket'].includes(x.kind)) || b.docs[0];
-            if (!d) { ctx.toast('Сначала добавьте билет или подтверждение'); addDocSheet(b, null, screen); return; }
-            if (d.files.length === 1) openFile(d.files[0]); else docSheet(b, d, screen);
+            if (!d) { addDocSheet(b, screen); return; }
+            const card = body.querySelector(`.bk-doc[data-doc="${d.id}"]`);
+            if (!card.classList.contains('open')) card.querySelector('.bk-doc-row').click();
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
           body.querySelector('[data-q="route"]').addEventListener('click', () => {
             const dest = b.cat === 'flight' ? [b.from, b.fromCity, 'airport'].filter(Boolean).join(' ') : b.place;
@@ -539,57 +615,58 @@
       });
     }
 
-    // Добавить файлы: новая группа или в существующую
-    function addDocSheet(b, group, screen) {
-      sheet(group ? 'Добавить файлы' : 'Новый документ', `<div class="bk-form" style="margin-top:10px">
-          ${group ? '' : `<label>Что это</label><div class="bk-f"><i data-lucide="folder"></i><select id="bk-dk">${DOC_KINDS.map(k => `<option value="${k.id}">${k.name}</option>`).join('')}</select></div>`}
-          <input type="file" id="bk-dfile" accept="application/pdf,image/*" multiple hidden>
-          <button class="st-btn st-btn-fw" type="button" data-a="pick" style="margin-top:6px"><i data-lucide="upload"></i>Выбрать PDF или фото</button>
-          <div class="st-muted" style="font-size:.8rem;text-align:center">До 15 МБ на файл. Файлы хранятся только на этом устройстве.</div>
+    // Новый документ: выбрать файл → приложение предлагает название, его можно изменить
+    function addDocSheet(b, screen) {
+      let file = null;
+      sheet('Новый документ', `<div class="bk-form" style="margin-top:10px">
+          <input type="file" id="bk-dfile" accept="application/pdf,image/*" hidden>
+          <button class="bk-card bk-cover" type="button" data-a="pick"><span class="bk-doc-ic" style="width:56px;height:48px"><i data-lucide="upload"></i></span>
+            <span id="bk-fname">Выбрать PDF или фото<small>До 15 МБ. Файл хранится только на этом устройстве.</small></span></button>
+          <label>Название</label>
+          <div class="bk-f"><i data-lucide="pencil"></i><input id="bk-dn" maxlength="60" placeholder="Например: Билеты в музей"></div>
+          <button class="st-btn st-btn-fw" type="button" data-a="save" style="margin-top:6px">Сохранить документ</button>
         </div>`, (root, close) => {
-        const inp = root.querySelector('#bk-dfile');
+        const inp = root.querySelector('#bk-dfile'), dn = root.querySelector('#bk-dn');
         root.querySelector('[data-a="pick"]').addEventListener('click', () => inp.click());
-        inp.addEventListener('change', async () => {
-          const files = [...inp.files].filter(f => f.size <= 15 * 1048576);
-          if (files.length < inp.files.length) ctx.toast('Слишком большие файлы пропущены (больше 15 МБ)');
-          if (!files.length) return;
-          let g = group;
-          if (!g) {
-            const kind = root.querySelector('#bk-dk').value;
-            g = b.docs.find(d => d.kind === kind);
-            if (!g) { g = { id: uid(), kind, files: [] }; b.docs.push(g); }
-          }
-          try {
-            for (const f of files) { const id = 'f_' + uid(); await DB.put(id, f); g.files.push({ id, name: f.name, type: f.type || 'application/octet-stream', size: f.size }); }
-          } catch (_) { ctx.toast('Не получилось сохранить файл: мало места на устройстве'); }
-          if (!g.files.length) b.docs = b.docs.filter(d => d !== g);
-          save(); close(); ctx.toast(files.length === 1 ? 'Документ добавлен' : 'Документы добавлены'); screen.refresh();
+        inp.addEventListener('change', () => {
+          const f = inp.files[0]; if (!f) return;
+          if (f.size > 15 * 1048576) { ctx.toast('Файл больше 15 МБ'); return; }
+          file = f;
+          root.querySelector('#bk-fname').innerHTML = `${esc(f.name)}<small>${esc(fileSize(f.size))} · нажмите, чтобы выбрать другой</small>`;
+          if (!dn.value.trim() || dn.dataset.auto) { dn.value = b.docs.length ? nameFromFile(f.name) || 'Документ' : docSuggest(b.cat); dn.dataset.auto = '1'; }
+          dn.focus(); dn.select();
+        });
+        dn.addEventListener('input', () => { delete dn.dataset.auto; });
+        root.querySelector('[data-a="save"]').addEventListener('click', async () => {
+          if (!file) { ctx.toast('Сначала выберите файл'); inp.click(); return; }
+          const id = 'f_' + uid();
+          try { await DB.put(id, file); } catch (_) { ctx.toast('Не получилось сохранить файл: мало места на устройстве'); return; }
+          normDocs(b).push({ id: uid(), kind: 'other', title: dn.value.trim() || nameFromFile(file.name) || 'Документ', files: [{ id, name: file.name, type: file.type || 'application/octet-stream', size: file.size }] });
+          save(); close(); ctx.toast('Документ добавлен'); screen.refresh();
         });
       });
     }
 
-    function docSheet(b, d, screen) {
-      const k = docKind(d.kind);
-      sheet(d.title || k.name, `<div class="bk-files">${d.files.map(f => `<div class="bk-file"><i data-lucide="${f.type === 'application/pdf' ? 'file-text' : 'image'}" style="width:20px;height:20px;color:var(--bk-ac)"></i>
-            <span>${esc(f.name)}<br><small>${fileSize(f.size)}</small></span>
-            <button type="button" data-open="${f.id}" aria-label="Открыть"><i data-lucide="eye"></i></button>
-            <button type="button" data-get="${f.id}" aria-label="Скачать"><i data-lucide="download"></i></button>
-            <button type="button" data-rm="${f.id}" aria-label="Удалить" style="color:#E5484D"><i data-lucide="trash-2"></i></button></div>`).join('')}</div>
-          <div class="bk-form"><button class="st-btn st-btn-g st-btn-fw" type="button" data-a="more"><i data-lucide="plus"></i>Добавить файлы</button>
-          <button class="st-btn st-btn-fw" type="button" data-a="all"><i data-lucide="download"></i>Скачать все</button></div>`, (root, close) => {
-        const f = id => d.files.find(x => x.id === id);
-        root.querySelectorAll('[data-open]').forEach(x => x.addEventListener('click', () => openFile(f(x.dataset.open))));
-        root.querySelectorAll('[data-get]').forEach(x => x.addEventListener('click', () => download([f(x.dataset.get)])));
-        root.querySelectorAll('[data-rm]').forEach(x => x.addEventListener('click', () => {
-          const file = f(x.dataset.rm); if (!confirm('Удалить файл «' + file.name + '»?')) return;
-          DB.del(file.id).catch(() => {});
-          d.files = d.files.filter(y => y !== file);
-          if (!d.files.length) b.docs = b.docs.filter(y => y !== d);
-          save(); close(); screen.refresh();
-          if (d.files.length) docSheet(b, d, screen);
-        }));
-        root.querySelector('[data-a="more"]').addEventListener('click', () => { close(); addDocSheet(b, d, screen); });
-        root.querySelector('[data-a="all"]').addEventListener('click', () => download(d.files));
+    // Меню документа: переименовать, скачать, удалить
+    function docMenu(b, d, screen) {
+      sheet('Документ', `<div class="bk-form" style="margin-top:10px">
+          <label>Название</label>
+          <div class="bk-f"><i data-lucide="pencil"></i><input id="bk-dn" maxlength="60" value="${esc(d.title)}"></div>
+          <button class="st-btn st-btn-fw" type="button" data-a="ren" style="margin-top:6px"><i data-lucide="check"></i>Сохранить название</button>
+          <button class="st-btn st-btn-g st-btn-fw" type="button" data-a="get"><i data-lucide="download"></i>Скачать на устройство</button>
+          <button class="st-btn st-btn-g st-btn-fw" type="button" data-a="del" style="color:#E5484D"><i data-lucide="trash-2"></i>Удалить документ</button>
+        </div>`, (root, close) => {
+        const dn = root.querySelector('#bk-dn');
+        const ren = () => { const v = dn.value.trim(); if (!v) { ctx.toast('Введите название'); return; } d.title = v; save(); close(); screen.refresh(); };
+        root.querySelector('[data-a="ren"]').addEventListener('click', ren);
+        dn.addEventListener('keydown', e => { if (e.key === 'Enter') ren(); });
+        root.querySelector('[data-a="get"]').addEventListener('click', () => download(d.files));
+        root.querySelector('[data-a="del"]').addEventListener('click', () => {
+          if (!confirm('Удалить документ «' + d.title + '»?')) return;
+          d.files.forEach(f => DB.del(f.id).catch(() => {}));
+          b.docs = b.docs.filter(y => y !== d);
+          save(); close(); ctx.toast('Документ удалён'); screen.refresh();
+        });
       });
     }
 
@@ -597,7 +674,7 @@
     let toolsP = null;
     const tools = () => toolsP || (toolsP = new Promise((ok, no) => {
       if (window.STBookingTools) return ok(window.STBookingTools);
-      const s = document.createElement('script'); s.src = '/js/modules/bookings-tools.js?v=1';
+      const s = document.createElement('script'); s.src = '/js/modules/bookings-tools.js?v=3';
       s.onload = () => ok(window.STBookingTools); s.onerror = () => { toolsP = null; no(new Error('tools')); };
       document.head.appendChild(s);
     }));
@@ -658,8 +735,9 @@
               <label>Цена</label><div class="bk-2"><div>${f('b-price', 'circle-dollar-sign', draft.price, '0,00', 'inputmode="decimal"')}</div>
                 <div><div class="bk-f${auto.has('currency') ? ' auto' : ''}"><i data-lucide="coins"></i><select id="b-currency">${curs.map(x => `<option${x === draft.currency ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div></div>
               <label>Заметка</label><div class="bk-f${auto.has('note') ? ' auto' : ''}"><i data-lucide="file-text" style="align-self:flex-start;margin-top:15px"></i><textarea id="b-note" maxlength="300">${esc(draft.note)}</textarea></div>
-              ${o.review ? `<div class="bk-card bk-cover" style="cursor:default"><span class="bk-doc-ic" style="width:56px;height:48px"><i data-lucide="${o.review.kind === 'boarding' ? 'ticket' : 'file-text'}"></i></span>
-                  <span>${esc(o.review.name)}<small>Файл сохранится в документах брони</small></span></div>` : `
+              ${o.review ? `<label>Документ</label><div class="bk-card bk-cover" style="cursor:default"><span class="bk-doc-ic" style="width:56px;height:48px"><i data-lucide="${/\.pdf$/i.test(o.review.name) ? 'file-text' : 'image'}"></i></span>
+                  <span>${esc(o.review.name)}<small>Файл сохранится в документах брони</small></span></div>
+                <label>Название документа</label><div class="bk-f"><i data-lucide="pencil"></i><input id="b-docname" maxlength="60" value="${esc(o.review.docTitle || docSuggest(draft.cat, o.review.kind))}"></div>` : `
               <label>Обложка</label>
               <button class="bk-card bk-cover" type="button" data-a="photo"><img src="${esc(draft.photo || IMG + c.hero)}" alt="">
                 <span>${draft.photo ? 'Своё фото' : 'Стандартная картинка'}<small>Нажмите, чтобы ${draft.photo ? 'заменить' : 'выбрать своё фото'}</small></span>
@@ -675,6 +753,7 @@
             ['title', 'provider', 'number', 'fromCity', 'toCity', 'date', 'time', 'endDate', 'endTime', 'place', 'placeTo', 'code', 'people', 'seats', 'note', 'currency', 'status']
               .forEach(k => { const el = v('b-' + k); if (el) draft[k] = el.value.trim(); });
             ['number', 'seats'].forEach(k => { draft[k] = (draft[k] || '').toUpperCase(); });
+            if (o.review && v('b-docname')) o.review.docTitle = v('b-docname').value.trim();
             const p = v('b-price').value.replace(/\s/g, '').replace(',', '.');
             draft.price = p === '' ? '' : (isNaN(+p) ? draft.price : Math.round(+p * 100) / 100);
           };
@@ -797,7 +876,7 @@
           if (res.price) { found[0].price = res.price; found[0].currency = res.currency || tripCur; if (found.length > 1) found[0].note = 'Цена за все рейсы этой брони (' + found.length + ')'; }
         } else if (res.date || res.title || res.code) {
           found = [{ cat: res.cat === 'flight' ? 'ticket' : res.cat, title: res.title, provider: res.provider, place: res.place, placeTo: res.placeTo, date: res.date, time: res.time,
-            endDate: res.endDate, endTime: res.endTime, code: res.code, people: res.people, price: res.price, currency: res.price ? res.currency : '' }];
+            endDate: res.endDate, endTime: res.endTime, code: res.code, people: res.people, price: res.price, currency: res.price ? res.currency : '', note: res.note || '' }];
         }
         if (!found.length) {
           ctx.toast('Данные не распознаны — заполните вручную. Файл прикреплён к брони.');
@@ -896,9 +975,8 @@
           try {
             const id = 'f_' + uid(), file = o.review.file;
             await DB.put(id, file);
-            let g = draft.docs.find(d => d.kind === o.review.kind);
-            if (!g) draft.docs.push(g = { id: uid(), kind: o.review.kind, files: [] });
-            g.files.push({ id, name: file.name || 'бронь', type: file.type || 'application/octet-stream', size: file.size });
+            normDocs(draft).push({ id: uid(), kind: o.review.kind, title: o.review.docTitle || docSuggest(draft.cat, o.review.kind),
+              files: [{ id, name: file.name || 'бронь', type: file.type || 'application/octet-stream', size: file.size }] });
           } catch (_) { ctx.toast('Файл не сохранился: мало места на устройстве'); }
         }
         const i = items.findIndex(x => x.id === draft.id);
