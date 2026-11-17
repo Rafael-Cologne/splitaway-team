@@ -32,3 +32,6 @@ deploy-*.zip
 
 # Local Netlify folder
 .netlify
+
+#temp
+supabase/.temp/
