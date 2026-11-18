@@ -215,22 +215,33 @@
 
   STHub.registerService(ID, ctx => {
     const trip = ctx.trip || {};
-    const S = { cc: ctx.store.get('cc', null), ccAuto: ctx.store.get('ccAuto', null), loc: null, locErr: '', near: null, emb: null, tab: 'data' };
-    const ccNow = () => (S.cc || S.ccAuto || '').toUpperCase();
+    // Страна: выбранная вручную → страна места поездки (по «Направлению»/названию) → страна по GPS.
+    // Страна поездки запоминается вместе с местом: сменили «Направление» — страна определяется заново.
+    const placeKey = [trip.dest || '', trip.name || ''].join('|').toLowerCase();
+    const savedTrip = ctx.store.get('ccTrip', null);
+    const S = { cc: ctx.store.get('cc', null), ccTrip: savedTrip && savedTrip.q === placeKey ? savedTrip.cc : null, ccGps: null, loc: null, locErr: '', near: null, emb: null, tab: 'data' };
+    const ccNow = () => (S.cc || S.ccTrip || S.ccGps || '').toUpperCase();
+    const ccSource = () => S.cc ? 'выбрано вручную' : S.ccTrip ? 'по месту поездки' : S.ccGps ? 'по GPS' : '';
     const nums = () => N[ccNow()] || null;
     const mainNum = () => { const n = nums(); return n ? (n.g || n.a || n.p) : '112'; };
     const lang = () => LANG[ccNow()] || 'en';
     const citizenships = () => (meGet().citizen || []).filter(Boolean);
 
-    async function detectCountry(after) {
-      if (S.ccAuto || S._asked) return; S._asked = true;
-      for (const q of [trip.dest, trip.name].filter(Boolean)) {
-        try {
-          const j = await getJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&accept-language=ru&q=${encodeURIComponent(q)}`, 9000);
-          const cc = j[0] && j[0].address && j[0].address.country_code;
-          if (cc) { S.ccAuto = cc.toUpperCase(); ctx.store.set('ccAuto', S.ccAuto); after && after(); return; }
-        } catch (_) {}
-      }
+    // один общий поиск страны поездки; каждый открытый экран перерисуется, когда страна найдётся
+    let detectP = null;
+    function detectCountry(after) {
+      if (S.ccTrip) return;
+      if (!detectP) detectP = (async () => {
+        for (const q of [trip.dest, trip.name].filter(Boolean)) {
+          try {
+            const j = await getJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&accept-language=ru&q=${encodeURIComponent(q)}`, 9000);
+            const cc = j[0] && j[0].address && j[0].address.country_code;
+            if (cc) { S.ccTrip = cc.toUpperCase(); ctx.store.set('ccTrip', { q: placeKey, cc: S.ccTrip }); S.emb = null; return true; }
+          } catch (_) {}
+        }
+        detectP = null; return false; // не нашли / нет сети — попробуем при следующем открытии
+      })();
+      detectP.then(ok => { if (ok && after) after(); });
     }
     function locate(screen) {
       if (!navigator.geolocation) { S.locErr = 'Геолокация недоступна на этом устройстве'; screen.refresh(); return; }
@@ -241,7 +252,7 @@
           const j = await getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ru&zoom=18&addressdetails=1&lat=${S.loc.lat}&lon=${S.loc.lon}`, 9000);
           const a = j.address || {};
           S.loc.addr = [a.road && (a.road + (a.house_number ? ' ' + a.house_number : '')), a.postcode && a.city ? a.postcode + ' ' + a.city : (a.city || a.town || a.village)].filter(Boolean).join(', ') || j.display_name;
-          if (a.country_code && !S.cc) { S.ccAuto = a.country_code.toUpperCase(); ctx.store.set('ccAuto', S.ccAuto); }
+          if (a.country_code) S.ccGps = a.country_code.toUpperCase();
         } catch (_) {}
         screen.refresh(); if (screen.near) nearby(screen);
       }, () => { S.loc = null; S.locErr = 'Не получилось определить место — разрешите доступ к геолокации в настройках телефона'; screen.refresh(); },
@@ -354,7 +365,7 @@
     function settings(screen) {
       const cc = ccNow();
       sheet('Настройки', `<div class="em-rows" style="margin-top:8px">
-          <button class="em-row" type="button" data-a="cc"><i data-lucide="map-pin" style="color:#e5262c"></i><span><b>Страна, где я сейчас</b><small>${cc ? flagImg(cc) + esc(regionName(cc)) + (S.cc ? '' : ' · автоматически') : 'Не определена'}</small></span><i data-lucide="chevron-right"></i></button>
+          <button class="em-row" type="button" data-a="cc"><i data-lucide="map-pin" style="color:#e5262c"></i><span><b>Страна, где я сейчас</b><small>${cc ? flagImg(cc) + esc(regionName(cc)) + ' · ' + ccSource() : 'Не определена'}</small></span><i data-lucide="chevron-right"></i></button>
           <button class="em-row" type="button" data-a="me"><i data-lucide="globe" style="color:#5b4bd6"></i><span><b>Гражданство</b><small>${esc(citizenships().map(regionName).join(', ') || 'Не указано')}</small></span><i data-lucide="chevron-right"></i></button>
         </div><div class="em-note" style="margin-top:10px">Номера и фразы подстраиваются под страну. Медкарта, документы и контакты хранятся только на этом телефоне.</div>`, (root, close) => {
         root.querySelector('[data-a="cc"]').addEventListener('click', () => { close(); countrySheet(c => { S.cc = c; ctx.store.set('cc', c); S.emb = null; screen.refresh(); }); });
@@ -377,11 +388,15 @@
           const free = [...new Set([n.g, n.p].filter(Boolean))].join(' и ');
           body.innerHTML = `
             <button class="em-country" type="button" data-a="cc">${cc ? `<img src="https://flagcdn.com/w80/${cc.toLowerCase()}.png" alt="" onerror="this.replaceWith(document.createTextNode('${flagEmoji(cc)}'))">` : '<i class="f">🌍</i>'}${esc(cc ? regionName(cc) : 'Выберите страну')}</button>
+            <div class="em-note" style="text-align:center;margin-top:-6px">${esc(ccSource() || 'выберите страну')} · нажмите на страну, чтобы сменить</div>
+            ${S.ccGps && S.ccGps !== cc ? `<button class="em-ph" type="button" data-a="gps"><b>${flagImg(S.ccGps)}Вы сейчас в стране: ${esc(regionName(S.ccGps))}</b><small>Показать номера этой страны</small></button>` : ''}
             <div class="em-list">${rows.filter(r => r[0]).map(([v, l, ic, col, bg]) => `<a class="em-num" href="${tel(v)}"><span class="em-ic" style="background:${bg};color:${col}"><i data-lucide="${ic}"></i></span><span><b>${esc(pretty(v))}</b><small>${esc(l)}</small></span><span class="em-call"><i data-lucide="phone"></i></span></a>`).join('')}</div>
             <div class="em-info"><i data-lucide="info"></i><span>Звонки на ${esc(free || '112')} бесплатны и доступны даже без SIM-карты.</span></div>
             ${!nums() ? '<div class="em-note">Для этой страны номеров в приложении нет — показан 112. Выберите страну вверху или уточните номер на месте.</div>' : '<div class="em-note">Номера — из открытого списка экстренных номеров. На месте их подтвердит отель или любой местный житель.</div>'}`;
           icons(body);
           body.querySelector('[data-a="cc"]').addEventListener('click', () => countrySheet(c => { S.cc = c; ctx.store.set('cc', c); screen.refresh(); }));
+          body.querySelector('[data-a="gps"]')?.addEventListener('click', () => { S.cc = S.ccGps; ctx.store.set('cc', S.cc); screen.refresh(); });
+          if (!S.ccTrip) detectCountry(() => screen.refresh());
         }
       });
     }

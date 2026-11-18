@@ -246,3 +246,10 @@ html[data-theme=azure] #pg-app #pg-dash .dh-hero *,html[data-theme=fresh] #pg-ap
 /* в маленьких окошках — тот же участок флага, что виден на карточке поездки на главной (правая часть с волнами) */
 img.st-flag{object-position:70% center!important;filter:none!important}
 .dy-hero:has(img.st-flag)::after{background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(20,14,60,.38))!important}
+/* Фото города за карточкой «Общие расходы»: тёмное матовое стекло, чтобы белая сумма читалась на любом фото
+   (флаг остаётся как в макете — светлое стекло) */
+#pg-app #pg-dash:has(#dash-bg-layer:not(.flag)) .dh-hero{background:linear-gradient(135deg,rgba(18,16,48,.52),rgba(18,16,48,.34))!important;border-color:rgba(255,255,255,.55)!important;
+  backdrop-filter:blur(8px) saturate(1.1);-webkit-backdrop-filter:blur(8px) saturate(1.1);box-shadow:0 10px 30px rgba(10,10,40,.25)}
+#pg-app #pg-dash:has(#dash-bg-layer:not(.flag)) .dh-hero .dh-amt{text-shadow:0 2px 12px rgba(0,0,0,.45)}
+/* верх фото чуть светлее под заголовком «Расходы», чтобы тёмный текст читался */
+html[data-theme=light] #dash-bg-layer:not(.flag)::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(242,242,251,.75) 0%,rgba(242,242,251,.35) 22%,rgba(242,242,251,0) 38%)}
