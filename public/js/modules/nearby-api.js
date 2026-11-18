@@ -1,8 +1,9 @@
 (function () {
   'use strict';
 
-  // Вставьте сюда ваш бесплатный ключ от Geoapify
-  const GEOAPIFY_KEY = '64f610be469c44ec92dbd5e6b8ac6d40';
+  // Места рядом — OpenStreetMap через Overpass: бесплатно и без ключа (правило команды: никаких ключей в коде).
+  // Overpass бывает перегружен, поэтому спрашиваем сразу три зеркала и берём первый ответ.
+  const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
 
   function ensureLeaflet() {
     if (window.L) return Promise.resolve();
@@ -38,36 +39,45 @@
     return null;
   }
 
+  function distM(lat1, lon1, lat2, lon2) {
+    const r = Math.PI / 180, x = (lat2 - lat1) * r, y = (lon2 - lon1) * r;
+    const h = Math.sin(x / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(y / 2) ** 2;
+    return 12742000 * Math.asin(Math.sqrt(h));
+  }
+
+  async function overpass(query) {
+    const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(query) };
+    const one = url => {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
+      return fetch(url, Object.assign({ signal: ctl.signal }, opts)).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).finally(() => clearTimeout(t));
+    };
+    try { return await Promise.any(OVERPASS.map(one)); }
+    catch (_) { throw new Error('Не удалось загрузить места рядом — сервис карт перегружен, попробуйте ещё раз'); }
+  }
+
   async function fetchPlaces(lat, lon, type, radius) {
-    let categories = 'catering.cafe,commercial.supermarket,commercial.convenience,service.vehicle.fuel';
-    if (type === 'cafe') categories = 'catering.cafe';
-    else if (type === 'shop') categories = 'commercial.supermarket,commercial.convenience,commercial.shopping_mall';
-    else if (type === 'fuel') categories = 'service.vehicle.fuel';
+    const around = `(around:${radius},${lat},${lon})`;
+    const parts = [];
+    if (type === 'all' || type === 'cafe') parts.push(`nwr["amenity"="cafe"]${around};`);
+    if (type === 'all' || type === 'shop') parts.push(`nwr["shop"~"^(supermarket|convenience|mall)$"]${around};`);
+    if (type === 'all' || type === 'fuel') parts.push(`nwr["amenity"="fuel"]${around};`);
+    const data = await overpass(`[out:json][timeout:20];(${parts.join('')});out center 200;`);
 
-    const host = ['api', 'geoapify', 'com'].join('.');
-    const url = `https://${host}/v2/places?categories=${categories}&filter=circle:${lon},${lat},${radius}&bias=proximity:${lon},${lat}&limit=50&apiKey=${GEOAPIFY_KEY}`;
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Не удалось загрузить места рядом');
-    const data = await res.json();
-
-    return (data.features || []).map(item => {
-      const p = item.properties;
-      const cats = p.categories || [];
-      let category = 'Магазин';
-      if (cats.some(c => c.includes('catering'))) category = 'Кафе';
-      else if (cats.some(c => c.includes('fuel'))) category = 'Заправка';
-
+    return (data.elements || []).map(el => {
+      const t = el.tags || {};
+      const pLat = el.lat ?? (el.center && el.center.lat), pLon = el.lon ?? (el.center && el.center.lon);
+      if (pLat == null || pLon == null) return null;
+      const category = t.amenity === 'cafe' ? 'Кафе' : t.amenity === 'fuel' ? 'Заправка' : 'Магазин';
       return {
-        id: p.place_id,
-        lat: p.lat,
-        lon: p.lon,
-        name: p.name || p.brand || category,
+        id: el.type + '-' + el.id,
+        lat: pLat,
+        lon: pLon,
+        name: t['name:ru'] || t.name || t.brand || category,
         category,
-        address: p.street ? `${p.street} ${p.housenumber || ''}`.trim() : 'Адрес не указан',
-        distance: p.distance || 0
+        address: t['addr:street'] ? `${t['addr:street']} ${t['addr:housenumber'] || ''}`.trim() : 'Адрес не указан',
+        distance: distM(lat, lon, pLat, pLon)
       };
-    });
+    }).filter(Boolean).sort((a, b) => a.distance - b.distance).slice(0, 50);
   }
 
   async function fetchRoute(fromLat, fromLon, toLat, toLon) {
