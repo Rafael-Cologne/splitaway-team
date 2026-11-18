@@ -74,11 +74,11 @@
     const banner = o.banners.find(f => !BAD.test(f));
     const image = o.images.find(f => !BAD.test(f));
     const file = (prefer === 'banner' || o.country) ? (banner || image) : (image || banner);
-    return file ? { file, id } : null;
+    return file ? { file, id, country: !!o.country } : null;
   }
 
-  function key(q, o) { return 'st_photo2_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
-  function wrap(hit, o) { return hit ? { url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null; }
+  function key(q, o) { return 'st_photo3_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
+  function wrap(hit, o) { return hit ? { country: !!hit.country, url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null; }
 
   // Синхронно: уже найденное фото (или undefined, если ещё не искали)
   function peek(q, opts) {
@@ -101,15 +101,19 @@
     mem[k] = { p };
     return p.then(h => wrap(h, o));
   }
-  // Поездка: сначала направление (город/страна), потом название поездки
-  const tripQueries = t => [t && t.dest, t && t.name].map(x => clean(x)).filter((x, i, a) => x && a.indexOf(x) === i);
+  // Поездка: название и направление. Город важнее страны: «Берлин» + «Германия» → фото Берлина,
+  // а не общая картинка Германии. Страна — только если города нет.
+  const tripQueries = t => [t && t.name, t && t.dest].map(x => clean(x)).filter((x, i, a) => x && a.indexOf(x) === i);
+  const bestOf = list => list.find(r => r && !r.country) || list.find(Boolean) || null;
   function peekTrip(trip, opts) {
-    for (const q of tripQueries(trip)) { const r = peek(q, Object.assign({ prefer: 'banner' }, opts)); if (r === undefined) return undefined; if (r) return r; }
-    return null;
+    const list = [];
+    for (const q of tripQueries(trip)) { const r = peek(q, Object.assign({ prefer: 'banner' }, opts)); if (r === undefined) return undefined; list.push(r); }
+    return bestOf(list);
   }
   async function forTrip(trip, opts) {
-    for (const q of tripQueries(trip)) { const r = await photo(q, Object.assign({ prefer: 'banner' }, opts)); if (r) return r; }
-    return null;
+    const list = [];
+    for (const q of tripQueries(trip)) list.push(await photo(q, Object.assign({ prefer: 'banner' }, opts)));
+    return bestOf(list);
   }
   // Поставить фото поездки в <img> (если не найдено — остаётся картинка по умолчанию)
   function tripImg(img, trip, opts) {
