@@ -246,10 +246,15 @@ html[data-theme=azure] #pg-app #pg-dash .dh-hero *,html[data-theme=fresh] #pg-ap
 /* в маленьких окошках — тот же участок флага, что виден на карточке поездки на главной (правая часть с волнами) */
 img.st-flag{object-position:70% center!important;filter:none!important}
 .dy-hero:has(img.st-flag)::after{background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(20,14,60,.38))!important}
-/* Фото города за карточкой «Общие расходы»: тёмное матовое стекло, чтобы белая сумма читалась на любом фото
-   (флаг остаётся как в макете — светлое стекло) */
-#pg-app #pg-dash:has(#dash-bg-layer:not(.flag)) .dh-hero{background:linear-gradient(135deg,rgba(18,16,48,.52),rgba(18,16,48,.34))!important;border-color:rgba(255,255,255,.55)!important;
-  backdrop-filter:blur(8px) saturate(1.1);-webkit-backdrop-filter:blur(8px) saturate(1.1);box-shadow:0 10px 30px rgba(10,10,40,.25)}
-#pg-app #pg-dash:has(#dash-bg-layer:not(.flag)) .dh-hero .dh-amt{text-shadow:0 2px 12px rgba(0,0,0,.45)}
-/* верх фото чуть светлее под заголовком «Расходы», чтобы тёмный текст читался */
-html[data-theme=light] #dash-bg-layer:not(.flag)::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(242,242,251,.75) 0%,rgba(242,242,251,.35) 22%,rgba(242,242,251,0) 38%)}
+/* ===== Заставка в карточке «Общие расходы» — по шаблону Рафаэля (8 стилей) ===== */
+#dash-bg-layer img{display:none!important}
+#pg-app #pg-dash .dh-hero.has-cover{position:relative;overflow:hidden;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#2a2560!important;border:2.5px solid rgba(255,255,255,.85)!important;box-shadow:0 12px 30px rgba(40,30,110,.22)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#pg-dash .dh-hero>*:not(.dh-cover){position:relative;z-index:2}
+.dh-cover{position:absolute;inset:0;z-index:0;background:center/cover no-repeat;border-radius:inherit}
+.dh-cover::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 70% at 50% 50%,rgba(10,8,40,.28),rgba(10,8,40,.08) 70%,rgba(10,8,40,0))}
+/* неизвестный город — его фото в сумеречных фиолетово-розовых тонах, как силуэты */
+.dh-cover.c-photo{filter:saturate(1.05) contrast(1.02)}
+.dh-cover.c-photo::after{background:linear-gradient(180deg,rgba(110,70,210,.55) 0%,rgba(230,110,170,.32) 55%,rgba(40,20,90,.55) 100%)}
+.dh-cover.c-flag::after{background:radial-gradient(70% 70% at 50% 50%,rgba(0,0,0,.22),rgba(0,0,0,.05) 70%,rgba(0,0,0,0))}
+#pg-app #pg-dash .dh-hero.has-cover .dh-amt{text-shadow:0 2px 14px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3)}

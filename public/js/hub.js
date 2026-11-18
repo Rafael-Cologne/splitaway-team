@@ -119,19 +119,23 @@
   // Фон экрана «Расходы» по месту поездки: город → фото города, только страна → флаг,
   // места нет → нейтральная картинка (как карточка поездки на главной)
   function fillDashBg() {
-    const imgs = ['dash-bg-dark', 'dash-bg-light'].map(id => $(id)).filter(Boolean);
-    if (!imgs.length || !hasTrip()) return;
-    // ключ — поездка + название + направление: сменили место в настройках → фон обновится
+    const cov = $('dh-cover');
+    if (!cov || !hasTrip()) return;
+    // ключ — поездка + название + направление: сменили место в настройках → заставка обновится
     const id = [S.trip.id, S.trip.name || '', S.trip.dest || ''].join('|');
-    const set = url => imgs.forEach(im => { if (im.dataset.src !== url) { im.dataset.src = url; im.src = url; const flag = /flagcdn\.com/.test(url);
-      // флаг «из шёлка» и фото города — на всю ширину
-      im.style.objectFit = 'cover'; im.style.objectPosition = flag ? 'center' : 'center 40%'; im.style.opacity = '';
-      im.parentNode.classList.toggle('flag', flag); waveInto(im, url, true); } });
-    if (imgs[0].dataset.trip !== id) { imgs.forEach(im => { im.dataset.trip = id; }); set('/img/trips/abstract.jpg'); }
+    // Заставка внутри карточки «Общие расходы» — по шаблону Рафаэля (флаг, силуэт города, природа, маршрут …)
+    const set = r => {
+      if (!r || cov.dataset.src === r.url) return;
+      cov.dataset.src = r.url; cov.style.backgroundImage = tripBg(r.url);
+      ['flag', 'photo', 'skyline', 'nature', 'route', 'travel', 'global', 'beach', 'city'].forEach(k => cov.classList.toggle('c-' + k, r.cover === k));
+      cov.closest('.dh-hero')?.classList.add('has-cover');
+      if (isFlag(r.url)) waveInto(cov, r.url);
+    };
+    if (cov.dataset.trip !== id) { cov.dataset.trip = id; delete cov.dataset.src; }
     if (!window.STPlacePhoto) return;
     const now = STPlacePhoto.peekTrip(S.trip, { width: 1400 });
-    if (now) { set(now.url); return; }
-    STPlacePhoto.forTrip(S.trip, { width: 1400 }).then(r => { if (r && hasTrip() && [S.trip.id, S.trip.name || '', S.trip.dest || ''].join('|') === id) { const pre = new Image(); pre.onload = () => set(r.url); pre.src = r.url; } });
+    if (now) { set(now); return; }
+    STPlacePhoto.forTrip(S.trip, { width: 1400 }).then(r => { if (r && hasTrip() && [S.trip.id, S.trip.name || '', S.trip.dest || ''].join('|') === id) { const pre = new Image(); pre.onload = () => set(r); pre.onerror = () => set(r); pre.src = r.url; } });
   }
 
   // Существующая форма создания поездки

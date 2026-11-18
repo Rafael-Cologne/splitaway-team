@@ -14,6 +14,9 @@
   const API = 'https://www.wikidata.org/w/api.php?format=json&origin=*';
   const SPARQL = 'https://query.wikidata.org/sparql?format=json&query=';
   const COUNTRY = new Set(['Q6256', 'Q3624078', 'Q7275', 'Q3336843', 'Q1763527', 'Q10742']);
+  // Природа и море — для заставок по шаблону Рафаэля (горы/озёра/парки → «Природа», острова/пляжи → «Отпуск»)
+  const NATURE = new Set(['Q8502', 'Q46831', 'Q23397', 'Q46169', 'Q35666', 'Q39816', 'Q179049', 'Q45776', 'Q473972', 'Q1437459']);
+  const BEACH = new Set(['Q23442', 'Q40080', 'Q33837', 'Q42523', 'Q1640628']);
   const BAD = /\.svg$|map|karte|карта|location|locator|satellite|flag|coat[ _]of[ _]arms|wappen|logo|diagram|seal/i;
   const STOP = new Set(['test', 'тест', 'trip', 'поездка', 'отпуск', 'путешествие', 'urlaub', 'reise', 'vacation', 'holiday', 'каникулы', 'тур', 'tour', 'в', 'во', 'на', 'nach', 'to', 'in', 'и', 'and', 'und']);
   const DAY = 86400000;
@@ -66,6 +69,7 @@
       if (b.banner) { const f = fileOf(b.banner.value); if (f && !o.banners.includes(f)) o.banners.push(f); }
       if (b.image) { const f = fileOf(b.image.value); if (f && !o.images.includes(f)) o.images.push(f); }
       if (b.type && COUNTRY.has(b.type.value.split('/').pop())) o.country = true;
+      if (b.type) (o.types || (o.types = [])).push(b.type.value.split('/').pop());
       if (b.iso && /^[A-Za-z]{2}$/.test(b.iso.value)) o.iso = b.iso.value.toLowerCase();
     });
     const near = o => lat == null || (o.coord && dist(lat, lon, o.coord[0], o.coord[1]) <= (o.country ? 1500 : 80));
@@ -74,16 +78,20 @@
     const o = by[id];
     // страна → её флаг (flagcdn.com, бесплатно); фото страны слишком общее
     if (o.country && o.iso) return { flag: o.iso, id, country: true };
+    const ts = o.types || [];
+    if (ts.some(t => NATURE.has(t))) return { kind: 'nature', id };
+    if (ts.some(t => BEACH.has(t))) return { kind: 'beach', id };
     const banner = o.banners.find(f => !BAD.test(f));
     const image = o.images.find(f => !BAD.test(f));
     const file = (prefer === 'banner' || o.country) ? (banner || image) : (image || banner);
     return file ? { file, id, country: !!o.country } : null;
   }
 
-  function key(q, o) { return 'st_photo4_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
+  function key(q, o) { return 'st_photo5_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
   function wrap(hit, o) {
-    if (hit && hit.flag) return { country: true, flag: hit.flag, url: 'https://flagcdn.com/w1280/' + hit.flag + '.png', file: '', page: 'https://flagcdn.com', credit: 'Флаг: flagcdn.com' };
-    return hit ? { country: !!hit.country, url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null;
+    if (hit && hit.kind) return { kind: hit.kind, id: hit.id, url: '/img/covers/' + hit.kind + '.webp', cover: hit.kind, file: '', page: '', credit: '' };
+    if (hit && hit.flag) return { id: hit.id, country: true, flag: hit.flag, url: 'https://flagcdn.com/w1280/' + hit.flag + '.png', file: '', page: 'https://flagcdn.com', credit: 'Флаг: flagcdn.com' };
+    return hit ? { id: hit.id, country: !!hit.country, url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null;
   }
 
   // Синхронно: уже найденное фото (или undefined, если ещё не искали)
@@ -110,18 +118,47 @@
   }
   // Поездка: название и направление. Город важнее страны: «Берлин» + «Германия» → фото Берлина,
   // а не общая картинка Германии. Если указана только страна — её флаг; ничего — нейтральная картинка.
-  const tripQueries = t => [t && t.name, t && t.dest].map(x => clean(x)).filter((x, i, a) => x && a.indexOf(x) === i);
+  // ---------- Заставка поездки по шаблону (8 стилей) ----------
+  // флаг страны · силуэт города (готовые картинки) · природа · карта с маршрутом · вещи путешественника (места нет)
+  // · контурный город · глобус (кругосветка / континент) · пляж. Неизвестный город — его фото в сумеречных тонах.
+  const COVER = '/img/covers/';
+  const CITY_COVERS = new Set(['Q64', 'Q365']); // Берлин, Кёльн — остальные города добавятся картинками /img/covers/q<ID>.webp
+  const GLOBAL_RE = /кругосвет|вокруг света|(^|\s)мир(\s|$)|world|weltreise|европ|europ|ази[яи]|asia|африк|afrik|africa|америк|amerik|america|океани|скандинав|балкан/i;
+  const MULTI_RE = /→|->|;|\s[-–—]\s|\sи\s|\+/;
+  const cover = k => ({ url: COVER + k + '.webp', cover: k, credit: '', file: '', page: '' });
+  // «Берлин, Германия» → [Берлин, Германия]; «Италия → Франция» → [Италия, Франция]
+  const tripQueries = t => [t && t.name].concat(String((t && t.dest) || '').split(/[,;/]|→|->|\s[-–—]\s|\sи\s|\+/))
+    .map(x => clean(x)).filter((x, i, a) => x && a.indexOf(x) === i);
   // Город важнее; только страна («Германия») — флаг страны
-  const bestOf = list => list.find(r => r && !r.country) || list.find(r => r && r.flag) || null;
+  const bestOf = list => list.find(r => r && !r.country && !r.kind) || list.find(r => r && r.kind) || list.find(r => r && r.flag) || null;
+  function special(trip) {
+    const txt = [trip && trip.name, trip && trip.dest].filter(Boolean).join(' ');
+    if (GLOBAL_RE.test(txt)) return cover('global');
+    if (MULTI_RE.test(String((trip && trip.dest) || ''))) return cover('route');
+    return null;
+  }
+  function decorate(list) {
+    const flags = [...new Set(list.filter(r => r && r.flag).map(r => r.flag))];
+    if (flags.length >= 2 && !list.some(r => r && !r.country && !r.kind)) return cover('route'); // «Италия, Франция»
+    const r = bestOf(list);
+    if (!r) return cover('travel');
+    if (r.flag) return Object.assign({ cover: 'flag' }, r);
+    if (r.kind) return r;
+    if (r.id && CITY_COVERS.has(r.id)) return Object.assign({}, r, { url: COVER + r.id.toLowerCase() + '.webp', cover: 'skyline', credit: '' });
+    return Object.assign({ cover: 'photo' }, r);
+  }
   function peekTrip(trip, opts) {
+    const sp = special(trip); if (sp) return sp;
+    const qs = tripQueries(trip); if (!qs.length) return cover('travel');
     const list = [];
-    for (const q of tripQueries(trip)) { const r = peek(q, Object.assign({ prefer: 'banner' }, opts)); if (r === undefined) return undefined; list.push(r); }
-    return bestOf(list);
+    for (const q of qs) { const r = peek(q, Object.assign({ prefer: 'banner' }, opts)); if (r === undefined) return undefined; list.push(r); }
+    return decorate(list);
   }
   async function forTrip(trip, opts) {
+    const sp = special(trip); if (sp) return sp;
     const list = [];
     for (const q of tripQueries(trip)) list.push(await photo(q, Object.assign({ prefer: 'banner' }, opts)));
-    return bestOf(list);
+    return decorate(list);
   }
   // Поставить фото поездки в <img> (если не найдено — остаётся картинка по умолчанию).
   // Одна и та же заставка везде: город → фото города, только страна → флаг «из шёлка».
