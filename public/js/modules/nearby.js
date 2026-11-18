@@ -26,7 +26,7 @@
     if (window.NearbyAPI) return Promise.resolve(window.NearbyAPI);
     return new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = 'js/modules/nearby-api.js';
+      s.src = '/js/modules/nearby-api.js?v=2'; // ?v= — чтобы телефон не брал старую копию из кэша; при изменении nearby-api.js увеличить число
       s.onload = () => res(window.NearbyAPI);
       s.onerror = () => rej(new Error('Не найден nearby-api.js'));
       document.head.appendChild(s);
