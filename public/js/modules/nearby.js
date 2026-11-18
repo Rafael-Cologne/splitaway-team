@@ -61,6 +61,7 @@
               <option value="1000" ${radius === 1000 ? 'selected' : ''}>1 км</option>
               <option value="2000" ${radius === 2000 ? 'selected' : ''}>2 км</option>
               <option value="5000" ${radius === 5000 ? 'selected' : ''}>5 км</option>
+              <option value="10000" ${radius === 10000 ? 'selected' : ''}>10 км</option>
             </select>
           </div>
           <div class="nb-route" id="nb-rbar"><span id="nb-rtxt"></span><button class="st-btn st-btn-g" id="nb-roff" style="padding:4px 8px;font-size:12px;">✖</button></div>
