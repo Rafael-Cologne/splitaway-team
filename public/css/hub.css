@@ -155,7 +155,7 @@
 .hub-tile.soon .hub-ico img{filter:saturate(.85)}
 /* Карточка текущей поездки (по макету): текст слева, фото места справа */
 .hub-trip2{position:relative;overflow:hidden;width:100%;min-height:124px;display:flex;align-items:center;gap:10px;padding:18px 16px 18px 20px;border-radius:24px;border:1px solid var(--hub-card-b);background:linear-gradient(105deg,#EEF1FF 0%,#ECE8FF 48%,#F3EEFF 100%);color:#14194A;text-align:left;box-shadow:var(--hub-shadow);cursor:pointer}
-.hub-trip2-ph{position:absolute;top:0;right:0;bottom:0;width:68%;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.55) 22%,#000 45%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.55) 22%,#000 45%)}
+.hub-trip2-ph{position:absolute;top:0;right:0;bottom:0;width:74%;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%)}
 .hub-trip2-ph.on{opacity:1}
 .hub-trip2-txt{position:relative;z-index:1;display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
 .hub-trip2-k{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;color:#2B3060}
@@ -170,3 +170,79 @@
 [data-theme=dark] .hub-trip2{background:linear-gradient(105deg,#1F1C3D 0%,#241F4A 50%,#1A1733 100%);color:#fff}
 [data-theme=dark] .hub-trip2-k,[data-theme=dark] .hub-trip2-meta{color:#D9D6FF;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 [data-theme=dark] .hub-trip2-name{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+/* Флаг страны на заставке поездки: приглушённо (сам флаг развевается — STPlacePhoto.wavyFlag) */
+.hub-trip2-ph.flag{background-size:cover;background-position:center}
+#dash-bg-layer.flag img{filter:none}
+/* «Расходы» — той же ширины, что главная и модули (на компьютере — колонка 560px по центру, как мобильная версия) */
+#pg-app{width:100%;max-width:560px;margin:0 auto;position:relative}
+#pg-app .nav-items{max-width:560px;margin:0 auto;width:100%}
+#pg-app .fab{right:max(18px,calc(50vw - 262px))}
+/* флаг в «Расходах» — как на карточке поездки: справа, плавно выходит из светлого фона */
+#dash-bg-layer.flag img{object-fit:cover!important;object-position:center!important;left:auto;right:0;width:74%;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%)}
+#dash-bg-layer.flag::after{background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 55%,var(--bg) 100%)!important}
+
+/* ===== Шапка «Расходов» (по макету Рафаэля) ===== */
+#pg-dash .dh-top{background:none!important;padding:calc(18px + var(--st)) 18px 14px;align-items:flex-start}
+#pg-dash .dh-left{display:flex;align-items:flex-start;gap:12px;min-width:0}
+#pg-dash .dh-back{width:34px;height:42px;border:0;background:none;color:#121845;display:flex;align-items:center;justify-content:flex-start;padding:0;margin-top:2px;cursor:pointer;flex-shrink:0}
+#pg-dash .dh-back svg{width:30px;height:30px;stroke-width:2}
+#pg-dash .dh-title{font-size:1.85rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:#121845}
+#pg-dash .dh-sub{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:.95rem;color:#2a2f4f}
+#pg-dash .dh-s{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+#pg-dash .dh-s svg{width:17px;height:17px;stroke-width:2}
+#pg-dash .dh-dot{opacity:.7}
+#pg-dash .dh-btns{display:flex;align-items:center;gap:10px;flex-shrink:0}
+#pg-dash .dh-btns .pulse{display:none}
+#pg-app #pg-dash .dh-btn{position:relative;width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+  background:linear-gradient(180deg,rgba(70,70,74,.62),rgba(35,35,38,.62))!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.45)!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#pg-app #pg-dash .dh-btn svg{width:22px;height:22px;stroke:#fff;stroke-width:1.9}
+#pg-dash .dh-btn:active{transform:scale(.95)}
+#pg-dash #notif-dot{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#8b7bff;box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}
+/* «Общие расходы» — стеклянная карточка поверх фона */
+#pg-dash .dh-hero{background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.02) 55%,rgba(255,255,255,.04))!important;border:2px solid rgba(255,255,255,.75)!important;border-radius:30px;
+  padding:20px 18px 18px;box-shadow:0 8px 30px rgba(60,50,140,.10),inset 0 1px 0 rgba(255,255,255,.6);}
+#pg-dash .dh-hero::before{display:none}
+#pg-app #pg-dash .dh-hero .dh-lbl{display:flex;align-items:center;justify-content:center;gap:9px;font-size:1.05rem;font-weight:500;color:#fff!important;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+#pg-app #pg-dash .dh-hero .dh-lbl svg{width:24px;height:24px;stroke:#fff1d6;stroke-width:1.7;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
+#pg-app #pg-dash .dh-hero .dh-amt{font-family:var(--font)!important;font-size:3.1rem;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin:4px 0 8px;color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.25)}
+#pg-app #pg-dash .dh-hero .dh-cur{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.8);background:rgba(255,255,255,.08);
+  color:#fff!important;font:600 1rem var(--font);letter-spacing:.02em;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+#pg-app #pg-dash .dh-hero .dh-cur svg{width:17px;height:17px;stroke:#fff;stroke-width:2}
+/* «1 расход», «4 участника» */
+#pg-dash .dh-stats{gap:12px}
+#pg-dash .dh-stat{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 12px;border-radius:24px;cursor:pointer;text-align:left;font-family:var(--font);
+  background:linear-gradient(135deg,rgba(246,244,255,.94),rgba(234,231,252,.9));border:2px solid rgba(255,255,255,.95);box-shadow:0 6px 20px rgba(70,60,160,.10);color:#121845}
+#pg-dash .dh-stat:active{transform:scale(.98)}
+#pg-dash .dh-ic{width:48px;height:48px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#f3f0ff,#e4defd);box-shadow:0 4px 10px rgba(90,70,200,.16),inset 0 1px 0 #fff}
+#pg-dash .dh-ic svg{width:25px;height:25px;stroke:#3b2fa8;stroke-width:1.9}
+#pg-dash .dh-txt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+#pg-dash .dh-txt b{font-size:1.45rem;font-weight:800}
+#pg-dash .dh-txt small{font-size:.98rem;font-weight:500;color:#121845;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pg-dash .dh-go{width:20px;height:20px;stroke:#121845;stroke-width:2;flex-shrink:0}
+@media (max-width:400px){#pg-dash .dh-title{font-size:1.55rem}#pg-dash .dh-sub{font-size:.85rem}#pg-app #pg-dash .dh-btn{width:42px;height:42px;border-radius:13px}#pg-dash .dh-btns{gap:7px}#pg-app #pg-dash .dh-hero .dh-amt{font-size:2.6rem}#pg-dash .dh-ic{width:42px;height:42px}#pg-dash .dh-txt b{font-size:1.25rem}#pg-dash .dh-txt small{font-size:.86rem}}
+/* фон шапки — до нижних карточек; слева светлый, справа фото/флаг */
+html:not([data-theme=azure]):not([data-theme=midnight]):not([data-theme=fresh]) #dash-bg-layer{height:400px;background:var(--bg)}
+html[data-theme=light] #dash-bg-layer{background:linear-gradient(100deg,#eceafb 0%,#f2f1fb 40%,#f2f2fb 100%)}
+/* тёмная тема — как карточка поездки на главной: слева тёмный фон, флаг плавно выходит из него */
+html[data-theme=dark] #dash-bg-layer{background:linear-gradient(100deg,#15142a 0%,#121222 40%,var(--bg) 100%)}
+html[data-theme=dark] #pg-dash .dh-title,html[data-theme=dark] #pg-dash .dh-back,html[data-theme=dark] #pg-dash .dh-sub,html[data-theme=dark] #pg-dash .dh-go{color:#fff;stroke:#fff}
+html[data-theme=dark] #pg-dash .dh-sub{color:rgba(255,255,255,.82)}
+html[data-theme=dark] #pg-dash .dh-stat{background:linear-gradient(135deg,rgba(32,31,52,.92),rgba(22,22,36,.92));border:1.5px solid rgba(255,255,255,.12);box-shadow:0 6px 20px rgba(0,0,0,.35);color:#fff}
+html[data-theme=dark] #pg-dash .dh-txt small{color:rgba(255,255,255,.85)}
+html[data-theme=dark] #pg-dash .dh-ic{background:linear-gradient(145deg,#2c2a52,#1f1d3d);box-shadow:0 4px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08)}
+html[data-theme=dark] #pg-dash .dh-ic svg{stroke:#b9b0ff}
+html[data-theme=dark] #pg-dash .dh-hero{background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.02) 55%,rgba(255,255,255,.03))!important;border-color:rgba(255,255,255,.4)!important;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#dash-bg-layer.flag img{width:80%!important}
+#dash-bg-layer::after{background:linear-gradient(180deg,rgba(242,242,251,0) 0%,rgba(242,242,251,0) 86%,var(--bg) 100%)!important}
+/* темы без фоновой картинки — тёмный текст в карточке */
+html[data-theme=azure] #pg-app #pg-dash .dh-hero .dh-lbl,html[data-theme=midnight] #pg-app #pg-dash .dh-hero .dh-lbl,html[data-theme=fresh] #pg-app #pg-dash .dh-hero .dh-lbl,
+html[data-theme=azure] #pg-app #pg-dash .dh-hero .dh-amt,html[data-theme=midnight] #pg-app #pg-dash .dh-hero .dh-amt,html[data-theme=fresh] #pg-app #pg-dash .dh-hero .dh-amt,
+html[data-theme=azure] #pg-app #pg-dash .dh-hero .dh-cur,html[data-theme=fresh] #pg-app #pg-dash .dh-hero .dh-cur{color:var(--text)!important;text-shadow:none;border-color:var(--b2)}
+html[data-theme=azure] #pg-dash .dh-hero,html[data-theme=fresh] #pg-dash .dh-hero{background:var(--s1)!important;border-color:var(--b1)!important}
+#pg-app #pg-dash .dh-hero .dh-lbl *,#pg-app #pg-dash .dh-hero .dh-cur *{color:#fff!important}
+html[data-theme=azure] #pg-app #pg-dash .dh-hero *,html[data-theme=fresh] #pg-app #pg-dash .dh-hero *{color:var(--text)!important}
+/* Флаг страны в модулях — та же заставка, что на главной: целиком по центру, без тёмной вуали */
+/* в маленьких окошках — тот же участок флага, что виден на карточке поездки на главной (правая часть с волнами) */
+img.st-flag{object-position:70% center!important;filter:none!important}
+.dy-hero:has(img.st-flag)::after{background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(20,14,60,.38))!important}

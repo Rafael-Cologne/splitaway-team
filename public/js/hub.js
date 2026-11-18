@@ -113,7 +113,25 @@
     setLayer('app');
     if (typeof goPage === 'function') goPage(page || 'pg-dash');
     icons();
+    fillDashBg();
     return true;
+  }
+  // Фон экрана «Расходы» по месту поездки: город → фото города, только страна → флаг,
+  // места нет → нейтральная картинка (как карточка поездки на главной)
+  function fillDashBg() {
+    const imgs = ['dash-bg-dark', 'dash-bg-light'].map(id => $(id)).filter(Boolean);
+    if (!imgs.length || !hasTrip()) return;
+    // ключ — поездка + название + направление: сменили место в настройках → фон обновится
+    const id = [S.trip.id, S.trip.name || '', S.trip.dest || ''].join('|');
+    const set = url => imgs.forEach(im => { if (im.dataset.src !== url) { im.dataset.src = url; im.src = url; const flag = /flagcdn\.com/.test(url);
+      // флаг «из шёлка» и фото города — на всю ширину
+      im.style.objectFit = 'cover'; im.style.objectPosition = flag ? 'center' : 'center 40%'; im.style.opacity = '';
+      im.parentNode.classList.toggle('flag', flag); waveInto(im, url, true); } });
+    if (imgs[0].dataset.trip !== id) { imgs.forEach(im => { im.dataset.trip = id; }); set('/img/trips/abstract.jpg'); }
+    if (!window.STPlacePhoto) return;
+    const now = STPlacePhoto.peekTrip(S.trip, { width: 1400 });
+    if (now) { set(now.url); return; }
+    STPlacePhoto.forTrip(S.trip, { width: 1400 }).then(r => { if (r && hasTrip() && [S.trip.id, S.trip.name || '', S.trip.dest || ''].join('|') === id) { const pre = new Image(); pre.onload = () => set(r.url); pre.src = r.url; } });
   }
 
   // Существующая форма создания поездки
@@ -328,14 +346,30 @@
     if (A.getMonth() === B.getMonth()) return A.getDate() + ' – ' + f({ day: 'numeric', month: 'long' }).format(B);
     return f({ day: 'numeric', month: 'short' }).format(A) + ' – ' + f({ day: 'numeric', month: 'short' }).format(B);
   }
+  // Флаг страны — «из шёлка» (STPlacePhoto.wavyFlag)
+  const isFlag = url => /flagcdn\.com/.test(url || '');
+  const tripBg = url => `url('${url}')`;
+  function waveInto(el, url, asImg) {
+    if (!isFlag(url) || !window.STPlacePhoto || !STPlacePhoto.wavyFlag) return;
+    STPlacePhoto.wavyFlag(url, asImg ? 860 : 400) /* фон «Расходов» высокий */.then(d => { if (!d || !el.isConnected) return; if (asImg) { if (el.dataset.src === url) el.src = d; } else el.style.backgroundImage = `url('${d}')`; });
+  }
+  // Место поездки изменили в настройках → заставка обновляется сразу везде:
+  // фон «Расходов», карточка на главной и картинки поездки в модулях (Дневник, Календарь, Погода, Бронирования)
+  function refreshTripBg() {
+    fillDashBg();
+    if (window.STPlacePhoto && STPlacePhoto.refreshTrip && hasTrip()) STPlacePhoto.refreshTrip(S.trip);
+    const el = $('hub-trip-ph');
+    if (el) { delete el.dataset.photo; el.classList.remove('flag'); el.style.backgroundImage = tripBg('/img/trips/abstract.jpg'); fillTripPhoto(); }
+  }
   function fillTripPhoto() {
     const el = $('hub-trip-ph');
+    if (el && el.classList.contains('flag')) { const m = el.style.backgroundImage.match(/url\(["']?(https:[^"')]+)/); if (m) waveInto(el, m[1]); }
     if (!el || el.dataset.photo || !window.STPlacePhoto || !hasTrip()) return;
     const id = S.trip.id;
     STPlacePhoto.forTrip(S.trip, { width: 900 }).then(r => {
       if (!r || !hasTrip() || S.trip.id !== id) return;
       const img = new Image();
-      img.onload = () => { const e = $('hub-trip-ph'); if (e) { e.style.backgroundImage = `url('${r.url}')`; e.dataset.photo = '1'; } };
+      img.onload = () => { const e = $('hub-trip-ph'); if (e) { e.style.backgroundImage = tripBg(r.url); e.classList.toggle('flag', isFlag(r.url)); e.dataset.photo = '1'; waveInto(e, r.url); } };
       img.src = r.url;
     });
   }
@@ -351,7 +385,7 @@
       top =
         '<button class="hub-trip2" type="button" data-hub="open-trip">' +
         // фото места; если места нет (поездка «Тест») — нейтральная абстрактная картинка
-        `<span class="hub-trip2-ph on" id="hub-trip-ph"${ph ? ' data-photo="1"' : ''} style="background-image:url('${ph ? esc(ph.url) : '/img/trips/abstract.jpg'}')"></span>` +
+        `<span class="hub-trip2-ph on${ph && isFlag(ph.url) ? ' flag' : ''}" id="hub-trip-ph"${ph ? ' data-photo="1"' : ''} style="background-image:${esc(tripBg(ph ? ph.url : '/img/trips/abstract.jpg'))}"></span>` +
         `<span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>${esc(tx('current_trip'))}</span>` +
         `<span class="hub-trip2-name">${esc(t.name)}</span>` +
         `<span class="hub-trip2-meta">${d ? '<i data-lucide="calendar-days"></i>' : ''}${meta.map(esc).join(' <b>•</b> ')}</span></span>` +
@@ -483,5 +517,5 @@
     return true;
   }
 
-  window.STHub = { show, render, openExpenses, openService, handleBack, registerService, openScreen, addStyles };
+  window.STHub = { show, render, openExpenses, openService, handleBack, registerService, openScreen, addStyles, refreshTripBg };
 })();

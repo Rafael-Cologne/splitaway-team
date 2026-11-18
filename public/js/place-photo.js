@@ -55,8 +55,8 @@
       if (ids.length) break;
     }
     if (!ids.length) return null;
-    const sparql = 'SELECT ?item ?coord ?banner ?image ?type WHERE { VALUES ?item {' + ids.map(i => 'wd:' + i).join(' ') + '} ' +
-      'OPTIONAL{?item wdt:P625 ?coord} OPTIONAL{?item wdt:P948 ?banner} OPTIONAL{?item wdt:P18 ?image} OPTIONAL{?item wdt:P31 ?type} }';
+    const sparql = 'SELECT ?item ?coord ?banner ?image ?type ?iso WHERE { VALUES ?item {' + ids.map(i => 'wd:' + i).join(' ') + '} ' +
+      'OPTIONAL{?item wdt:P625 ?coord} OPTIONAL{?item wdt:P948 ?banner} OPTIONAL{?item wdt:P18 ?image} OPTIONAL{?item wdt:P31 ?type} OPTIONAL{?item wdt:P297 ?iso} }';
     const j = await getJSON(SPARQL + encodeURIComponent(sparql), 12000);
     const by = {};
     (j.results.bindings || []).forEach(b => {
@@ -66,19 +66,25 @@
       if (b.banner) { const f = fileOf(b.banner.value); if (f && !o.banners.includes(f)) o.banners.push(f); }
       if (b.image) { const f = fileOf(b.image.value); if (f && !o.images.includes(f)) o.images.push(f); }
       if (b.type && COUNTRY.has(b.type.value.split('/').pop())) o.country = true;
+      if (b.iso && /^[A-Za-z]{2}$/.test(b.iso.value)) o.iso = b.iso.value.toLowerCase();
     });
     const near = o => lat == null || (o.coord && dist(lat, lon, o.coord[0], o.coord[1]) <= (o.country ? 1500 : 80));
     const id = ids.find(i => by[i] && by[i].coord && near(by[i]));
     if (!id) return null;
     const o = by[id];
+    // страна → её флаг (flagcdn.com, бесплатно); фото страны слишком общее
+    if (o.country && o.iso) return { flag: o.iso, id, country: true };
     const banner = o.banners.find(f => !BAD.test(f));
     const image = o.images.find(f => !BAD.test(f));
     const file = (prefer === 'banner' || o.country) ? (banner || image) : (image || banner);
     return file ? { file, id, country: !!o.country } : null;
   }
 
-  function key(q, o) { return 'st_photo3_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
-  function wrap(hit, o) { return hit ? { country: !!hit.country, url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null; }
+  function key(q, o) { return 'st_photo4_' + norm(q) + '|' + (o.prefer || 'photo') + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : ''); }
+  function wrap(hit, o) {
+    if (hit && hit.flag) return { country: true, flag: hit.flag, url: 'https://flagcdn.com/w1280/' + hit.flag + '.png', file: '', page: 'https://flagcdn.com', credit: 'Флаг: flagcdn.com' };
+    return hit ? { country: !!hit.country, url: urlOf(hit.file, o.width), file: hit.file, page: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(hit.file.replace(/ /g, '_')), credit: 'Фото: Wikimedia Commons' } : null;
+  }
 
   // Синхронно: уже найденное фото (или undefined, если ещё не искали)
   function peek(q, opts) {
@@ -95,16 +101,18 @@
     const c = mem[k] || lsGet(k);
     if (c && Date.now() - c.t < (c.hit ? 30 : 1) * DAY) return Promise.resolve(wrap(c.hit, o));
     if (mem[k] && mem[k].p) return mem[k].p.then(h => wrap(h, o));
-    const p = lookup(name, o.lat, o.lon, o.prefer).catch(() => null).then(hit => {
+    // запоминаем только настоящий ответ; сбой сети (Wikidata не ответила) не кэшируем — в следующий раз ищем снова
+    const p = lookup(name, o.lat, o.lon, o.prefer).then(hit => {
       mem[k] = { t: Date.now(), hit }; lsSet(k, mem[k]); return hit;
-    });
+    }, () => { delete mem[k]; return null; });
     mem[k] = { p };
     return p.then(h => wrap(h, o));
   }
   // Поездка: название и направление. Город важнее страны: «Берлин» + «Германия» → фото Берлина,
-  // а не общая картинка Германии. Страна — только если города нет.
+  // а не общая картинка Германии. Если указана только страна — её флаг; ничего — нейтральная картинка.
   const tripQueries = t => [t && t.name, t && t.dest].map(x => clean(x)).filter((x, i, a) => x && a.indexOf(x) === i);
-  const bestOf = list => list.find(r => r && !r.country) || list.find(Boolean) || null;
+  // Город важнее; только страна («Германия») — флаг страны
+  const bestOf = list => list.find(r => r && !r.country) || list.find(r => r && r.flag) || null;
   function peekTrip(trip, opts) {
     const list = [];
     for (const q of tripQueries(trip)) { const r = peek(q, Object.assign({ prefer: 'banner' }, opts)); if (r === undefined) return undefined; list.push(r); }
@@ -115,12 +123,32 @@
     for (const q of tripQueries(trip)) list.push(await photo(q, Object.assign({ prefer: 'banner' }, opts)));
     return bestOf(list);
   }
-  // Поставить фото поездки в <img> (если не найдено — остаётся картинка по умолчанию)
+  // Поставить фото поездки в <img> (если не найдено — остаётся картинка по умолчанию).
+  // Одна и та же заставка везде: город → фото города, только страна → флаг «из шёлка».
+  // Все такие картинки запоминаем: сменили место в настройках → refreshTrip() обновляет их сразу.
+  const tracked = [];
+  function fillTripImg(img, trip, opts) {
+    const ask = [trip.id, trip.name || '', trip.dest || ''].join('|'); img.dataset.tripKey = ask;
+    const set = r => { if (!img.isConnected || img.dataset.tripKey !== ask) return;
+      if (!r) { img.src = '/img/trips/abstract.jpg'; img.classList.remove('st-flag'); delete img.dataset.flag; return; }
+      img.src = r.url; img.title = r.credit || ''; img.dataset.place = '1';
+      const flag = /flagcdn\.com/.test(r.url); img.classList.toggle('st-flag', flag);
+      if (flag) { img.dataset.flag = r.url; wavyFlag(r.url).then(d => { if (d && img.isConnected && img.dataset.flag === r.url) img.src = d; }); } else delete img.dataset.flag; };
+    const now = peekTrip(trip, opts);
+    if (now !== undefined) set(now); else forTrip(trip, opts).then(set);
+  }
   function tripImg(img, trip, opts) {
     if (!img || !trip) return;
-    const set = r => { if (r && img.isConnected) { img.src = r.url; img.title = r.credit; img.dataset.place = '1'; } };
-    const now = peekTrip(trip, opts);
-    if (now) set(now); else if (now === undefined) forTrip(trip, opts).then(set);
+    for (let i = tracked.length - 1; i >= 0; i--) if (!tracked[i].img.isConnected || tracked[i].img === img) tracked.splice(i, 1);
+    tracked.push({ img, trip, opts });
+    fillTripImg(img, trip, opts);
+  }
+  function refreshTrip(trip) {
+    if (!trip) return;
+    for (let i = tracked.length - 1; i >= 0; i--) {
+      const t = tracked[i]; if (!t.img.isConnected) { tracked.splice(i, 1); continue; }
+      if (t.trip && t.trip.id === trip.id) { t.trip = trip; fillTripImg(t.img, trip, t.opts); }
+    }
   }
 
   // ---------- Фото места «по погоде»: дождь, снег, туман, ночь ----------
@@ -177,5 +205,51 @@
     return p.then(h => wrap(h, o));
   }
 
-  window.STPlacePhoto = { photo, peek, forTrip, peekTrip, tripImg, clean, moodPhoto, peekMood };
+  // ---------- Флаг страны «из шёлка» ----------
+  // Плоский флаг (flagcdn) накладываем на фото белого шёлка (/img/trips/silk.jpg):
+  // складки ткани слегка изгибают полосы, тени шёлка мягко затемняют цвет (в тени цвет насыщеннее),
+  // блики высветляют, мелкое зерно даёт фактуру ткани. Все полосы флага видны по высоте.
+  // Так любой флаг выглядит как на образце. Результат хранится до закрытия вкладки.
+  const waveMem = {};
+  const loadImg = (src, cors) => new Promise((res, rej) => { const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  function wavyFlag(url, h) {
+    if (!url) return Promise.resolve('');
+    const H = h || 400, key = 'st_wave5_' + H + '_' + url;
+    if (waveMem[key]) return waveMem[key];
+    try { const c = sessionStorage.getItem(key); if (c) return (waveMem[key] = Promise.resolve(c)); } catch (_) {}
+    return (waveMem[key] = Promise.all([loadImg(url, true), loadImg('/img/trips/silk.jpg')]).then(([img, silk]) => {
+      const W = 960, DISP = 26;
+      const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+      const px = draw => { const c = mk(), g = c.getContext('2d'); draw(g); return g.getImageData(0, 0, W, H).data; };
+      const L = px(g => g.drawImage(silk, 0, 0, W, H));                                   // свет и тень ткани
+      const B = px(g => { g.filter = 'blur(14px)'; g.drawImage(silk, 0, 0, W, H); });    // плавные складки для изгиба
+      // по высоте — весь флаг; по ширине можно растянуть не больше чем в 1,35 раза, остальное обрезается
+      const m = DISP * 1.2, fh = H + 2 * m, need = (W + 2 * m) / (img.width * fh / img.height);
+      let dw = img.width * fh / img.height * Math.min(need, 1.35), dh = fh;
+      if (dw < W + 2 * m) { const z = (W + 2 * m) / dw; dw *= z; dh *= z; }
+      const F = px(g => g.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh));
+      const N = new Float32Array(W * H);                                                 // зерно ткани
+      let v = 0.5; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { v = v * 0.55 + Math.random() * 0.45; N[y * W + x] = v * 0.7 + (y ? N[(y - 1) * W + x] : 0.5) * 0.3; }
+      const oc = mk(), og = oc.getContext('2d'), out = og.createImageData(W, H), O = out.data;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4, b = B[i] / 255 - 0.5, l = L[i] / 255;
+        const sx = Math.min(W - 1, Math.max(0, Math.round(x + b * DISP * 0.35)));
+        const sy = Math.min(H - 1, Math.max(0, Math.round(y - b * DISP)));
+        const j = (sy * W + sx) * 4;
+        const mm = Math.min(1, Math.max(0.66, 0.9 + (l - 0.53) * 0.7)) * (1 + (N[y * W + x] - 0.5) * 0.07); // тень
+        const sp = Math.max(0, (l - 0.82) / 0.18) * 0.22;                                                    // блик
+        const pw = 1 + 0.35 * (1 - mm);                                                                       // в тени цвет глубже
+        const cs = [0, 1, 2].map(k => Math.pow(Math.min(1, F[j + k] / 255 * mm), pw));
+        const gy = (cs[0] + cs[1] + cs[2]) / 3;                                                            // чуть спокойнее цвет
+        for (let k = 0; k < 3; k++) { const c = gy + (cs[k] - gy) * 0.86; O[i + k] = 255 * (1 - (1 - c) * (1 - sp)); }
+        O[i + 3] = 255;
+      }
+      og.putImageData(out, 0, 0);
+      const d = oc.toDataURL('image/jpeg', 0.88);
+      try { sessionStorage.setItem(key, d); } catch (_) {}
+      return d;
+    }).catch(() => url));
+  }
+
+  window.STPlacePhoto = { photo, peek, forTrip, peekTrip, tripImg, refreshTrip, clean, moodPhoto, peekMood, wavyFlag };
 })();
