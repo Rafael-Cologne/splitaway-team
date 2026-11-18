@@ -1,7 +1,7 @@
 // ============================================================
 // Модуль «Гид и места» (id: 'guide')
 // Ответственный: Здислав
-// Источники: Nominatim (OSM), Overpass API (OSM), Wikipedia API, Leaflet + OSM
+// Источники: Nominatim (OSM), Wikipedia (места рядом), Overpass API (OSM, дополнительно), Leaflet + OSM
 // ============================================================
 (function () {
   'use strict';
@@ -148,26 +148,31 @@
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   }
 
-  async function fetchCityData(city) {
-    const key = city.trim().toLowerCase();
-    if (cityCache.has(key)) return cityCache.get(key);
+  // ---------- Загрузка мест города ----------
+  // Overpass (OSM) часто перегружен и отвечает 40–90 секунд или ошибкой. Поэтому:
+  //  1) главные места — из Википедии рядом с городом (geosearch, ~0,5 с, сразу с фото и описанием);
+  //  2) Overpass — дополнительно (кафе, часы работы, «бесплатно»), несколько зеркал, ждём не дольше 7 с;
+  //     если ответ придёт позже, он сохранится и появится при следующем открытии города;
+  //  3) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
+  const CITY_TTL = 7 * 86400000;
+  const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
+  const lsKey = key => 'st_guide_city_' + key;
+  const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
+  const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
 
-    const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ru&q=${encodeURIComponent(city)}`;
-    const nomRes = await fetch(nomUrl);
-    if (!nomRes.ok) throw new Error('Не удалось найти город');
-    const nomJson = await nomRes.json();
-    if (!nomJson.length) throw new Error(`Город «${city}» не найден`);
+  async function fetchJSON(url, opts, ms) {
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), ms || 10000);
+    try {
+      const r = await fetch(url, Object.assign({}, opts || {}, { signal: ctl.signal }));
+      if (!r.ok) throw new Error('http ' + r.status);
+      return await r.json();
+    } finally { clearTimeout(timer); }
+  }
 
-    const geo = nomJson[0];
-    const lat = Number(geo.lat);
-    const lon = Number(geo.lon);
-
-    const wikiPromise = fetch(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`)
-      .then(r => (r.ok ? r.json() : null))
-      .catch(() => null);
-
+  // Места из OSM (Overpass): первое ответившее зеркало
+  function overpassPlaces(lat, lon, cityShort, ms) {
     const query = `
-      [out:json][timeout:20];
+      [out:json][timeout:25];
       (
         node["tourism"~"attraction|museum|gallery|viewpoint|artwork|zoo|theme_park"]["name"](around:6500,${lat},${lon});
         way["tourism"~"attraction|museum|gallery|viewpoint|zoo|theme_park"]["name"](around:6500,${lat},${lon});
@@ -179,67 +184,112 @@
       );
       out center 160;
     `.trim();
-
-    const ovPromise = fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body: 'data=' + encodeURIComponent(query)
-    }).then(r => {
-      if (!r.ok) throw new Error('Сервис карт временно перегружен, попробуйте через пару секунд');
-      return r.json();
+    const body = 'data=' + encodeURIComponent(query);
+    const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body };
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, ms))).then(ov => {
+      const out = [];
+      for (const el of ov.elements || []) {
+        const tags = el.tags || {};
+        const name = (tags['name:ru'] || tags.name || '').trim();
+        const pLat = el.lat ?? el.center?.lat, pLon = el.lon ?? el.center?.lon;
+        if (!name || pLat == null || pLon == null) continue;
+        const latNum = Number(pLat), lonNum = Number(pLon);
+        const hasWiki = Boolean(tags['wikipedia:ru'] || tags.wikipedia);
+        out.push({
+          id: `${el.type}-${el.id}`, name, city: cityShort,
+          cat: classifyPlace(tags), typeLabel: placeTypeLabel(tags), addr: formatAddress(tags),
+          hours: tags.opening_hours || '', website: safeUrl(tags.website || tags['contact:website'] || ''),
+          cuisine: tags.cuisine ? tags.cuisine.replace(/;/g, ', ') : '', free: tags.fee === 'no',
+          wikiTag: tags['wikipedia:ru'] || tags.wikipedia || '',
+          distKm: haversineKm(lat, lon, latNum, lonNum),
+          score: (hasWiki ? 3 : 0) + (tags.website ? 1 : 0) + (tags.opening_hours ? 1 : 0) + (tags['name:ru'] ? 1 : 0),
+          lat: latNum, lon: lonNum
+        });
+      }
+      return out;
     });
+  }
 
-    const [wiki, ov] = await Promise.all([wikiPromise, ovPromise]);
-
-    const seen = new Set();
-    const places = [];
-    for (const el of ov.elements || []) {
-      const tags = el.tags || {};
-      const name = (tags['name:ru'] || tags.name || '').trim();
-      if (!name) continue;
-      const norm = name.toLowerCase();
-      if (seen.has(norm)) continue;
-      seen.add(norm);
-
-      const pLat = el.lat ?? el.center?.lat;
-      const pLon = el.lon ?? el.center?.lon;
-      if (pLat == null || pLon == null) continue;
-
-      const latNum = Number(pLat);
-      const lonNum = Number(pLon);
-      const hasWiki = Boolean(tags['wikipedia:ru'] || tags.wikipedia);
-      const score = (hasWiki ? 3 : 0) + (tags.website ? 1 : 0) + (tags.opening_hours ? 1 : 0) + (tags['name:ru'] ? 1 : 0);
-
-      places.push({
-        id: `${el.type}-${el.id}`,
-        name,
-        city: geo.display_name.split(',')[0].trim(),
-        cat: classifyPlace(tags),
-        typeLabel: placeTypeLabel(tags),
-        addr: formatAddress(tags),
-        hours: tags.opening_hours || '',
-        website: safeUrl(tags.website || tags['contact:website'] || ''),
-        cuisine: tags.cuisine ? tags.cuisine.replace(/;/g, ', ') : '',
-        free: tags.fee === 'no',
-        wikiTag: tags['wikipedia:ru'] || tags.wikipedia || '',
-        distKm: haversineKm(lat, lon, latNum, lonNum),
-        score,
-        lat: latNum,
-        lon: lonNum
+  // Места из Википедии рядом с центром города (быстро и надёжно)
+  const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|больниц|кладбищ|компани|предприяти|министерств|посольств|партия|профсоюз|издательств|газет|футбольн|клуб|отель|гостиниц|город в|коммуна|община|деревн|село/i;
+  async function wikiPlaces(lat, lon, cityName, cityShort) {
+    const url = 'https://ru.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch' +
+      `&ggscoord=${lat}|${lon}&ggsradius=10000&ggslimit=100&prop=coordinates|pageimages|description&colimit=max&pilimit=max&pithumbsize=240`;
+    const j = await fetchJSON(url, null, 9000);
+    const pages = Object.values(j?.query?.pages || {});
+    const cityN = String(cityName || '').toLowerCase();
+    return pages.filter(p => p.coordinates && p.coordinates[0] && p.title && p.title.toLowerCase() !== cityN && !WIKI_SKIP.test((p.description || '') + ' ' + p.title))
+      .map(p => {
+        const d = ((p.description || '') + ' ' + p.title).toLowerCase();
+        const cat = /музе|галере|театр|опер|концерт|филармон/.test(d) ? 'museum'
+          : /парк|сад\b|сады|ботаническ|зоопарк|лес\b|озеро/.test(d) ? 'park' : 'sights';
+        const c = p.coordinates[0];
+        return {
+          id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
+          cat, typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
+          addr: '', hours: '', website: '', cuisine: '', free: false,
+          wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
+          distKm: haversineKm(lat, lon, c.lat, c.lon),
+          score: 3 + (p.thumbnail ? 2 : 0) + (p.description ? 1 : 0),
+          lat: c.lat, lon: c.lon
+        };
       });
-    }
+  }
 
-    places.sort((a, b) => b.score - a.score || a.distKm - b.distKm);
+  // Объединить: одно и то же место из Википедии и OSM — один раз
+  function mergePlaces(a, b) {
+    const out = a.slice();
+    const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
+    for (const p of b) {
+      const n = norm(p.name);
+      const dup = out.find(x => norm(x.name) === n || (haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 && (norm(x.name).includes(n) || n.includes(norm(x.name)))));
+      if (dup) { // берём лучшее из обоих: часы и сайт из OSM, фото из Википедии
+        ['hours', 'website', 'cuisine', 'addr'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
+        if (p.free) dup.free = true;
+        if (!dup.thumb && p.thumb) dup.thumb = p.thumb;
+        dup.score = Math.max(dup.score, p.score);
+      } else out.push(p);
+    }
+    return out.sort((x, y) => y.score - x.score || x.distKm - y.distKm);
+  }
+
+  async function fetchCityData(city) {
+    const key = city.trim().toLowerCase();
+    if (cityCache.has(key)) return cityCache.get(key);
+    const saved = lsRead(key);
+    if (saved) { cityCache.set(key, saved); return saved; }
+
+    let nomJson;
+    try {
+      nomJson = await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ru&q=${encodeURIComponent(city)}`, null, 10000);
+    } catch (_) { throw new Error('Нет связи с сервисом поиска. Проверьте интернет и попробуйте ещё раз'); }
+    if (!nomJson.length) throw new Error(`Город «${city}» не найден`);
+
+    const geo = nomJson[0];
+    const lat = Number(geo.lat), lon = Number(geo.lon);
+    const cityShort = geo.display_name.split(',')[0].trim();
+
+    const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`, null, 8000).catch(() => null);
+    const listP = wikiPlaces(lat, lon, city, cityShort).catch(() => []);
+    const ovFull = overpassPlaces(lat, lon, cityShort, 30000);
+    // Википедия обычно отвечает за полсекунды; если мест из неё хватает, OSM ждём недолго
+    const ovQuick = listP.then(l => Promise.race([ovFull, new Promise(res => setTimeout(() => res(null), l.length >= 15 ? 2500 : 7000))])).catch(() => null);
+
+    const [wiki, wList, ov] = await Promise.all([wikiP, listP, ovQuick]);
+    const places = mergePlaces(wList, ov || []);
+    if (!places.length) throw new Error('Не удалось загрузить места: сервисы карт перегружены. Попробуйте ещё раз через минуту');
 
     const result = {
       city,
       displayName: (geo.display_name || city).split(',').slice(0, 2).join(', '),
-      lat,
-      lon,
+      lat, lon,
       wiki: wiki && wiki.extract ? { title: wiki.title, extract: wiki.extract } : null,
       places
     };
     cityCache.set(key, result);
+    lsWrite(key, result);
+    // OSM ответил позже — дополним сохранённый город (будет видно при следующем открытии)
+    if (!ov) ovFull.then(list => { if (list && list.length) { result.places = mergePlaces(result.places, list); lsWrite(key, result); } }).catch(() => {});
     return result;
   }
 
@@ -456,7 +506,7 @@
         enrichPlaceWiki(p).then(w => {
           if (!state.alive || !w) return;
           p.wikiExtract = w.extract || '';
-          p.thumb = w.thumb || '';
+          p.thumb = w.thumb || p.thumb || '';
           const card = body.querySelector(`[data-place-id="${CSS.escape(p.id)}"]`);
           if (!card) return;
           if (p.thumb) {

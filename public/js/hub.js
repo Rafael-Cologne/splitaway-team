@@ -23,7 +23,7 @@
       trips: 'Поездки', new_trip: 'Создать новую поездку', new_trip_sub: 'Название, валюта и участники',
       join: 'Присоединиться по коду', join_sub: 'Введите код или отсканируйте QR',
       on_device: 'Поездки на этом устройстве', no_trips: 'Здесь появятся ваши поездки',
-      current: 'Открыта', home: 'Главная', saved: 'Сохранённое', profile: 'Профиль',
+      current: 'Открыта', current_trip: 'Текущая поездка', home: 'Главная', saved: 'Сохранённое', profile: 'Профиль',
       language: 'Язык', theme: 'Тема', light: 'Светлая', dark: 'Тёмная', back: 'Назад', close: 'Закрыть',
       notifications: 'Уведомления',
       members: n => n + ' ' + plRu(n, 'участник', 'участника', 'участников')
@@ -38,7 +38,7 @@
       trips: 'Trips', new_trip: 'Create a new trip', new_trip_sub: 'Name, currency and members',
       join: 'Join with a code', join_sub: 'Enter the code or scan a QR',
       on_device: 'Trips on this device', no_trips: 'Your trips will appear here',
-      current: 'Open', home: 'Home', saved: 'Saved', profile: 'Profile',
+      current: 'Open', current_trip: 'Current trip', home: 'Home', saved: 'Saved', profile: 'Profile',
       language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', back: 'Back', close: 'Close',
       notifications: 'Notifications',
       members: n => n + (n === 1 ? ' member' : ' members')
@@ -53,7 +53,7 @@
       trips: 'Reisen', new_trip: 'Neue Reise erstellen', new_trip_sub: 'Name, Währung und Mitglieder',
       join: 'Mit Code beitreten', join_sub: 'Code eingeben oder QR scannen',
       on_device: 'Reisen auf diesem Gerät', no_trips: 'Hier erscheinen deine Reisen',
-      current: 'Geöffnet', home: 'Start', saved: 'Gespeichert', profile: 'Profil',
+      current: 'Geöffnet', current_trip: 'Aktuelle Reise', home: 'Start', saved: 'Gespeichert', profile: 'Profil',
       language: 'Sprache', theme: 'Design', light: 'Hell', dark: 'Dunkel', back: 'Zurück', close: 'Schließen',
       notifications: 'Benachrichtigungen',
       members: n => n + (n === 1 ? ' Mitglied' : ' Mitglieder')
@@ -302,7 +302,9 @@
 
   // ---------- Разметка ----------
   function tileHtml(s) {
-    const icon = (window.ST_ICONS || {})[s.icon] || '';
+    // Иконки плиток — картинки из макета (public/img/hub/<icon>.webp); старый SVG — если картинки нет
+    const svg = (window.ST_ICONS || {})[s.icon] || '';
+    const icon = `<img src="/img/hub/${esc(s.icon)}.webp?v=2" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
     const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
       `<span class="hub-ico">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
@@ -316,16 +318,44 @@
       : `<div class="hub-empty">${esc(tx('nothing'))}</div>`;
   }
 
+  // Даты поездки — из модуля «Календарь», если указаны
+  function tripDates(id) {
+    try { const d = JSON.parse(localStorage.getItem('st_mod_calendar_' + id + '_dates')); return d && d.start ? d : null; } catch (_) { return null; }
+  }
+  function rangeText(a, b) {
+    const A = new Date(a + 'T12:00'), B = new Date(b + 'T12:00');
+    const f = o => new Intl.DateTimeFormat(lang(), o);
+    if (A.getMonth() === B.getMonth()) return A.getDate() + ' – ' + f({ day: 'numeric', month: 'long' }).format(B);
+    return f({ day: 'numeric', month: 'short' }).format(A) + ' – ' + f({ day: 'numeric', month: 'short' }).format(B);
+  }
+  function fillTripPhoto() {
+    const el = $('hub-trip-ph');
+    if (!el || el.dataset.photo || !window.STPlacePhoto || !hasTrip()) return;
+    const id = S.trip.id;
+    STPlacePhoto.forTrip(S.trip, { width: 900 }).then(r => {
+      if (!r || !hasTrip() || S.trip.id !== id) return;
+      const img = new Image();
+      img.onload = () => { const e = $('hub-trip-ph'); if (e) { e.style.backgroundImage = `url('${r.url}')`; e.dataset.photo = '1'; } };
+      img.src = r.url;
+    });
+  }
+
   function homeHtml() {
     let top;
     if (hasTrip()) {
       const t = S.trip;
-      const sub = [t.dest, tx('members')(S.members.length)].filter(Boolean).join(' · ');
+      // Карточка поездки как в макете: текст слева, фото места справа (js/place-photo.js)
+      const d = tripDates(t.id);
+      const meta = [d ? rangeText(d.start, d.end) : t.dest, tx('members')(S.members.length)].filter(Boolean);
+      const ph = window.STPlacePhoto ? STPlacePhoto.peekTrip(t, { width: 900 }) : null;
       top =
-        '<button class="hub-trip" type="button" data-hub="open-trip">' +
-        '<span class="hub-trip-ic"><i data-lucide="plane"></i></span>' +
-        `<span class="hub-trip-txt"><span class="hub-trip-name">${esc(t.name)}</span><span class="hub-trip-sub">${esc(sub)}</span></span>` +
-        '<span class="hub-trip-go"><i data-lucide="chevron-right"></i></span></button>' +
+        '<button class="hub-trip2" type="button" data-hub="open-trip">' +
+        // фото места; если места нет (поездка «Тест») — нейтральная абстрактная картинка
+        `<span class="hub-trip2-ph on" id="hub-trip-ph"${ph ? ' data-photo="1"' : ''} style="background-image:url('${ph ? esc(ph.url) : '/img/trips/abstract.jpg'}')"></span>` +
+        `<span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>${esc(tx('current_trip'))}</span>` +
+        `<span class="hub-trip2-name">${esc(t.name)}</span>` +
+        `<span class="hub-trip2-meta">${d ? '<i data-lucide="calendar-days"></i>' : ''}${meta.map(esc).join(' <b>•</b> ')}</span></span>` +
+        '<span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span></button>' +
         '<div class="hub-qa">' +
         `<button class="hub-qa-btn" type="button" data-hub="qa-expense"><i data-lucide="plus"></i><span>${esc(tx('qa_expense'))}</span></button>` +
         `<button class="hub-qa-btn" type="button" data-hub="qa-invite"><i data-lucide="qr-code"></i><span>${esc(tx('qa_invite'))}</span></button>` +
@@ -391,10 +421,11 @@
       ? `<button class="hub-icbtn" type="button" data-hub="bell" aria-label="${esc(tx('notifications'))}"><i data-lucide="bell"></i></button>` : '';
     root.innerHTML =
       '<div class="hub-wrap"><header class="hub-hd">' +
-      `<div class="hub-brand"><img src="/icons/app_icon.png" alt="" class="hub-logo"><div><div class="hub-brand-name">${esc(tx('brand'))}</div><div class="hub-brand-sub">${esc(tx('tagline'))}</div></div></div>` +
+      `<div class="hub-brand"><img src="/icons/splitaway-team.svg" alt="" class="hub-logo"><div><div class="hub-brand-name">${esc(tx('brand'))}</div><div class="hub-brand-sub">${esc(tx('tagline'))}</div></div></div>` +
       `<div class="hub-hd-act"><button class="hub-icbtn${searchOpen ? ' on' : ''}" type="button" data-hub="search" aria-label="${esc(tx('search'))}"><i data-lucide="search"></i></button>${bell}</div>` +
       `</header><main class="hub-main">${view === 'trips' ? tripsHtml() : homeHtml()}</main></div>` + navHtml();
     icons(root);
+    fillTripPhoto();
     const q = $('hub-q');
     if (q) {
       q.addEventListener('input', () => { query = q.value; $('hub-svc-body').innerHTML = servicesBody(); });

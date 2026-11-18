@@ -149,3 +149,24 @@
 .st-empty svg{width:40px;height:40px;color:var(--t3);margin-bottom:8px}
 
 .mod-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.hub-ico img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
+.hub-ico{width:46px;height:46px}
+@media (min-width:700px){.hub-ico{width:52px;height:52px}}
+.hub-tile.soon .hub-ico img{filter:saturate(.85)}
+/* Карточка текущей поездки (по макету): текст слева, фото места справа */
+.hub-trip2{position:relative;overflow:hidden;width:100%;min-height:124px;display:flex;align-items:center;gap:10px;padding:18px 16px 18px 20px;border-radius:24px;border:1px solid var(--hub-card-b);background:linear-gradient(105deg,#EEF1FF 0%,#ECE8FF 48%,#F3EEFF 100%);color:#14194A;text-align:left;box-shadow:var(--hub-shadow);cursor:pointer}
+.hub-trip2-ph{position:absolute;top:0;right:0;bottom:0;width:68%;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.55) 22%,#000 45%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.55) 22%,#000 45%)}
+.hub-trip2-ph.on{opacity:1}
+.hub-trip2-txt{position:relative;z-index:1;display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.hub-trip2-k{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;color:#2B3060}
+.hub-trip2-k svg{width:17px;height:17px}
+.hub-trip2-name{font-size:1.55rem;font-weight:800;letter-spacing:-.015em;line-height:1.1;color:#121845;max-width:70%;text-shadow:0 1px 8px rgba(255,255,255,.7)}
+.hub-trip2-meta{display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:500;color:#2B3060;flex-wrap:wrap;text-shadow:0 1px 6px rgba(255,255,255,.8)}
+.hub-trip2-meta svg{width:17px;height:17px}
+.hub-trip2-meta b{font-weight:800;opacity:.7}
+.hub-trip2-go{position:relative;z-index:1;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.92);color:#14194A;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.hub-trip2-go svg{width:20px;height:20px}
+.hub-trip2:active{transform:scale(.98)}
+[data-theme=dark] .hub-trip2{background:linear-gradient(105deg,#1F1C3D 0%,#241F4A 50%,#1A1733 100%);color:#fff}
+[data-theme=dark] .hub-trip2-k,[data-theme=dark] .hub-trip2-meta{color:#D9D6FF;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+[data-theme=dark] .hub-trip2-name{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.6)}

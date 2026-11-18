@@ -53,27 +53,47 @@
   const wKind = c => (WMO[c] || ['', 'cloud'])[1];
 
   // ---------- Иконки (свои SVG, без внешних картинок) ----------
+  // Объёмные облака из нескольких «шаров» с общим градиентом, солнце с мягким свечением,
+  // капли-слезинки, снежинки, молния. Всё внутри 64×64 с полями, чтобы ничего не залезало на подписи.
   let gid = 0;
   function wxIcon(code, day, size) {
     const k = wKind(code), n = ++gid, s = size || 40;
-    const sun = (cx, cy, r) => `<g><circle cx="${cx}" cy="${cy}" r="${r * 1.55}" fill="url(#ws${n})" opacity=".18"/>${[0, 45, 90, 135, 180, 225, 270, 315].map(a => { const t = a * Math.PI / 180; return `<line x1="${cx + Math.cos(t) * r * 1.3}" y1="${cy + Math.sin(t) * r * 1.3}" x2="${cx + Math.cos(t) * r * 1.62}" y2="${cy + Math.sin(t) * r * 1.62}" stroke="#FFB21E" stroke-width="${r * .22}" stroke-linecap="round"/>`; }).join('')}<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#ws${n})"/></g>`;
-    const moon = (cx, cy, r) => `<path d="M${cx + r * .35} ${cy - r} a${r} ${r} 0 1 0 ${r * .65} ${r * 1.55} a${r * .82} ${r * .82} 0 0 1 -${r * .65} -${r * 1.55}z" fill="url(#wm${n})"/>`;
-    const cloud = (dark, dy) => `<path transform="translate(0 ${dy || 0})" d="M17 50h30a11 11 0 0 0 1.5-21.9A14.5 14.5 0 0 0 20.2 25 12.6 12.6 0 0 0 17 50z" fill="url(#${dark ? 'wd' : 'wc'}${n})" stroke="${dark ? '#8E99B2' : '#CFDAEA'}" stroke-width=".8"/>`;
-    const drops = (cnt, color) => Array.from({ length: cnt }, (_, i) => `<line x1="${22 + i * 9}" y1="${54 + (i % 2) * 2}" x2="${19 + i * 9}" y2="${61 + (i % 2) * 2}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`).join('');
-    const defs = `<defs><radialGradient id="ws${n}" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#FFE77A"/><stop offset=".6" stop-color="#FFC531"/><stop offset="1" stop-color="#FF9B17"/></radialGradient>
-      <linearGradient id="wm${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1BF"/><stop offset="1" stop-color="#F3BE45"/></linearGradient>
-      <linearGradient id="wc${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE5F3"/></linearGradient>
-      <linearGradient id="wd${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C5CDDD"/><stop offset="1" stop-color="#8E99B2"/></linearGradient></defs>`;
+    const sun = (cx, cy, r) => `<g><circle cx="${cx}" cy="${cy}" r="${r * 1.75}" fill="url(#wg${n})"/>` +
+      Array.from({ length: 12 }, (_, i) => { const t = i * Math.PI / 6, a = r * 1.22, b = r * (i % 2 ? 1.5 : 1.62), w = .13;
+        const p = (rad, ang) => (cx + Math.cos(ang) * rad).toFixed(2) + ' ' + (cy + Math.sin(ang) * rad).toFixed(2);
+        return `<path d="M${p(a, t - w)} L${p(b, t)} L${p(a, t + w)}Z" fill="#FFB524" stroke="#FFB524" stroke-width="${(r * .12).toFixed(2)}" stroke-linejoin="round"/>`; }).join('') +
+      `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#ws${n})"/><circle cx="${cx - r * .35}" cy="${cy - r * .38}" r="${r * .32}" fill="#FFF6C8" opacity=".55"/></g>`;
+    const moon = (cx, cy, r) => `<g><circle cx="${cx}" cy="${cy}" r="${r * 1.5}" fill="url(#wmg${n})"/>
+      <path d="M${cx + r * .25} ${cy - r} A${r} ${r} 0 1 0 ${cx + r} ${cy + r * .45} A${r * .78} ${r * .78} 0 0 1 ${cx + r * .25} ${cy - r}Z" fill="url(#wm${n})"/>
+      <circle cx="${cx - r * .35}" cy="${cy + r * .1}" r="${r * .12}" fill="#E2B64A" opacity=".5"/><circle cx="${cx - r * .05}" cy="${cy + r * .55}" r="${r * .08}" fill="#E2B64A" opacity=".45"/>
+      <path d="M${cx + r * 1.15} ${cy - r * .9}l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#FFE9A6"/></g>`;
+    // облако: x, y — сдвиг, sc — масштаб, dark — грозовое/дождевое
+    const cloud = (x, y, sc, dark) => `<g transform="translate(${x} ${y}) scale(${sc || 1})">
+      <ellipse cx="33" cy="50" rx="20" ry="2.6" fill="#1B2A4A" opacity=".12"/>
+      <g fill="${dark ? '#5E6A86' : '#AFBFD6'}" transform="translate(0 1.6)"><circle cx="21" cy="37" r="10"/><circle cx="33" cy="29" r="13.5"/><circle cx="45.5" cy="36.5" r="10.5"/><rect x="11" y="36" width="45" height="12" rx="6"/></g>
+      <g fill="url(#${dark ? 'wd' : 'wc'}${n})"><circle cx="21" cy="37" r="10"/><circle cx="33" cy="29" r="13.5"/><circle cx="45.5" cy="36.5" r="10.5"/><rect x="11" y="36" width="45" height="12" rx="6"/></g>
+      <path d="M22.5 30.5a9 9 0 0 1 5.5-6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="${dark ? '.35' : '.9'}"/></g>`;
+    const drop = (x, y, sc) => `<path transform="translate(${x} ${y}) rotate(18) scale(${(sc || 1) * 1.3})" d="M0 -4.6C0 -4.6 -3 -.9 -3 1.2a3 3 0 0 0 6 0C3 -.9 0 -4.6 0 -4.6Z" fill="url(#wr${n})"/>`;
+    const flake = (x, y, r) => `<g transform="translate(${x} ${y})" stroke="#6FB4FF" stroke-width="2.1" stroke-linecap="round">${[0, 60, 120].map(a => `<line x1="0" y1="${-r}" x2="0" y2="${r}" transform="rotate(${a})"/>`).join('')}<circle r="1.2" fill="#BFE0FF" stroke="none"/></g>`;
+    const defs = `<defs>
+      <radialGradient id="ws${n}" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#FFF2A0"/><stop offset=".55" stop-color="#FFCB34"/><stop offset="1" stop-color="#FF9E1B"/></radialGradient>
+      <radialGradient id="wg${n}"><stop offset=".45" stop-color="#FFD24A" stop-opacity=".35"/><stop offset="1" stop-color="#FFD24A" stop-opacity="0"/></radialGradient>
+      <radialGradient id="wmg${n}"><stop offset=".4" stop-color="#FFE7A0" stop-opacity=".25"/><stop offset="1" stop-color="#FFE7A0" stop-opacity="0"/></radialGradient>
+      <linearGradient id="wm${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4C6"/><stop offset="1" stop-color="#F0B53C"/></linearGradient>
+      <linearGradient id="wc${n}" x1="0" y1="15" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#EEF3FA"/><stop offset="1" stop-color="#C9D6E8"/></linearGradient>
+      <linearGradient id="wd${n}" x1="0" y1="15" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#C9D1DF"/><stop offset=".55" stop-color="#9DA9C0"/><stop offset="1" stop-color="#6E7B97"/></linearGradient>
+      <linearGradient id="wr${n}" x1="0" y1="-5" x2="0" y2="4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8FD0FF"/><stop offset="1" stop-color="#2D7FE6"/></linearGradient>
+      <linearGradient id="wb${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE45C"/><stop offset="1" stop-color="#FF9F1A"/></linearGradient></defs>`;
     let body;
-    if (k === 'clear') body = day ? sun(32, 32, 13) : moon(30, 32, 15);
-    else if (k === 'pc') body = (day ? sun(24, 24, 10) : moon(24, 22, 11)) + cloud(false, 4);
-    else if (k === 'cloud') body = `<g opacity=".75" transform="translate(9 -7) scale(.8)">${cloud(true)}</g>` + cloud(false, 2);
-    else if (k === 'fog') body = cloud(false, -4) + [52, 58].map((y, i) => `<line x1="${14 + i * 6}" y1="${y}" x2="${50 - i * 4}" y2="${y}" stroke="#AAB6CB" stroke-width="3" stroke-linecap="round"/>`).join('');
-    else if (k === 'drizzle') body = cloud(false, -6) + drops(3, '#5AA7F2');
-    else if (k === 'rain') body = cloud(true, -6) + drops(4, '#2F86E8');
-    else if (k === 'showers') body = (day ? sun(24, 20, 9) : '') + cloud(false, -2) + drops(3, '#2F86E8');
-    else if (k === 'snow') body = cloud(false, -6) + [22, 32, 42].map((x, i) => `<circle cx="${x}" cy="${57 + (i % 2) * 3}" r="2.6" fill="#8CC4FF"/>`).join('');
-    else body = cloud(true, -6) + '<path d="M33 46l-7 10h6l-3 8 9-12h-6l4-6z" fill="#FFC531" stroke="#F59E0B" stroke-width="1" stroke-linejoin="round"/>';
+    if (k === 'clear') body = day ? sun(32, 32, 12.5) : moon(30, 32, 14);
+    else if (k === 'pc') body = (day ? sun(23, 22, 9.5) : moon(24, 21, 10)) + cloud(4, 6, .86);
+    else if (k === 'cloud') body = `<g opacity=".9">${cloud(10, -6, .72, true)}</g>` + cloud(-1, 4, .95);
+    else if (k === 'fog') body = cloud(0, -6, .92) + [46, 52, 58].map((y, i) => `<rect x="${12 + i * 4}" y="${y - 1.6}" width="${40 - i * 6}" height="3.2" rx="1.6" fill="#A9B7CC" opacity="${1 - i * .2}"/>`).join('');
+    else if (k === 'drizzle') body = cloud(0, -8, .92) + drop(22, 50, .8) + drop(32, 55, .8) + drop(42, 50, .8);
+    else if (k === 'rain') body = cloud(0, -9, .92, true) + drop(19, 50) + drop(29, 56) + drop(39, 50) + drop(49, 56);
+    else if (k === 'showers') body = (day ? sun(22, 18, 8.5) : moon(22, 17, 8.5)) + cloud(4, -4, .84) + drop(23, 53) + drop(34, 57.5) + drop(45, 53);
+    else if (k === 'snow') body = cloud(0, -9, .92) + flake(20, 51, 4.3) + flake(32, 56.5, 4.3) + flake(44, 51, 4.3);
+    else body = cloud(0, -9, .92, true) + `<path d="M34 39l-8.5 12.5h6.5l-3.5 10 11-14h-6.8l4.3-8.5z" fill="url(#wb${n})" stroke="#E98A00" stroke-width="1" stroke-linejoin="round"/>` + drop(18, 51, .8) + drop(47, 51, .8);
     return `<svg class="wx-ic" viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true">${defs}${body}</svg>`;
   }
 
@@ -115,6 +135,14 @@
     .wx-desc{font-size:1.25rem;font-weight:700;margin-top:8px}
     .wx-mm{font-size:1.15rem;font-weight:700;margin-top:6px;display:flex;gap:16px}
     .wx-hero.sm{min-height:200px}
+    .wx-hero>img.place{object-position:center 60%}
+    .wx-hero.night>img.place{filter:brightness(.42) saturate(.75) contrast(1.05)}
+    .wx-hero.rain>img.place{filter:saturate(.45) brightness(.78)}
+    .wx-hero.snow>img.place,.wx-hero.fog>img.place,.wx-hero.cloud>img.place{filter:saturate(.6) brightness(.85)}
+    .wx-hero>img.place.mood{filter:brightness(.9)}
+    .wx-hero.night>img.place.mood{filter:brightness(.8)}
+    .wx-hero.snow::after,.wx-hero.fog::after,.wx-hero.cloud::after{background:linear-gradient(90deg,rgba(30,40,60,.5),rgba(0,0,0,.05) 60%)}
+    .wx-credit{position:absolute;right:12px;bottom:7px;z-index:2;font-size:.6rem;color:rgba(255,255,255,.82);text-shadow:0 1px 3px rgba(0,0,0,.6)}
     .wx-hero.sm .wx-temp{font-size:3.6rem}
     /* показатели */
     .wx-stats{display:grid;grid-template-columns:repeat(4,1fr);padding:12px 4px}
@@ -136,14 +164,15 @@
     .wx-h2{font-size:1.32rem;font-weight:800;margin:8px 2px -2px}
     /* 7 дней */
     .wx-days{padding:2px 18px}
-    .wx-day{display:grid;grid-template-columns:1fr 46px 92px 22px;align-items:center;gap:6px;min-height:54px;border-bottom:1px solid var(--wx-line);width:100%;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:var(--text);text-align:left;cursor:pointer;padding:0}
+    .wx-day{display:grid;grid-template-columns:1fr 50px 92px 22px;align-items:center;gap:8px;min-height:62px;border-bottom:1px solid var(--wx-line);width:100%;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:var(--text);text-align:left;cursor:pointer;padding:0}
     .wx-day:last-child{border-bottom:0}
     .wx-day-n{font-size:1rem;font-weight:500;display:flex;flex-direction:column}
     .wx-day-n small{font-size:.7rem;color:var(--wx-ac);font-weight:700}
     .wx-day-n{min-width:0}
     .wx-day-n small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .wx-day-ic{display:flex;flex-direction:column;align-items:center}
-    .wx-day-ic small{font-size:.66rem;color:#2F86E8;font-weight:700;margin-top:-4px}
+    .wx-day-ic{gap:2px;padding:5px 0}
+    .wx-day-ic small{font-size:.68rem;line-height:1;color:#2F86E8;font-weight:800;margin-top:0;letter-spacing:.01em}
     .wx-day-t{text-align:right;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
     .wx-day-t span{color:var(--t2);font-weight:600}
     .wx-day>svg:last-child{width:20px;height:20px}
@@ -426,7 +455,7 @@
     // ---------- общие куски разметки ----------
     function tripCard() {
       if (!trip) return '';
-      return `<button class="wx-card wx-trip" type="button" data-a="city"><img src="/img/bookings/trip-coast.jpg" alt="">
+      return `<button class="wx-card wx-trip" type="button" data-a="city"><img src="/img/trips/abstract.jpg" alt="">
         <span class="wx-trip-t"><b>${esc(trip.name || 'Поездка')}</b>
           <span class="wx-meta"><i data-lucide="map-pin"></i>${esc(trip.dest || 'Направление не указано')}</span>
           ${tripDates ? `<span class="wx-meta"><i data-lucide="calendar-days"></i>${esc(rangeLabel(tripDates.start, tripDates.end))}</span>` : ''}
@@ -437,7 +466,17 @@
       const chip = (key, icon, name, temp, on) => `<button class="wx-chip${on ? ' on' : ''}" type="button" data-sel="${esc(key)}"><i data-lucide="${icon}"></i><span>${esc(name)}</span>${temp != null ? `<b>${deg(temp)}</b>` : ''}</button>`;
       return `<div class="wx-chips" id="wx-chips">${chip('here', 'navigation', here ? here.name : 'Моё место', here ? tempOf(here) : null, sel === 'here')}${places.map(p => chip(keyOf(p), 'map-pin', p.name, tempOf(p), sel === keyOf(p))).join('')}<button class="wx-chip add" type="button" data-a="add"><i data-lucide="plus"></i><span>Место</span></button></div>`;
     }
-    function heroImg(code, day) { return !day ? 'night' : (code >= 51 || code === 3 || code === 45 || code === 48) ? 'rain' : 'sun'; }
+    // Погода для картинки: дождь / снег / туман / ночь / пасмурно / солнце
+    function heroImg(code, day) {
+      const k = wKind(code);
+      if (k === 'rain' || k === 'drizzle' || k === 'showers' || k === 'thunder') return 'rain';
+      if (k === 'snow') return 'snow';
+      if (k === 'fog') return 'fog';
+      if (!day) return 'night';
+      return k === 'cloud' ? 'cloud' : 'sun';
+    }
+    const MOODS = { rain: 1, snow: 1, fog: 1, night: 1 };
+    const FALLBACK = { sun: 'sun', night: 'night', rain: 'rain', snow: 'rain', fog: 'rain', cloud: 'rain' };
     function hero(i, small) {
       const D = f.daily, d = D.time[i];
       const isNow = i === 0 && f.current;
@@ -446,7 +485,13 @@
       const temp = isNow ? f.current.temperature_2m : D.temperature_2m_max[i];
       const sub = isNow ? 'Сейчас, ' + dayLong(d) + ', ' + hhmm(f.current.time) : dayLong(d);
       const kind = heroImg(code, day);
-      return `<div class="wx-hero ${kind}${small ? ' sm' : ''}"><img src="/img/weather/${kind}.jpg" alt="">
+      // фото выбранного места по погоде (дождь — дождливый снимок этого города, ночь — ночной …),
+      // иначе обычное фото места (Wikimedia Commons); пока ищем — общая картинка по погоде
+      const o = { lat: loc.lat, lon: loc.lon, prefer: 'photo', width: 1100 };
+      const mp = window.STPlacePhoto && MOODS[kind] && STPlacePhoto.peekMood ? STPlacePhoto.peekMood(loc.name, Object.assign({ mood: kind }, o)) : null;
+      const ph = mp || (window.STPlacePhoto ? STPlacePhoto.peek(loc.name, o) : null);
+      return `<div class="wx-hero ${kind}${small ? ' sm' : ''}" data-mood="${MOODS[kind] ? kind : ''}"><img src="${ph ? esc(ph.url) : '/img/weather/' + FALLBACK[kind] + '.jpg'}" class="${ph ? 'place' + (mp ? ' mood' : '') : ''}" alt="">
+        <span class="wx-credit">${ph ? esc(ph.credit) : ''}</span>
         <div class="wx-hero-in">
           <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
           <div class="wx-now">${esc(sub)}${f.offline ? ' · нет сети' : ''}</div>
@@ -460,7 +505,7 @@
       return `<button class="wx-day${inTrip(d) ? ' trip' : ''}" type="button" data-day="${i}"${extra && i >= 7 ? ' style="opacity:.8"' : ''}>
         <span class="wx-day-n">${esc(i === 0 ? 'Сегодня' : dayLong(d).replace(/^(\S)/, c => c.toUpperCase()))}${inTrip(d) ? '<small>поездка</small>' : ''}
           ${extra ? `<small style="color:var(--t2);font-weight:500">💧 ${(D.precipitation_sum[i] || 0).toFixed(1).replace('.', ',')} мм · ветер ${Math.round(D.wind_speed_10m_max[i])} км/ч</small>` : ''}</span>
-        <span class="wx-day-ic">${wxIcon(D.weather_code[i], true, 36)}${pp >= 20 ? `<small>${pp}%</small>` : ''}</span>
+        <span class="wx-day-ic">${wxIcon(D.weather_code[i], true, 42)}${pp >= 20 ? `<small>${pp}%</small>` : ''}</span>
         <span class="wx-day-t"><span>${deg(D.temperature_2m_min[i])}</span> / ${deg(D.temperature_2m_max[i])}</span>
         <i data-lucide="chevron-right"></i></button>`;
     }
@@ -542,7 +587,25 @@
       }));
       body.querySelectorAll('[data-a="add"]').forEach(b => b.addEventListener('click', () => citySheet(scr, true)));
     }
+    // Подставить фото места в карточку погоды и фото поездки в карточку поездки
+    function fillPhotos(body) {
+      if (!window.STPlacePhoto || !loc) return;
+      STPlacePhoto.tripImg(body.querySelector('.wx-trip img'), trip, { width: 400 });
+      const img = body.querySelector('.wx-hero > img');
+      if (!img || img.classList.contains('mood')) return;
+      const l = loc, mood = img.parentNode.dataset.mood, o = { lat: l.lat, lon: l.lon, prefer: 'photo', width: 1100 };
+      const put = (r, isMood) => {
+        if (!r || l !== loc || !img.isConnected) return;
+        const pre = new Image();
+        pre.onload = () => { img.src = r.url; img.classList.add('place'); if (isMood) img.classList.add('mood'); const c = img.parentNode.querySelector('.wx-credit'); if (c) c.textContent = r.credit; };
+        pre.src = r.url;
+      };
+      const plain = () => { if (!img.classList.contains('place')) STPlacePhoto.photo(l.name, o).then(r => put(r, false)); };
+      if (mood && STPlacePhoto.moodPhoto) STPlacePhoto.moodPhoto(l.name, Object.assign({ mood }, o)).then(r => { if (r) put(r, true); else plain(); }, plain);
+      else plain();
+    }
     function bindCommon(body, scr) {
+      fillPhotos(body);
       bindChips(body, scr);
       body.querySelectorAll('[data-a="city"]').forEach(b => b.addEventListener('click', () => citySheet(scr)));
       body.querySelector('[data-a="retry"]')?.addEventListener('click', () => { f = null; err = null; scr.refresh(); load(true, scr); });
@@ -641,6 +704,7 @@
           body.innerHTML = `${hero(cur, true)}
             <div class="wx-card wx-tabs">${tabs.map(([k, t]) => `<button class="wx-tab${mode === k ? ' on' : ''}" type="button" data-tab="${k}">${esc(t)}</button>`).join('')}</div>
             ${content}<div style="height:10px"></div>`;
+          fillPhotos(body);
           body.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { mode = b.dataset.tab; screen.refresh(); }));
           body.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { cur = +b.dataset.day; mode = 'day'; screen.refresh(); window.scrollTo(0, 0); }));
           if (mode === 'radar') radar(body.querySelector('#wx-radar'));

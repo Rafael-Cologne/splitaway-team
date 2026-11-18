@@ -100,11 +100,18 @@
   async function fetchOsrmRoute(stops, mode) {
     const pts = stops.slice(0, 25);
     const coords = pts.map(p => `${p.lon},${p.lat}`).join(';');
-    const profile = mode === 'car' ? 'driving' : 'foot';
-    const url = `https://router.project-osrm.org/route/v1/${profile}/${coords}?overview=full&geometries=geojson`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('OSRM error');
-    const json = await res.json();
+    // Демо-сервер OSRM (router.project-osrm.org) умеет только авто — пешком он считал как на машине
+    // (3,6 км за 7 мин). Поэтому пешком/на авто — серверы FOSSGIS с нужным профилем, демо — запасной для авто.
+    const q = `${coords}?overview=full&geometries=geojson`;
+    const urls = mode === 'car'
+      ? [`https://routing.openstreetmap.de/routed-car/route/v1/driving/${q}`, `https://router.project-osrm.org/route/v1/driving/${q}`]
+      : [`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${q}`];
+    let json = null;
+    for (const url of urls) {
+      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 12000);
+      try { const res = await fetch(url, { signal: ctl.signal }); if (res.ok) { json = await res.json(); if (json?.routes?.[0]) break; } } catch (_) {} finally { clearTimeout(timer); }
+    }
+    if (!json) throw new Error('OSRM error');
     const route = json?.routes?.[0];
     if (!route) throw new Error('No route');
     return {

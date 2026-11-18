@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Только тестовая (debug) сборка: другое название на телефоне -->
+<resources>
+    <string name="app_name">Splitaway Team</string>
+    <string name="title_activity_main">Splitaway Team</string>
+</resources>

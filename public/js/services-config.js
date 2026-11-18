@@ -20,7 +20,7 @@ window.ST_SERVICES = [
   { id: 'route',      title: { ru: 'Маршрут',      en: 'Route',       de: 'Route' },         icon: 'route',      route: null,       status: 'coming_soon', requiresTrip: true  },
   { id: 'calendar',   title: { ru: 'Календарь',    en: 'Calendar',    de: 'Kalender' },      icon: 'calendar',   route: null,       status: 'coming_soon', requiresTrip: true  },
   { id: 'bookings',   title: { ru: 'Бронирования', en: 'Bookings',    de: 'Buchungen' },     icon: 'bookings',   route: null,       status: 'coming_soon', requiresTrip: true  },
-  { id: 'guide',      title: { ru: 'Гид и места',  en: 'Guide',       de: 'Reiseführer' },   icon: 'guide',      route: null,       status: 'coming_soon', requiresTrip: false },
+  { id: 'guide',      title: { ru: 'Гид',  en: 'Guide',       de: 'Reiseführer' },   icon: 'guide',      route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'translator', title: { ru: 'Переводчик',   en: 'Translator',  de: 'Übersetzer' },    icon: 'translator', route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'currency',   title: { ru: 'Валюты',       en: 'Currency',    de: 'Währungen' },     icon: 'currency',   route: 'currency', status: 'active',      requiresTrip: true  },
   { id: 'weather',    title: { ru: 'Погода',       en: 'Weather',     de: 'Wetter' },        icon: 'weather',    route: null,       status: 'coming_soon', requiresTrip: false },
