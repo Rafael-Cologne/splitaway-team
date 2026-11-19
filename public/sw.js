@@ -8,7 +8,7 @@
 // v3.0: локальный lucide.js, qrcode.min.js; убран CDN-кэш; нет Google Fonts
 // ============================================================
 
-const SW_VERSION = '1.0.25-91-team';
+const SW_VERSION = '1.0.25-92-team';
 const CACHE_STATIC = `splitaway-static-${SW_VERSION}`;
 
 // Ресурсы, которые кэшируем при установке (все локальные — нет CDN)
@@ -44,6 +44,12 @@ const SKIP_CACHE = [
   'netlify/functions',
 ];
 
+// Модуль «Офлайн» хранит свои кэши отдельно (переживают обновления приложения):
+//   st-offline-assets — копия экранов, картинок и библиотек; st-offline-maps — карта района поездки.
+const OFFLINE_PREFIX = 'st-offline-';
+// Внешние файлы, которые нужны без сети: карта (Leaflet), флаги
+const CDN_HOSTS = ['unpkg.com', 'flagcdn.com'];
+
 // ============================================================
 // INSTALL — кэшируем ядро приложения
 // ============================================================
@@ -66,7 +72,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(k => !CURRENT.includes(k)).map(k => {
+        keys.filter(k => !CURRENT.includes(k) && !k.startsWith(OFFLINE_PREFIX)).map(k => {
           console.log('[SW] Deleting old cache:', k);
           return caches.delete(k);
         })
@@ -85,6 +91,17 @@ self.addEventListener('fetch', event => {
 
   // 1. API и реалтайм — пропускаем, только сеть
   if (SKIP_CACHE.some(p => event.request.url.includes(p))) return;
+
+  // Тайлы карты OpenStreetMap: сначала скачанный район (a./b./c. — один и тот же тайл), иначе сеть
+  if (/(^|\.)tile\.openstreetmap\.org$/.test(url.hostname)) {
+    event.respondWith(tileFromCache(event.request, url));
+    return;
+  }
+  // Leaflet и флаги: сеть, а без сети — сохранённая копия
+  if (CDN_HOSTS.includes(url.hostname)) {
+    event.respondWith(fetch(event.request).catch(async () => (await caches.match(event.request.url)) || Response.error()));
+    return;
+  }
   if (url.origin !== self.location.origin) return;
 
   // 2. Навигация — сначала сеть: установленная PWA сразу получает свежий UI.
@@ -126,7 +143,7 @@ async function networkFirst(request, cacheName) {
     }
     return response;
   } catch {
-    return await cache.match(request) || await offlineFallback(request);
+    return await cache.match(request) || await caches.match(request) || await offlineFallback(request);
   } finally {
     clearTimeout(timeout);
   }
@@ -148,7 +165,19 @@ async function staleWhileRevalidate(request, cacheName) {
     .catch(() => null);
 
   // Если есть кэш — отдаём сразу; иначе ждём сети
-  return cached || await fetchPromise || offlineFallback(request);
+  return cached || await fetchPromise || await caches.match(request) || offlineFallback(request);
+}
+
+// ---- Тайлы карты: скачанный район → сеть ----
+async function tileFromCache(request, url) {
+  const key = 'https://tile.openstreetmap.org' + url.pathname;
+  try {
+    const cache = await caches.open(OFFLINE_PREFIX + 'maps');
+    const hit = await cache.match(key);
+    if (hit) return hit;
+  } catch { /* кэш недоступен — идём в сеть */ }
+  try { return await fetch(request); }
+  catch { return new Response('', { status: 504 }); }
 }
 
 // ---- Фолбэк при офлайне ----
