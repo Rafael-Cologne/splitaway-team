@@ -31,5 +31,5 @@ window.ST_SERVICES = [
   { id: 'emergency',  title: { ru: 'Экстренно',    en: 'Emergency',   de: 'Notfall' },       icon: 'emergency',  route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'offline',    title: { ru: 'Офлайн',       en: 'Offline',     de: 'Offline' },       icon: 'offline',    route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'diary',      title: { ru: 'Дневник',      en: 'Diary',       de: 'Tagebuch' },      icon: 'diary',      route: null,       status: 'coming_soon', requiresTrip: true  },
-  { id: 'assistant',  title: { ru: 'AI-помощник',  en: 'AI assistant', de: 'KI-Assistent' }, icon: 'assistant',  route: null,       status: 'coming_soon', requiresTrip: false }
+  { id: 'assistant',  title: { ru: 'KI Ассистент', en: 'AI assistant', de: 'KI-Assistent' }, icon: 'assistant',  route: null,       status: 'coming_soon', requiresTrip: false }
 ];
