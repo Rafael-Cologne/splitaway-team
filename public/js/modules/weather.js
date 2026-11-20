@@ -183,6 +183,7 @@
     .wx-hero.rain>img.wx-bg.place{filter:saturate(.5) brightness(.8)}
     .wx-hero.cloud>img.wx-bg.place,.wx-hero.snow>img.wx-bg.place,.wx-hero.fog>img.wx-bg.place{filter:saturate(.65) brightness(.88)}
     .wx-hero.pic .wx-sil{display:none}
+    .wx-credit{position:absolute;right:10px;bottom:6px;z-index:2;max-width:60%;font-size:.58rem;line-height:1.2;color:rgba(255,255,255,.85);text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .wx-hero>img.wx-bg.city{object-position:78% center}
     .wx-hero.night>img.wx-bg.city,.wx-hero.dk>img.wx-bg.city{filter:brightness(.72)}
     .wx-hero.pic::after{background:linear-gradient(90deg,rgba(14,12,48,.62),rgba(14,12,48,.32) 42%,rgba(0,0,0,0) 72%)}
@@ -608,12 +609,15 @@
           return;
         }
         if (!name || !window.STPlacePhoto) { generic(); return; }
-        const o = { lat: +img.dataset.lat, lon: +img.dataset.lon, prefer: 'photo', width: 1100 };
-        const ok = r => r && r.url && !r.flag && !r.kind && !r.country; // флаг страны и общая обложка — не фото места
-        const pk = STPlacePhoto.peek(name, o);
-        if (pk !== undefined) { if (ok(pk)) show(pk.url, true); else generic(); return; }
-        const late = setTimeout(generic, 4000); // поиск долгий — пока покажем пейзаж по погоде
-        STPlacePhoto.photo(name, o).then(r => { clearTimeout(late); if (ok(r)) show(r.url, true); else generic(); }, () => { clearTimeout(late); generic(); });
+        // узнаваемое фото места со свободной лицензией (place-photo.js → scenic): автор и лицензия — в подписи
+        const o = { lat: +img.dataset.lat, lon: +img.dataset.lon };
+        const credit = r => { const a = hero.querySelector('.wx-credit'); if (!a || !r) return; a.href = r.page; a.textContent = 'Фото: ' + (r.author ? r.author + ', ' : '') + r.license; a.hidden = false; };
+        const put = r => { if (r && r.url) { show(r.url, true); credit(r); } else generic(); };
+        if (!STPlacePhoto.scenic) { generic(); return; }
+        const pk = STPlacePhoto.peekScenic(name, o);
+        if (pk !== undefined) { put(pk); return; }
+        const late = setTimeout(generic, 5000); // поиск долгий — пока покажем пейзаж по погоде
+        STPlacePhoto.scenic(name, o).then(r => { clearTimeout(late); put(r); }, () => { clearTimeout(late); generic(); });
       });
     }
     function hero(i, small) {
@@ -630,6 +634,7 @@
         <div class="wx-l"><span class="wx-orb"></span><span class="wx-cl c"></span><span class="wx-cl a"></span><span class="wx-cl b"></span><span class="wx-fx"></span>
           ${sil ? `<span class="wx-sil" style="--sm:url('${sil}')"></span>` : ''}</div>
         <img class="wx-bg" alt="" data-bg="${bgOf(kind, dark)}"${loc.near ? '' : ` data-name="${esc(loc.name)}" data-lat="${loc.lat}" data-lon="${loc.lon}"`}>
+        <a class="wx-credit" target="_blank" rel="noopener" hidden></a>
         <div class="wx-hero-in">
           <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.near ? '<small class="wx-here">по координатам</small>' : loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
           <div class="wx-now">${esc(sub)}${f.offline ? ' · нет сети' : ''}</div>
