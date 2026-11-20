@@ -28,6 +28,7 @@
   const lsSet = (k, v) => { try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); return true; } catch (_) { return false; } };
   const VER = 'ST1';
   const META = 'st_key_meta';
+  const DATES = id => 'st_mod_calendar_' + id + '_dates'; // даты поездки (модуль «Календарь»)
   const fmtDate = t => new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
   const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c); };
 
@@ -45,7 +46,9 @@
         const id = d.trip.id;
         const k = localStorage.getItem('sw_mkey_' + id + '_' + d.me), a = localStorage.getItem('sw_admin_' + id), iv = localStorage.getItem('sw_invite_' + id);
         if (!k && !a) continue; // без ключа участника войти нельзя
-        out.push({ i: id, n: d.trip.name || id, d: d.trip.dest || '', c: d.trip.currency || '', m: d.me, g: d.meGender || 'm', iv: iv || '', k: k || '', a: a || '' });
+        const dt = lsGet(DATES(id), null);
+        out.push(Object.assign({ i: id, n: d.trip.name || id, d: d.trip.dest || '', c: d.trip.currency || '', m: d.me, g: d.meGender || 'm', iv: iv || '', k: k || '', a: a || '' },
+          dt && dt.start ? { ds: dt.start, de: dt.end || dt.start } : {}));
       }
     } catch (_) {}
     const last = localStorage.getItem('sw_last');
@@ -84,14 +87,44 @@
   async function unpack(code, num, pin) {
     const p = String(code).split('.');
     if (p.length !== 4 || !p[0].startsWith(VER)) throw new Error('format');
+    return unpackWith(code, await derive(normNum(num) + ':' + pin, ub64u(p[1])));
+  }
+  // расшифровать готовым ключом (сохранённым на этом устройстве)
+  async function unpackWith(code, key) {
+    const p = String(code).split('.');
+    if (p.length !== 4 || !p[0].startsWith(VER)) throw new Error('format');
     let data;
-    try { data = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64u(p[2]) }, await derive(normNum(num) + ':' + pin, ub64u(p[1])), ub64u(p[3]))); }
+    try { data = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64u(p[2]) }, key, ub64u(p[3]))); }
     catch (_) { throw new Error('pin'); }
     if (p[0].slice(3) === '1') data = await zip(data, new DecompressionStream('deflate-raw'));
     const obj = JSON.parse(dec.decode(data));
     if (!obj || !Array.isArray(obj.t)) throw new Error('format');
     return obj;
   }
+  const savedKey = () => idbDo('readonly', st => st.get('enc')).catch(() => null);
+  // вход по ключу: устройство подключается к кабинету — сохраняем ключ шифрования (соль та же, что в блоке)
+  async function adopt(num, pin, code) {
+    const salt = ub64u(String(code).split('.')[1]);
+    const key = await derive(normNum(num) + ':' + pin, salt);
+    await idbDo('readwrite', st => st.put({ key, salt }, 'enc'));
+  }
+
+  // ---------- Кабинет: поездки со всех устройств ----------
+  // Ключ хранит объединённый список: каждое устройство ДОБАВЛЯЕТ свои поездки, а не перезаписывает чужие.
+  // x — удалённые поездки (чтобы другое устройство не вернуло их обратно).
+  const uniq = a => [...new Set((a || []).filter(Boolean))];
+  const FIELDS = ['i', 'n', 'd', 'c', 'm', 'g', 'iv', 'k', 'a', 'ds', 'de'];
+  function merge(base, local, gone) {
+    const map = new Map();
+    const put = t => { const cur = map.get(t.i) || {}; FIELDS.forEach(f => { if (t[f]) cur[f] = t[f]; }); map.set(t.i, cur); };
+    (base || []).forEach(put);
+    (local || []).forEach(put);
+    (gone || []).forEach(id => map.delete(id));
+    return [...map.values()].map(t => { const o = {}; FIELDS.forEach(f => { if (t[f]) o[f] = t[f]; }); return o; }).sort((x, y) => (x.i < y.i ? -1 : 1));
+  }
+  // поездки этого устройства, которые пользователь разрешил добавить в кабинет
+  const ownLocal = m => myTrips().filter(t => !((m && m.skip) || []).includes(t.i));
+  const fpOf = (t, x) => JSON.stringify([merge(t, [], []), uniq(x).sort()]);
 
   // ---------- Сервер (Supabase): только зашифрованный блок ----------
   /* global getSupabase */
@@ -201,14 +234,18 @@
 
   // ---------- Мой ключ входа ----------
   const SRV = { ok: ['circle-check', '#1b9a50', 'Вход по номеру включён'], missing: ['clock', '#c27a00', 'Вход по номеру заработает после обновления базы — пока входите по QR'],
-    off: ['wifi-off', '#c27a00', 'Нет связи с сервером — номер сохранится позже, QR работает'], error: ['circle-alert', '#d93a3a', 'Сервер не принял ключ — входите по QR'] };
+    off: ['wifi-off', '#c27a00', 'Нет связи с сервером — номер сохранится позже, QR работает'], error: ['circle-alert', '#d93a3a', 'Сервер не принял ключ — входите по QR'],
+    replaced: ['circle-alert', '#d93a3a', 'Ключ заменён на другом устройстве — войдите по новому ключу'] };
   function openMyKey() {
     const trips = myTrips();
     const meta = lsGet(META, null);
     const st = { step: meta && meta.num && meta.blob ? 'show' : 'pin', pin: '', pin2: '', err: '', num: meta && meta.num || '', blob: meta && meta.blob || '', srv: meta && meta.srv || '', shown: false, busy: false };
     sheet('Мой ключ входа', (b, api) => {
       if (!trips.length && st.step === 'pin') {
-        b.innerHTML = `<p class="pk-p">На этом телефоне пока нет поездок, в которые вы вошли под своим именем. Создайте поездку или войдите в неё — и ключ появится.</p>`;
+        b.innerHTML = `<p class="pk-p">На этом устройстве пока нет поездок, в которые вы вошли под своим именем. Создайте поездку или войдите в неё — и ключ появится.</p>
+          <p class="pk-p">Уже есть ключ с другого устройства? Войдите в свой кабинет:</p>
+          <button class="pk-btn" type="button" data-a="login"><i data-lucide="log-in"></i>Войти по личному ключу</button>`;
+        b.querySelector('[data-a="login"]').addEventListener('click', () => { api.close(); openRestore(); });
         return;
       }
       if (st.step === 'pin') {
@@ -233,10 +270,15 @@
           try {
             const old = st.num;
             st.num = newNumber();
-            st.blob = await pack({ v: 1, me: trips[0].m, at: Date.now(), t: trips }, st.num, st.pin);
+            // новый ключ забирает все поездки кабинета, а не только поездки этого устройства
+            const m0 = lsGet(META, null) || {}, s0 = old ? await savedKey() : null;
+            let all = merge([], ownLocal(m0), []), gone = [];
+            if (s0 && m0.blob) { try { const b0 = await unpackWith(m0.blob, s0.key); gone = uniq([...(b0.x || []), ...(m0.gone || [])]); all = merge(b0.t, ownLocal(m0), gone); } catch (_) {} }
+            st.blob = await pack({ v: 2, me: trips[0].m, at: Date.now(), t: all, x: gone }, st.num, st.pin);
+            st.ids = all.map(x => x.i); st.gone = gone; st.skip = m0.skip || [];
             st.srv = await serverSave(st.num, st.blob).catch(() => 'error');
             if (old && st.srv === 'ok') { try { const c = await sb(); const k = await ids(old); await c.rpc('delete_personal_key', { p_id: k.id, p_write: k.write }); } catch (_) {} }
-            lsSet(META, { t: Date.now(), ids: trips.map(x => x.i), num: st.num, blob: st.blob, srv: st.srv });
+            lsSet(META, { t: Date.now(), ids: st.ids, num: st.num, blob: st.blob, srv: st.srv, me: trips[0].m, skip: st.skip, gone: st.gone });
             st.step = 'show';
           } catch (_) { st.err = 'Не удалось создать ключ'; }
           st.busy = false; st.pin = st.pin2 = ''; api.draw();
@@ -252,7 +294,7 @@
         <div class="pk-warn"><i data-lucide="shield-alert"></i><span><b>Никому не показывайте и не отправляйте в чаты.</b> С ключом и PIN можно войти в ваши поездки от вашего имени. Друзей приглашайте QR-кодом «Пригласить» в поездке.</span></div>
         <div class="pk-key">
           <span class="pk-badge"><i data-lucide="lock"></i>МОЙ КЛЮЧ ВХОДА</span>
-          <h3>${esc(trips[0] ? trips[0].m : '')}</h3>
+          <h3>${esc(m.me || (trips[0] ? trips[0].m : ''))}</h3>
           <small>${esc(plural((m.ids || trips).length, 'поездка', 'поездки', 'поездок'))} · обновлён ${esc(fmtDate(m.t || Date.now()))}</small>
           <div class="pk-qr" data-a="reveal"><div id="pk-qr"></div>${st.shown ? '' : '<div class="veil"><i data-lucide="eye-off"></i>Нажмите, чтобы показать</div>'}</div>
           <div class="pk-num" data-a="reveal">${st.shown ? esc(prettyNum(st.num)) : '••••-••••-••••'}</div>
@@ -265,16 +307,22 @@
           <button class="pk-btn lite" type="button" data-a="copy"><i data-lucide="copy"></i>Номер</button>
         </div>
         <button class="pk-btn lite" type="button" data-a="new"><i data-lucide="refresh-cw"></i>Создать новый ключ (сменить PIN)</button>
+        <button class="pk-btn lite" type="button" data-a="login"><i data-lucide="log-in"></i>Войти другим ключом</button>
         <p class="pk-p" style="margin-top:12px">Сохраните картинку заранее — в фото или распечатайте. Новые поездки добавляются в ключ сами, номер и PIN остаются прежними.</p>`;
       qrInto(b.querySelector('#pk-qr'), url);
       b.querySelectorAll('[data-a="reveal"]').forEach(x => x.addEventListener('click', () => { st.shown = !st.shown; api.draw(); }));
       b.querySelector('[data-a="copy"]').addEventListener('click', async () => { try { await navigator.clipboard.writeText(prettyNum(st.num)); say('Номер скопирован — храните как пароль'); } catch (_) { say('Не удалось скопировать'); } });
-      b.querySelector('[data-a="png"]').addEventListener('click', () => savePng(b.querySelector('#pk-qr'), trips, st.num));
+      b.querySelector('[data-a="png"]').addEventListener('click', () => savePng(b.querySelector('#pk-qr'), m.me || (trips[0] ? trips[0].m : ''), (m.ids || trips).length, st.num));
       b.querySelector('[data-a="new"]').addEventListener('click', () => { st.step = 'pin'; api.draw(); });
-      if (st.srv !== 'ok') serverSave(st.num, st.blob).then(r => { if (r !== st.srv) { st.srv = r; const mm = lsGet(META, {}); mm.srv = r; lsSet(META, mm); api.draw(); } }).catch(() => {});
+      b.querySelector('[data-a="login"]').addEventListener('click', () => { api.close(); openRestore(); });
+      // при открытии — свести поездки всех устройств и обновить картинку
+      if (!st.synced) {
+        st.synced = true;
+        autoUpdate().then(() => { const mm = lsGet(META, {}) || {}; if (mm.blob) { st.blob = mm.blob; st.srv = mm.srv || st.srv; } if (api.el.isConnected) api.draw(); }).catch(() => {});
+      }
     });
   }
-  function savePng(qrEl, trips, num) {
+  function savePng(qrEl, name, count, num) {
     const src = qrEl.querySelector('canvas') || qrEl.querySelector('img');
     if (!src) { say('QR не готов'); return; }
     const W = 720, H = 960, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -283,9 +331,9 @@
     g.fillStyle = grd; g.fillRect(0, 0, W, H);
     g.strokeStyle = 'rgba(243,194,91,.7)'; g.setLineDash([14, 10]); g.lineWidth = 4; g.strokeRect(24, 24, W - 48, H - 48); g.setLineDash([]);
     g.fillStyle = '#f3c25b'; g.font = '900 34px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('🔒 МОЙ КЛЮЧ ВХОДА', W / 2, 110);
-    g.fillStyle = '#fff'; g.font = '800 44px system-ui, sans-serif'; g.fillText(trips[0].m, W / 2, 175);
+    g.fillStyle = '#fff'; g.font = '800 44px system-ui, sans-serif'; g.fillText(name, W / 2, 175);
     g.font = '500 26px system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,.8)';
-    g.fillText('Splitaway Team · ' + plural(trips.length, 'поездка', 'поездки', 'поездок') + ' · ' + fmtDate(Date.now()), W / 2, 220);
+    g.fillText('Splitaway Team · ' + plural(count, 'поездка', 'поездки', 'поездок') + ' · ' + fmtDate(Date.now()), W / 2, 220);
     g.fillStyle = '#fff'; g.fillRect(150, 250, 420, 420);
     g.imageSmoothingEnabled = false; g.drawImage(src, 170, 270, 380, 380);
     g.fillStyle = '#f3c25b'; g.font = '800 40px ui-monospace, Menlo, Consolas, monospace'; g.fillText(prettyNum(num), W / 2, 760);
@@ -302,7 +350,7 @@
   // ---------- Вход по ключу ----------
   function openRestore(prefill, fromUrl) {
     const ex = extract(prefill);
-    const st = { num: ex ? ex.num : '', blob: ex ? ex.blob : '', pin: '', err: '', data: null, pick: {}, busy: false };
+    const st = { num: ex ? ex.num : '', blob: ex ? ex.blob : '', pin: '', err: '', data: null, pick: {}, add: {}, extra: [], used: '', busy: false };
     const api = sheet('Вход по личному ключу', (b, api) => {
       if (!st.data) {
         b.innerHTML = `
@@ -328,6 +376,11 @@
           try {
             const blob = st.blob || await serverGet(st.num);
             st.data = await unpack(blob, st.num, st.pin); st.data.t.forEach(t => { st.pick[t.i] = true; });
+            st.used = blob;
+            // поездки этого устройства, которых нет в кабинете, — спросим, добавить ли их
+            const inKey = new Set([...st.data.t.map(t => t.i), ...(st.data.x || [])]), cur = lsGet(META, null) || {};
+            st.extra = myTrips().filter(t => !inKey.has(t.i));
+            st.extra.forEach(t => { st.add[t.i] = !(cur.num === st.num && (cur.skip || []).includes(t.i)); });
           } catch (e) {
             const m = e && e.message;
             st.err = m === 'pin' ? 'Неверный номер или PIN' : m === 'notfound' ? 'Ключ с таким номером не найден — проверьте номер' : m === 'missing' ? 'Вход по номеру ещё не включён на сервере — отсканируйте QR-ключ'
@@ -339,13 +392,29 @@
         return;
       }
       const n = st.data.t.filter(t => st.pick[t.i]).length;
+      const here = new Set(myTrips().map(t => t.i)), cur = lsGet(META, null) || {};
+      const row = (t, attr, on, note) => `<label class="pk-row"><input type="checkbox" ${attr}="${esc(t.i)}" ${on ? 'checked' : ''}><span>${esc(t.n)}</span><small>${note}${esc(t.m)}${t.a ? ' · админ' : ''}</small></label>`;
       b.innerHTML = `
-        <p class="pk-p">Ключ <b>${esc(st.data.me || '')}</b> от ${esc(fmtDate(st.data.at || Date.now()))}. Выберите поездки, которые открыть на этом устройстве:</p>
-        <div class="pk-card">${st.data.t.map(t => `<label class="pk-row"><input type="checkbox" data-i="${esc(t.i)}" ${st.pick[t.i] ? 'checked' : ''}><span>${esc(t.n)}</span><small>${esc(t.m)}${t.a ? ' · админ' : ''}</small></label>`).join('')}</div>
-        <button class="pk-btn gold" type="button" data-a="go" ${n ? '' : 'disabled'}><i data-lucide="rotate-ccw"></i>Открыть ${esc(plural(n, 'поездку', 'поездки', 'поездок'))}</button>
-        <p class="pk-p" style="margin-top:12px">Данные загрузятся с сервера. Можно пользоваться сразу на нескольких устройствах под своим именем.</p>`;
+        <p class="pk-p">Кабинет <b>${esc(st.data.me || '')}</b>. Отметьте поездки, которые открыть на этом устройстве:</p>
+        ${st.data.t.length ? `<div class="pk-card">${st.data.t.map(t => row(t, 'data-i', st.pick[t.i], here.has(t.i) ? 'уже здесь · ' : '')).join('')}</div>` : '<p class="pk-p">В кабинете пока нет поездок.</p>'}
+        ${st.extra.length ? `<span class="pk-lbl">На этом устройстве есть поездки, которых нет в кабинете. Добавить их в кабинет?</span>
+          <div class="pk-card">${st.extra.map(t => row(t, 'data-x', st.add[t.i], '')).join('')}</div>
+          <p class="pk-p">Без галочки поездка останется только на этом устройстве.</p>` : ''}
+        ${cur.num && cur.num !== st.num ? '<p class="pk-p">У этого устройства был другой ключ. Теперь оно перейдёт на этот кабинет, а прежний ключ здесь больше не будет обновляться.</p>' : ''}
+        ${st.err ? `<div class="pk-err">${esc(st.err)}</div>` : ''}
+        <button class="pk-btn gold" type="button" data-a="go" ${st.busy ? 'disabled' : ''}><i data-lucide="log-in"></i>${st.busy ? 'Вхожу…' : n ? 'Войти и открыть ' + esc(plural(n, 'поездку', 'поездки', 'поездок')) : 'Войти в кабинет'}</button>
+        <p class="pk-p" style="margin-top:12px">Данные поездок загрузятся с сервера. Новые поездки с любого вашего устройства будут попадать в этот кабинет.</p>`;
       b.querySelectorAll('[data-i]').forEach(cb => cb.addEventListener('change', () => { st.pick[cb.dataset.i] = cb.checked; api.draw(); }));
-      b.querySelector('[data-a="go"]').addEventListener('click', () => { api.onClose = null; restore(st.data.t.filter(t => st.pick[t.i]), st.num); });
+      b.querySelectorAll('[data-x]').forEach(cb => cb.addEventListener('change', () => { st.add[cb.dataset.x] = cb.checked; }));
+      b.querySelector('[data-a="go"]').addEventListener('click', async () => {
+        st.busy = true; st.err = ''; api.draw();
+        try {
+          await adopt(st.num, st.pin, st.used);
+          lsSet(META, { t: st.data.at || Date.now(), num: st.num, blob: st.used, ids: st.data.t.map(t => t.i), srv: '', me: st.data.me || '',
+            skip: st.extra.filter(t => !st.add[t.i]).map(t => t.i), gone: [] });
+        } catch (_) { st.busy = false; st.err = 'Не удалось сохранить ключ на этом устройстве'; api.draw(); return; }
+        api.onClose = null; restore(st.data.t.filter(t => st.pick[t.i]));
+      });
     });
     if (fromUrl) api.onClose = () => { clearHash(); location.reload(); };
     return api;
@@ -361,10 +430,11 @@
       if (t.iv) lsSet('sw_invite_' + t.i, t.iv);
       if (t.a) lsSet('sw_admin_' + t.i, t.a);
       if (t.k) lsSet('sw_mkey_' + t.i + '_' + t.m, t.k);
+      if (t.ds && !localStorage.getItem(DATES(t.i))) lsSet(DATES(t.i), { start: t.ds, end: t.de || t.ds });
     });
     if (list[0]) lsSet('sw_last', list[0].i);
     try { localStorage.setItem('sw_onboarding_prefs_done', '1'); } catch (_) {}
-    say('Поездки восстановлены');
+    say(list.length ? 'Поездки восстановлены' : 'Вы вошли в кабинет');
     clearHash();
     setTimeout(() => location.reload(), 400);
   }
@@ -379,31 +449,50 @@
   }
   // статус ключа для профиля
   function status() {
-    const m = lsGet(META, null), list = myTrips().map(t => t.i);
+    const m = lsGet(META, null), list = ownLocal(m).map(t => t.i);
     if (!m || !m.num) return { has: false, n: list.length };
-    const fresh = list.every(id => (m.ids || []).includes(id));
-    return { has: true, t: m.t, n: list.length, fresh };
+    return { has: true, t: m.t, n: (m.ids || []).length, fresh: list.every(id => (m.ids || []).includes(id)), srv: m.srv || '' };
   }
-  // новые поездки → ключ обновляется сам (тем же ключом шифрования, без PIN)
-  async function autoUpdate() {
+  // поездка удалена → убрать её из кабинета (и на других устройствах она не вернётся)
+  function forget(id) {
+    const m = lsGet(META, null);
+    if (!m || !m.num || !id) return;
+    m.gone = uniq([...(m.gone || []), id]); lsSet(META, m);
+  }
+  // Синхронизация кабинета: сервер + поездки этого устройства → общий список (тем же ключом шифрования, без PIN)
+  let upd = null;
+  function autoUpdate() { if (!upd) upd = doUpdate().catch(() => {}).finally(() => { upd = null; }); return upd; }
+  async function doUpdate() {
     const m = lsGet(META, null);
     if (!m || !m.num || !(window.crypto && crypto.subtle)) return;
-    const trips = myTrips(), list = trips.map(t => t.i);
-    const same = list.length === (m.ids || []).length && list.every(id => m.ids.includes(id));
-    if (same && m.srv === 'ok') return;
-    try {
-      let blob = m.blob;
-      if (!same) {
-        const saved = await idbDo('readonly', st => st.get('enc'));
-        if (!saved || !trips.length) return;
-        blob = await pack({ v: 1, me: trips[0].m, at: Date.now(), t: trips }, m.num, '', saved);
-      }
-      const srv = await serverSave(m.num, blob).catch(() => 'error');
-      lsSet(META, Object.assign(m, { t: same ? m.t : Date.now(), ids: list, blob, srv }));
-    } catch (_) {}
+    const saved = await savedKey();
+    if (!saved) { // ключ без сохранённого ключа шифрования — только досылаем готовый блок
+      if (m.srv !== 'ok' && m.blob) { const srv = await serverSave(m.num, m.blob).catch(() => 'error'); lsSet(META, Object.assign(m, { srv })); }
+      return;
+    }
+    let base = null, srvBlob = '';
+    try { srvBlob = await serverGet(m.num); base = await unpackWith(srvBlob, saved.key); }
+    catch (e) {
+      srvBlob = '';
+      // номер был на сервере, а теперь его нет — ключ заменили на другом устройстве: старый не воскрешаем
+      if (e && e.message === 'notfound' && m.srv === 'ok') { lsSet(META, Object.assign(m, { srv: 'replaced' })); return; }
+    }
+    if (m.srv === 'replaced') return;
+    if (!base) { try { base = await unpackWith(m.blob, saved.key); } catch (_) { base = { t: [], x: [] }; } }
+    const gone = uniq([...(base.x || []), ...(m.gone || [])]);
+    const t = merge(base.t, ownLocal(m), gone);
+    const me = m.me || base.me || (t[0] && t[0].m) || '';
+    if (fpOf(t, gone) === fpOf(base.t, base.x)) { // ничего нового
+      if (srvBlob) lsSet(META, Object.assign(m, { blob: srvBlob, ids: t.map(x => x.i), srv: 'ok', me, t: base.at || m.t }));
+      else if (m.srv !== 'ok') { const srv = await serverSave(m.num, m.blob).catch(() => 'error'); lsSet(META, Object.assign(m, { ids: t.map(x => x.i), srv, me })); }
+      return;
+    }
+    const blob = await pack({ v: 2, me, at: Date.now(), t, x: gone }, m.num, '', saved);
+    const srv = await serverSave(m.num, blob).catch(() => 'error');
+    lsSet(META, Object.assign(m, { t: Date.now(), ids: t.map(x => x.i), blob, srv, me }));
   }
-  setTimeout(autoUpdate, 8000);
+  setTimeout(autoUpdate, 4000);
   window.addEventListener('online', () => setTimeout(autoUpdate, 3000));
 
-  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate };
+  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate, forget };
 })();

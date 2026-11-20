@@ -302,8 +302,9 @@
   function keyRow() {
     if (!window.STKey) return '';
     const k = STKey.status();
-    const sub = !k.n ? 'Появится, когда войдёте в поездку' : !k.has ? 'Не создан — восстановить поездки на новом телефоне будет нельзя'
-      : !k.fresh ? 'Есть новые поездки — создайте ключ заново' : 'Создан ' + new Date(k.t).toLocaleDateString('ru-RU');
+    const sub = !k.has ? (k.n ? 'Не создан — восстановить поездки на новом телефоне будет нельзя' : 'Появится, когда войдёте в поездку')
+      : k.srv === 'replaced' ? 'Ключ заменён на другом устройстве — войдите по новому'
+      : 'Кабинет: ' + k.n + ' ' + (k.n % 10 === 1 && k.n % 100 !== 11 ? 'поездка' : [2, 3, 4].includes(k.n % 10) && ![12, 13, 14].includes(k.n % 100) ? 'поездки' : 'поездок') + (k.fresh ? '' : ' · обновляется…');
     return `<div class="hub-sheet-lbl">Безопасность</div>` +
       `<button class="hub-row" type="button" data-hub="my-key" style="margin-top:4px"><i data-lucide="key-round" style="color:#d9962b"></i>` +
       `<span style="flex:1;min-width:0;text-align:left"><b style="display:block">Мой ключ входа</b><small style="color:var(--t2)">${esc(sub)}</small></span><i data-lucide="chevron-right"></i></button>`;
@@ -323,7 +324,8 @@
       ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
       ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
       hasTrip() ? ['invite', 'qr-code', 'Пригласить в поездку', 'QR для друзей'] : null,
-      window.STKey ? ['mykey', 'key-round', 'Мой ключ входа', 'Только для вас: вернуть поездки на новом телефоне'] : null
+      window.STKey ? ['mykey', 'key-round', 'Мой ключ входа', 'Только для вас: вернуть поездки на новом телефоне'] : null,
+      window.STKey ? ['keylogin', 'log-in', 'Войти по личному ключу', 'Открыть свой кабинет на этом устройстве'] : null
     ].filter(Boolean);
     ov.firstChild.innerHTML =
       '<div class="mdl-handle"></div>' +
@@ -522,6 +524,7 @@
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
         else if (v === 'invite' && typeof openQR === 'function') openQR();
         else if (v === 'mykey' && window.STKey) setTimeout(() => STKey.openMyKey(), 60);
+        else if (v === 'keylogin' && window.STKey) setTimeout(() => STKey.openRestore(), 60);
         break;
     }
   });
