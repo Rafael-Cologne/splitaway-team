@@ -117,12 +117,50 @@
     .wx-meta svg{width:16px;height:16px;flex-shrink:0}
     .wx-chev{width:22px;height:22px;flex-shrink:0}
     /* главная карточка */
-    .wx-hero{position:relative;border-radius:24px;overflow:hidden;min-height:240px;color:#fff;box-shadow:0 14px 30px rgba(40,90,180,.22);background:#3A86E0}
-    .wx-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 50%}
-    .wx-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,60,140,.5),rgba(10,60,140,.12) 55%,rgba(0,0,0,0)),linear-gradient(0deg,rgba(0,30,80,.25),rgba(0,0,0,0) 45%)}
-    .wx-hero.night::after{background:linear-gradient(90deg,rgba(10,6,40,.55),rgba(0,0,0,0) 60%)}
-    .wx-hero.rain::after{background:linear-gradient(90deg,rgba(20,30,50,.55),rgba(0,0,0,.05) 60%)}
-    .wx-hero-in{position:relative;z-index:1;padding:20px 22px 18px;display:flex;flex-direction:column;height:100%;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+    /* Заставка — нарисованная сцена в цветах приложения: небо по погоде и времени суток,
+       солнце/луна, облака, дождь, снег, звёзды и силуэт города. Без фото из интернета —
+       появляется сразу, без «переключения», текст всегда читается. */
+    .wx-hero{position:relative;border-radius:24px;overflow:hidden;min-height:0;color:#fff;box-shadow:0 14px 30px rgba(70,60,170,.25);background:var(--sky);isolation:isolate}
+    .wx-hero.sun{--sky:linear-gradient(180deg,#4A6FDC 0%,#7C8BEA 38%,#B9A0EA 72%,#F0B6CB 100%);--sil:rgba(40,30,110,.62)}
+    .wx-hero.cloud{--sky:linear-gradient(180deg,#5D66AE 0%,#8A8FC9 45%,#BDB7DF 100%);--sil:rgba(38,32,96,.6)}
+    .wx-hero.rain{--sky:linear-gradient(180deg,#38407D 0%,#555A98 50%,#8580B7 100%);--sil:rgba(24,20,66,.72)}
+    .wx-hero.snow{--sky:linear-gradient(180deg,#6F82CC 0%,#9DA9E0 50%,#D6D7F1 100%);--sil:rgba(52,46,120,.55)}
+    .wx-hero.fog{--sky:linear-gradient(180deg,#6E7299 0%,#9A9CBB 50%,#C9C6DC 100%);--sil:rgba(50,46,96,.45)}
+    .wx-hero.night{--sky:linear-gradient(180deg,#0F1235 0%,#24205E 50%,#4F3988 100%);--sil:rgba(8,6,28,.86)}
+    .wx-hero.dk.rain{--sky:linear-gradient(180deg,#191C42 0%,#2D2E63 55%,#4A4580 100%);--sil:rgba(6,5,24,.85)}
+    .wx-hero.dk.snow,.wx-hero.dk.fog{--sky:linear-gradient(180deg,#22264F 0%,#3B3D72 55%,#66649A 100%);--sil:rgba(10,8,32,.82)}
+    .wx-hero>.wx-l{position:absolute;inset:0;pointer-events:none}
+    .wx-orb{position:absolute;top:24px;right:30px;width:70px;height:70px;border-radius:50%;z-index:0}
+    .wx-hero.sun .wx-orb{background:radial-gradient(circle,#FFF8DD 0 40%,#FFE3A0 48%,rgba(255,220,150,0) 72%);box-shadow:0 0 70px 26px rgba(255,214,160,.45)}
+    .wx-hero.cloud .wx-orb{background:radial-gradient(circle,rgba(255,246,220,.85) 0 36%,rgba(255,230,180,0) 70%);opacity:.7}
+    .wx-hero.night .wx-orb,.wx-hero.dk .wx-orb{width:44px;height:44px;top:28px;right:44px;background:transparent;box-shadow:inset -11px 5px 0 0 #F1ECFF;filter:drop-shadow(0 0 14px rgba(230,220,255,.7))}
+    .wx-hero.rain .wx-orb,.wx-hero.snow .wx-orb,.wx-hero.fog .wx-orb{opacity:.35}
+    .wx-cl{position:absolute;border-radius:50%;background:radial-gradient(ellipse at center,rgba(255,255,255,.8) 0%,rgba(255,255,255,.35) 45%,rgba(255,255,255,0) 70%);animation:wxDrift 38s ease-in-out infinite alternate}
+    .wx-cl.a{width:260px;height:96px;top:34px;right:-40px}
+    .wx-cl.b{width:200px;height:70px;top:84px;right:120px;opacity:.75;animation-duration:52s}
+    .wx-cl.c{width:240px;height:80px;top:8px;left:-60px;opacity:.55;animation-duration:46s}
+    .wx-hero.sun .wx-cl.a,.wx-hero.sun .wx-cl.c{display:none}
+    .wx-hero.sun .wx-cl.b{opacity:.5;top:96px}
+    .wx-hero.night .wx-cl{opacity:.12}
+    .wx-hero.rain .wx-cl,.wx-hero.dk .wx-cl{background:radial-gradient(ellipse at center,rgba(214,214,240,.55) 0%,rgba(200,200,235,.2) 45%,rgba(200,200,235,0) 70%)}
+    @keyframes wxDrift{from{transform:translateX(0)}to{transform:translateX(-40px)}}
+    .wx-fx{position:absolute;inset:0}
+    .wx-hero.rain .wx-fx{background:repeating-linear-gradient(105deg,rgba(255,255,255,.28) 0 1px,rgba(255,255,255,0) 1px 13px);background-size:100% 160%;animation:wxRain 1.1s linear infinite;
+      -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.2),#000 40%,rgba(0,0,0,.3));mask-image:linear-gradient(180deg,rgba(0,0,0,.2),#000 40%,rgba(0,0,0,.3))}
+    @keyframes wxRain{from{background-position:0 0}to{background-position:-24px 90px}}
+    .wx-hero.snow .wx-fx{background-image:radial-gradient(circle,rgba(255,255,255,.95) 0 1.6px,rgba(255,255,255,0) 2.4px),radial-gradient(circle,rgba(255,255,255,.7) 0 1.1px,rgba(255,255,255,0) 1.8px);
+      background-size:46px 46px,29px 29px;background-position:0 0,13px 17px;animation:wxSnow 9s linear infinite}
+    @keyframes wxSnow{to{background-position:20px 230px,-15px 170px}}
+    .wx-hero.night .wx-fx{background-image:radial-gradient(circle,rgba(255,255,255,.9) 0 1px,rgba(255,255,255,0) 1.6px),radial-gradient(circle,rgba(220,210,255,.7) 0 .8px,rgba(255,255,255,0) 1.3px);
+      background-size:63px 47px,37px 29px;background-position:7px 5px,21px 13px;-webkit-mask-image:linear-gradient(180deg,#000 30%,rgba(0,0,0,0) 72%);mask-image:linear-gradient(180deg,#000 30%,rgba(0,0,0,0) 72%);animation:wxTw 4s ease-in-out infinite alternate}
+    @keyframes wxTw{from{opacity:.65}to{opacity:1}}
+    .wx-hero.fog .wx-fx{background:linear-gradient(180deg,rgba(255,255,255,0) 35%,rgba(240,238,250,.38) 55%,rgba(255,255,255,0) 64%,rgba(240,238,250,.32) 78%,rgba(255,255,255,.12) 100%)}
+    .wx-sil{position:absolute;left:0;right:0;bottom:0;height:62%;background:var(--sil);-webkit-mask:var(--sm) right bottom/150% auto no-repeat;mask:var(--sm) right bottom/150% auto no-repeat}
+    .wx-hero.snow .wx-sil::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 30%)}
+    .wx-hero::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(16,14,56,.42),rgba(16,14,56,.14) 55%,rgba(0,0,0,0) 78%)}
+    .wx-hero.snow::after,.wx-hero.fog::after{background:linear-gradient(90deg,rgba(28,24,80,.5),rgba(28,24,80,.2) 60%,rgba(0,0,0,0) 85%)}
+    @media (prefers-reduced-motion:reduce){.wx-cl,.wx-fx{animation:none!important}}
+    .wx-hero-in{position:relative;z-index:1;padding:20px 22px 18px;display:flex;flex-direction:column;height:100%;text-shadow:0 1px 3px rgba(10,8,40,.45),0 2px 14px rgba(10,8,40,.35)}
     .wx-city{display:flex;align-items:center;gap:10px;font-size:1.45rem;font-weight:800}
     .wx-city svg{width:24px;height:24px;fill:#fff;color:#2E6CD8}
     .wx-city svg.lucide-navigation{width:21px;height:21px}
@@ -135,15 +173,56 @@
     .wx-desc{font-size:1.25rem;font-weight:700;margin-top:8px}
     .wx-mm{font-size:1.15rem;font-weight:700;margin-top:6px;display:flex;gap:16px}
     .wx-hero.sm{min-height:200px}
-    .wx-hero>img.place{object-position:center 60%}
-    .wx-hero.night>img.place{filter:brightness(.42) saturate(.75) contrast(1.05)}
-    .wx-hero.rain>img.place{filter:saturate(.45) brightness(.78)}
-    .wx-hero.snow>img.place,.wx-hero.fog>img.place,.wx-hero.cloud>img.place{filter:saturate(.6) brightness(.85)}
-    .wx-hero>img.place.mood{filter:brightness(.9)}
-    .wx-hero.night>img.place.mood{filter:brightness(.8)}
-    .wx-hero.snow::after,.wx-hero.fog::after,.wx-hero.cloud::after{background:linear-gradient(90deg,rgba(30,40,60,.5),rgba(0,0,0,.05) 60%)}
-    .wx-credit{position:absolute;right:12px;bottom:7px;z-index:2;font-size:.6rem;color:rgba(255,255,255,.82);text-shadow:0 1px 3px rgba(0,0,0,.6)}
     .wx-hero.sm .wx-temp{font-size:3.6rem}
+    /* Компактная заставка 2,4:1: погода и температура слева, пейзаж справа и на фоне.
+       Фон: фото этого места → универсальный пейзаж по погоде (/img/weather/bg-*.webp) → нарисованное небо.
+       Текст всегда отдельными элементами поверх картинки. */
+    .wx-hero>img.wx-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center;z-index:0;opacity:0;transition:opacity .45s}
+    .wx-hero>img.wx-bg.on{opacity:1}
+    .wx-hero.night>img.wx-bg.place,.wx-hero.dk>img.wx-bg.place{filter:brightness(.5) saturate(.8)}
+    .wx-hero.rain>img.wx-bg.place{filter:saturate(.5) brightness(.8)}
+    .wx-hero.cloud>img.wx-bg.place,.wx-hero.snow>img.wx-bg.place,.wx-hero.fog>img.wx-bg.place{filter:saturate(.65) brightness(.88)}
+    .wx-hero.pic .wx-sil{display:none}
+    .wx-hero>img.wx-bg.city{object-position:78% center}
+    .wx-hero.night>img.wx-bg.city,.wx-hero.dk>img.wx-bg.city{filter:brightness(.72)}
+    .wx-hero.pic::after{background:linear-gradient(90deg,rgba(14,12,48,.62),rgba(14,12,48,.32) 42%,rgba(0,0,0,0) 72%)}
+    .wx-hero .wx-hero-in{box-sizing:border-box;padding:16px 20px 16px;justify-content:flex-start;gap:0;max-width:62%}
+    .wx-hero .wx-city{font-size:1.4rem;gap:9px;white-space:nowrap}
+    .wx-hero .wx-city svg{width:21px;height:21px}
+    .wx-hero .wx-city svg.lucide-navigation{width:20px;height:20px}
+    .wx-hero .wx-here{font-size:.68rem;padding:3px 9px}
+    .wx-hero .wx-now{font-size:.84rem;margin:3px 0 0 30px;white-space:nowrap}
+    .wx-hero .wx-big{margin-top:8px;gap:12px;align-items:center}
+    .wx-hero .wx-temp,.wx-hero.sm .wx-temp{font-size:3.5rem}
+    .wx-hero .wx-temp sup{font-size:1.5rem;top:3px}
+    .wx-hero .wx-desc{font-size:1.12rem;font-weight:800;margin-top:6px}
+    .wx-hero .wx-mm{font-size:1.05rem;font-weight:800;margin-top:4px;gap:16px}
+    .wx-hero.near .wx-city small.wx-here{background:rgba(255,200,90,.32)}
+    /* место не указано — нейтральная заставка без погоды */
+    .wx-hero.none{background:radial-gradient(120% 140% at 80% 120%,#2E6FD8 0%,#173A86 38%,#0E1E52 70%,#0A1440 100%)}
+    .wx-hero.none .wx-l{background-image:radial-gradient(circle,rgba(150,190,255,.35) 0 1.2px,rgba(0,0,0,0) 1.8px);background-size:11px 11px;-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,0) 30%,#000 75%);mask-image:linear-gradient(90deg,rgba(0,0,0,0) 30%,#000 75%)}
+    .wx-hero.none .wx-hero-in{justify-content:center;gap:6px}
+    .wx-none-t{font-size:1.25rem;font-weight:800}
+    .wx-none-s{font-size:.82rem;line-height:1.35;opacity:.9;max-width:78%}
+    .wx-none-b{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .wx-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:0;background:rgba(255,255,255,.94);color:#5B3FE0;font:inherit;font-size:.86rem;font-weight:800;cursor:pointer;text-shadow:none}
+    .wx-pill.ghost{background:rgba(255,255,255,.16);color:#fff}
+    .wx-pill svg{width:16px;height:16px}
+    .wx-stat em{font-style:normal;font-size:.68rem;color:var(--t2);font-weight:500;margin-top:-2px}
+    /* качество воздуха */
+    .wx-aq{padding:14px 16px}
+    .wx-aq-h{display:flex;align-items:center;gap:10px}
+    .wx-aq-h svg{width:22px;height:22px;color:var(--wx-ac);flex-shrink:0}
+    .wx-aq-h b{flex:1;font-size:1rem;white-space:nowrap}
+    .wx-aq-v{font-size:.8rem;font-weight:800;color:#fff;border-radius:999px;padding:4px 10px;white-space:nowrap}
+    .wx-aq-l{font-weight:800;font-size:.9rem;margin-top:6px}
+    .wx-aq-bar{position:relative;height:8px;border-radius:8px;margin:12px 2px 4px;background:linear-gradient(90deg,#2FA84F 0 16.6%,#8BC34A 16.6% 33.3%,#C9A400 33.3% 50%,#F07A00 50% 66.6%,#E0442D 66.6% 83.3%,#8E24AA 83.3%)}
+    .wx-aq-bar i{position:absolute;top:-4px;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--text);transform:translateX(-50%);box-sizing:border-box}
+    .wx-aq-g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;text-align:center}
+    .wx-aq-g small{display:block;font-size:.7rem;color:var(--t2);font-weight:600}
+    .wx-aq-g b{font-size:.92rem}
+    .wx-aq-tip{font-size:.84rem;margin-top:10px;line-height:1.35}
+    .wx-aq-src{font-size:.7rem;color:var(--t2);margin-top:8px;line-height:1.35}
     /* показатели */
     .wx-stats{display:grid;grid-template-columns:repeat(4,1fr);padding:12px 4px}
     .wx-stat{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;border-right:1px solid var(--wx-line);padding:0 2px}
@@ -264,6 +343,19 @@
       throw e;
     }
   }
+  const AQ = 'https://air-quality-api.open-meteo.com/v1/air-quality';
+  async function airQuality(loc) {
+    const k = 'st_wx_aq_' + keyOf(loc), c = ls.get(k, null);
+    if (c && Date.now() - c.t < 30 * 60000) return c.data;
+    const data = await getJSON(AQ + '?latitude=' + loc.lat + '&longitude=' + loc.lon + '&timezone=auto&domains=auto&current=european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone', 10000);
+    ls.set(k, { t: Date.now(), data });
+    return data;
+  }
+  // Уровни европейского индекса качества воздуха (EAQI)
+  const aqLevel = v => v <= 20 ? ['Хорошее', '#2FA84F', ''] : v <= 40 ? ['Удовлетворительное', '#7CB342', '']
+    : v <= 60 ? ['Умеренное', '#C9A400', 'Чувствительным людям лучше не заниматься спортом на улице долго.']
+    : v <= 80 ? ['Плохое', '#F07A00', 'Сократите долгие прогулки и спорт на улице, особенно детям и людям с астмой.']
+    : v <= 100 ? ['Очень плохое', '#E0442D', 'Лучше оставаться в помещении; на улице — меньше нагрузки.'] : ['Крайне плохое', '#8E24AA', 'Избегайте нахождения на улице.'];
   async function searchCity(q) {
     const j = await getJSON(GEO + '?count=8&language=ru&format=json&name=' + encodeURIComponent(q), 8000);
     return (j.results || []).map(r => ({ name: r.name, region: [r.admin1, r.country].filter(Boolean).join(', '), country: r.country || '', lat: r.latitude, lon: r.longitude, fc: r.feature_code || '' }));
@@ -290,9 +382,14 @@
   // Название места по координатам (для «Моё местоположение»)
   async function placeName(lat, lon) {
     try {
-      const j = await getJSON('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=ru&lat=' + lat + '&lon=' + lon, 7000);
-      const a = j.address || {};
-      return { name: a.city || a.town || a.village || a.municipality || j.name || 'Моё местоположение', region: [a.state, a.country].filter(Boolean).join(', '), country: a.country || '' };
+      // zoom 14 — видны деревни и хутора; погода всё равно по координатам, название — только подпись
+      const j = await getJSON('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=ru&lat=' + lat + '&lon=' + lon, 7000);
+      const a = j.address || {}, region = [a.state, a.country].filter(Boolean).join(', ');
+      const own = a.city || a.town || a.village || a.hamlet || a.isolated_dwelling;
+      if (own) return { name: own, region, country: a.country || '' };
+      // населённого пункта нет (поле, горы, трасса) — явно пишем, что это окрестности
+      const area = a.municipality || a.county || a.state_district || a.state;
+      return area ? { name: 'Рядом с ' + area, region, country: a.country || '', near: true } : { name: 'Моё местоположение', region, country: a.country || '', near: true };
     } catch (_) { return { name: 'Моё местоположение', region: '', country: '' }; }
   }
 
@@ -407,7 +504,7 @@
         navigator.geolocation.getCurrentPosition(async p => {
           const lat = +p.coords.latitude.toFixed(3), lon = +p.coords.longitude.toFixed(3);
           const same = here && here.name && Math.abs(here.lat - lat) + Math.abs(here.lon - lon) < 0.03;
-          const nm = same ? { name: here.name, region: here.region, country: here.country } : await placeName(lat, lon);
+          const nm = same ? { name: here.name, region: here.region, country: here.country, near: here.near } : await placeName(lat, lon);
           here = Object.assign({ lat, lon, t: Date.now() }, nm);
           ls.set('st_wx_here', here); geoState = 'ok'; res(here);
         }, e => { geoState = e && e.code === 1 ? 'denied' : 'unavailable'; res(null); },
@@ -475,8 +572,50 @@
       if (!day) return 'night';
       return k === 'cloud' ? 'cloud' : 'sun';
     }
-    const MOODS = { rain: 1, snow: 1, fog: 1, night: 1 };
-    const FALLBACK = { sun: 'sun', night: 'night', rain: 'rain', snow: 'rain', fog: 'rain', cloud: 'rain' };
+    // силуэт города: свой для городов с иллюстрацией, иначе общий городской
+    const SIL = [[/берлин|berlin/i, 'q64'], [/к[её]льн|koeln|köln|cologne/i, 'q365']];
+    // для остальных мест силуэта нет: чужой «город» на фоне деревни вводил бы в заблуждение
+    const silOf = name => { const m = SIL.find(x => x[0].test(name || '')); return m ? '/img/weather/sil-' + m[1] + '.webp' : ''; };
+    // Универсальный пейзаж по погоде и времени суток. Файлы кладём в /img/weather/ (≈1200×500, 2,4:1, без текста):
+    // bg-sun, bg-cloud, bg-rain, bg-snow, bg-fog, bg-night, bg-rain-night, bg-snow-night, bg-fog-night (.webp).
+    // Пока файла нет — остаётся нарисованное небо.
+    const bgOf = (kind, dark) => '/img/weather/bg-' + kind + (dark && kind !== 'night' ? '-night' : '') + '.webp';
+    // Фон заставки: фото именно этого места; если его нет — универсальный пейзаж по погоде.
+    // Пока ищем фото, видно нарисованное небо — чужая картинка не мелькает перед фото места.
+    // Готовые фото городов (как на макете): показываем сразу, если место — этот город (название + не дальше 40 км от центра)
+    const CITY_PIC = [
+      { re: /к[её]льн|koeln|köln|cologne/i, lat: 50.94, lon: 6.96, url: '/img/covers/q365.webp' },
+      { re: /берлин|berlin/i, lat: 52.52, lon: 13.40, url: '/img/covers/q64.webp' }
+    ];
+    const km = (a, b, c, d) => { const r = Math.PI / 180, x = (d - b) * r * Math.cos((a + c) / 2 * r), y = (c - a) * r; return Math.sqrt(x * x + y * y) * 6371; };
+    const cityPic = (name, lat, lon) => (CITY_PIC.find(c => c.re.test(name || '') && (isNaN(lat) || km(lat, lon, c.lat, c.lon) < 40)) || {}).url || '';
+    function loadHeroBg(root) {
+      (root || document).querySelectorAll('.wx-hero > img.wx-bg:not([data-done])').forEach(img => {
+        img.dataset.done = '1';
+        const hero = img.parentNode;
+        let placed = false;
+        const show = (url, place) => {
+          const pre = new Image();
+          pre.onload = () => { if (!img.isConnected || (placed && !place)) return; if (place) placed = true; img.src = url; img.classList.add('on'); img.classList.toggle('place', !!place); hero.classList.add('pic'); };
+          pre.src = url;
+        };
+        const generic = () => { if (img.dataset.bg) show(img.dataset.bg, false); };
+        const name = img.dataset.name;
+        const own = name && cityPic(name, +img.dataset.lat, +img.dataset.lon);
+        if (own) { // готовое фото этого города — сразу, без поиска и без «перескока»
+          img.src = own; img.classList.add('on', 'city'); hero.classList.add('pic'); placed = true;
+          img.onerror = () => { img.classList.remove('on', 'city'); hero.classList.remove('pic'); placed = false; generic(); };
+          return;
+        }
+        if (!name || !window.STPlacePhoto) { generic(); return; }
+        const o = { lat: +img.dataset.lat, lon: +img.dataset.lon, prefer: 'photo', width: 1100 };
+        const ok = r => r && r.url && !r.flag && !r.kind && !r.country; // флаг страны и общая обложка — не фото места
+        const pk = STPlacePhoto.peek(name, o);
+        if (pk !== undefined) { if (ok(pk)) show(pk.url, true); else generic(); return; }
+        const late = setTimeout(generic, 4000); // поиск долгий — пока покажем пейзаж по погоде
+        STPlacePhoto.photo(name, o).then(r => { clearTimeout(late); if (ok(r)) show(r.url, true); else generic(); }, () => { clearTimeout(late); generic(); });
+      });
+    }
     function hero(i, small) {
       const D = f.daily, d = D.time[i];
       const isNow = i === 0 && f.current;
@@ -485,17 +624,16 @@
       const temp = isNow ? f.current.temperature_2m : D.temperature_2m_max[i];
       const sub = isNow ? 'Сейчас, ' + dayLong(d) + ', ' + hhmm(f.current.time) : dayLong(d);
       const kind = heroImg(code, day);
-      // фото выбранного места по погоде (дождь — дождливый снимок этого города, ночь — ночной …),
-      // иначе обычное фото места (Wikimedia Commons); пока ищем — общая картинка по погоде
-      const o = { lat: loc.lat, lon: loc.lon, prefer: 'photo', width: 1100 };
-      const mp = window.STPlacePhoto && MOODS[kind] && STPlacePhoto.peekMood ? STPlacePhoto.peekMood(loc.name, Object.assign({ mood: kind }, o)) : null;
-      const ph = mp || (window.STPlacePhoto ? STPlacePhoto.peek(loc.name, o) : null);
-      return `<div class="wx-hero ${kind}${small ? ' sm' : ''}" data-mood="${MOODS[kind] ? kind : ''}"><img src="${ph ? esc(ph.url) : '/img/weather/' + FALLBACK[kind] + '.jpg'}" class="${ph ? 'place' + (mp ? ' mood' : '') : ''}" alt="">
-        <span class="wx-credit">${ph ? esc(ph.credit) : ''}</span>
+      const sil = silOf(loc.name), dark = !day && kind !== 'night';
+      setTimeout(() => loadHeroBg(), 0);
+      return `<div class="wx-hero ${kind}${dark ? ' dk' : ''}${small ? ' sm' : ''}${loc.near ? ' near' : ''}">
+        <div class="wx-l"><span class="wx-orb"></span><span class="wx-cl c"></span><span class="wx-cl a"></span><span class="wx-cl b"></span><span class="wx-fx"></span>
+          ${sil ? `<span class="wx-sil" style="--sm:url('${sil}')"></span>` : ''}</div>
+        <img class="wx-bg" alt="" data-bg="${bgOf(kind, dark)}"${loc.near ? '' : ` data-name="${esc(loc.name)}" data-lat="${loc.lat}" data-lon="${loc.lon}"`}>
         <div class="wx-hero-in">
-          <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
+          <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.near ? '<small class="wx-here">по координатам</small>' : loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
           <div class="wx-now">${esc(sub)}${f.offline ? ' · нет сети' : ''}</div>
-          <div class="wx-big">${wxIcon(code, day, small ? 76 : 86)}<div class="wx-temp">${T(temp)}<sup>°${UNIT}</sup></div></div>
+          <div class="wx-big">${wxIcon(code, day, 64)}<div class="wx-temp">${T(temp)}<sup>°${UNIT}</sup></div></div>
           <div class="wx-desc">${esc(wText(code))}</div>
           <div class="wx-mm"><span>↑ ${deg(D.temperature_2m_max[i])}</span><span>↓ ${deg(D.temperature_2m_min[i])}</span></div>
         </div></div>`;
@@ -510,13 +648,15 @@
         <i data-lucide="chevron-right"></i></button>`;
     }
     function stateHtml() {
-      if (err === 'denied' || err === 'nogeo') return `<div class="wx-card wx-empty"><i data-lucide="locate-off" style="width:34px;height:34px;color:var(--wx-ac)"></i>
-          <div>${err === 'denied' ? 'Нет доступа к местоположению. Разрешите геолокацию для приложения в настройках телефона или браузера' : 'Не удалось определить местоположение'} — или добавьте место вручную.</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="st-btn" type="button" data-a="add"><i data-lucide="plus"></i>Добавить место</button>
-          <button class="st-btn st-btn-g" type="button" data-a="retry">Повторить</button></div></div>`;
-      if (err === 'nocity') return `<div class="wx-card wx-empty"><i data-lucide="map-pin" style="width:34px;height:34px;color:var(--wx-ac)"></i>
-          <div>Выберите город: найдите по названию или используйте геолокацию.</div>
-          <button class="st-btn" type="button" data-a="city"><i data-lucide="search"></i>Выбрать город</button></div>`;
+      // Место не определено: нейтральная заставка, погоду другого города не подставляем
+      if (err === 'denied' || err === 'nogeo' || err === 'nocity') {
+        const why = err === 'denied' ? 'Нет доступа к геолокации. Выберите место вручную или разрешите GPS в настройках.'
+          : err === 'nogeo' ? 'Не удалось определить ваше положение. Выберите место вручную.' : 'Погода показывается по выбранному месту или по вашему GPS-положению.';
+        return `<div class="wx-hero none"><div class="wx-l"></div><img class="wx-bg" alt="" data-bg="/img/weather/bg-none.webp">
+          <div class="wx-hero-in"><div class="wx-none-t">Место не указано</div><div class="wx-none-s">${esc(why)}</div>
+            <div class="wx-none-b"><button class="wx-pill" type="button" data-a="add"><i data-lucide="crosshair"></i>Выбрать место</button>
+            ${err !== 'nocity' ? '<button class="wx-pill ghost" type="button" data-a="retry"><i data-lucide="navigation"></i>По GPS</button>' : ''}</div></div></div>`;
+      }
       if (err === 'net') return `<div class="wx-card wx-empty"><i data-lucide="wifi-off" style="width:34px;height:34px;color:var(--wx-ac)"></i>
           <div>Не получилось загрузить погоду. Проверьте интернет.</div><button class="st-btn" type="button" data-a="retry">Повторить</button></div>`;
       return `<div class="wx-skel" style="height:240px"></div><div class="wx-skel" style="height:86px"></div><div class="wx-skel" style="height:110px"></div>`;
@@ -528,7 +668,7 @@
         title: 'Погода',
         action: { icon: 'map-pin', label: 'Город', cls: 'wx-loc', onClick: () => citySheet(screen) },
         render(body, scr) {
-          if (!f) { body.innerHTML = tripCard() + chipsHtml() + stateHtml(); bindCommon(body, scr); return; }
+          if (!f) { body.innerHTML = tripCard() + chipsHtml() + stateHtml(); bindCommon(body, scr); loadHeroBg(body); return; }
           const D = f.daily, c = f.current || {};
           const ni = nowIndex(f), H = f.hourly;
           const uvNow = H.uv_index ? H.uv_index[ni] : D.uv_index_max[0];
@@ -550,8 +690,9 @@
               <div class="wx-stat"><i data-lucide="thermometer"></i><small>Ощущается</small><b>${deg(c.apparent_temperature)}${UNIT}</b></div>
               <div class="wx-stat"><i data-lucide="wind"></i><small>Ветер</small><b>${Math.round(c.wind_speed_10m)} км/ч</b></div>
               <div class="wx-stat"><i data-lucide="droplet"></i><small>Влажность</small><b>${Math.round(c.relative_humidity_2m)} %</b></div>
-              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${Math.round(uvNow || 0)} ${uvT}</b></div>
+              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${Math.round(uvNow || 0)} ${uvT}</b>${Math.round(D.uv_index_max[0] || 0) > Math.round(uvNow || 0) ? `<em>днём до ${Math.round(D.uv_index_max[0])}</em>` : ''}</div>
             </div>
+            <div id="wx-aq"></div>
             <div class="wx-hours">${hours.map((k, n) => {
               const now = n === 0, pp = (H.precipitation_probability || [])[k];
               return `<div class="wx-hour${now ? ' now' : ''}"><span>${now ? 'Сейчас' : hhmm(H.time[k])}</span>${wxIcon(now ? c.weather_code : H.weather_code[k], now ? c.is_day : H.is_day[k], 36)}
@@ -562,13 +703,14 @@
             <div class="wx-h2">Прогноз на 7 дней</div>
             <div class="wx-card wx-days">${D.time.slice(0, 7).map((_, i) => dayRow(i)).join('')}</div>
             <div class="wx-card wx-tip"><i data-lucide="shirt"></i><span><b>Что надеть сегодня</b><span>${esc(advice(f, 0))}</span></span></div>
-            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.)<br>Обновлено ${new Date(f.cachedAt || Date.now()).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}${f.offline ? ' · сейчас нет сети, показан сохранённый прогноз' : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
+            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.) · воздух: CAMS (Copernicus)<br>Обновлено ${new Date(f.cachedAt || Date.now()).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}${f.offline ? ' · сейчас нет сети, показан сохранённый прогноз' : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
             <div style="height:8px"></div>`;
           bindCommon(body, scr);
           // температура в чипах для мест без свежих данных
           places.filter(p => tempOf(p) == null).slice(0, 4).forEach(p => forecast(p).then(() => {
             const ch = body.querySelector('#wx-chips'); if (ch) { ch.outerHTML = chipsHtml(); bindChips(body, scr); if (typeof initializeIcons === 'function') initializeIcons(body); }
           }).catch(() => {}));
+          fillAir(body, loc);
           if (climateNeeded) climate(loc, tripDates.start, tripDates.end).then(cl => {
             const el = body.querySelector('#wx-clim span span'); if (!el) return;
             el.textContent = rangeLabel(tripDates.start, tripDates.end) + ': обычно ' + deg(cl.min) + ' / ' + deg(cl.max) + ', дождливых дней ≈ ' + Math.round(cl.rainDays) + ' из ' + cl.days + '. Это климатические средние за ' + cl.years + ' прошлых года, а не прогноз — он появится за 16 дней до поездки.';
@@ -580,6 +722,29 @@
       });
       return screen;
     }
+    // Качество воздуха: Open-Meteo Air Quality (CAMS, Copernicus). Показываем только свежие данные (не старше 3 часов).
+    async function fillAir(body, l) {
+      const box = body.querySelector('#wx-aq'); if (!box || !l) return;
+      let a = null;
+      try { a = await airQuality(l); } catch (_) {}
+      if (!box.isConnected || l !== loc) return;
+      const c = a && a.current, v = c && c.european_aqi;
+      if (v == null) return; // нет данных — карточку не показываем
+      const ageH = (Date.now() - (Date.parse(c.time + 'Z') - (a.utc_offset_seconds || 0) * 1000)) / 3600000;
+      if (!(ageH > -2 && ageH < 3)) return; // устаревшие данные не показываем
+      const [lvl, col, tip] = aqLevel(v);
+      const n = x => x == null ? '—' : Math.round(x);
+      const eu = l.lat > 30 && l.lat < 72 && l.lon > -25 && l.lon < 45;
+      box.innerHTML = `<div class="wx-card wx-aq">
+          <div class="wx-aq-h"><i data-lucide="leaf"></i><b>Качество воздуха</b><span class="wx-aq-v" style="background:${col}">EAQI ${Math.round(v)}</span></div>
+          <div class="wx-aq-l" style="color:${col}">${esc(lvl)}</div>
+          <div class="wx-aq-bar"><i style="left:${Math.min(100, v / 120 * 100)}%"></i></div>
+          <div class="wx-aq-g"><span><small>PM2.5</small><b>${n(c.pm2_5)}</b></span><span><small>PM10</small><b>${n(c.pm10)}</b></span><span><small>NO₂</small><b>${n(c.nitrogen_dioxide)}</b></span><span><small>O₃</small><b>${n(c.ozone)}</b></span></div>
+          ${tip ? `<div class="wx-aq-tip">${esc(tip)}</div>` : ''}
+          <div class="wx-aq-src">Европейский индекс EAQI, мкг/м³. Данные CAMS (Copernicus) через Open-Meteo на ${esc(hhmm(c.time))} — модельная оценка для сетки ~${eu ? 11 : 45} км, а не замер датчика у вас на улице.</div>
+        </div>`;
+      if (typeof initializeIcons === 'function') initializeIcons(box);
+    }
     function bindChips(body, scr) {
       body.querySelectorAll('[data-sel]').forEach(b => b.addEventListener('click', () => {
         if (b.dataset.sel === sel && f) return;
@@ -587,22 +752,9 @@
       }));
       body.querySelectorAll('[data-a="add"]').forEach(b => b.addEventListener('click', () => citySheet(scr, true)));
     }
-    // Подставить фото места в карточку погоды и фото поездки в карточку поездки
+    // Фото поездки в карточку поездки (заставка погоды — нарисованная сцена, без фото)
     function fillPhotos(body) {
-      if (!window.STPlacePhoto || !loc) return;
-      STPlacePhoto.tripImg(body.querySelector('.wx-trip img'), trip, { width: 400 });
-      const img = body.querySelector('.wx-hero > img');
-      if (!img || img.classList.contains('mood')) return;
-      const l = loc, mood = img.parentNode.dataset.mood, o = { lat: l.lat, lon: l.lon, prefer: 'photo', width: 1100 };
-      const put = (r, isMood) => {
-        if (!r || l !== loc || !img.isConnected) return;
-        const pre = new Image();
-        pre.onload = () => { img.src = r.url; img.classList.add('place'); if (isMood) img.classList.add('mood'); const c = img.parentNode.querySelector('.wx-credit'); if (c) c.textContent = r.credit; };
-        pre.src = r.url;
-      };
-      const plain = () => { if (!img.classList.contains('place')) STPlacePhoto.photo(l.name, o).then(r => put(r, false)); };
-      if (mood && STPlacePhoto.moodPhoto) STPlacePhoto.moodPhoto(l.name, Object.assign({ mood }, o)).then(r => { if (r) put(r, true); else plain(); }, plain);
-      else plain();
+      if (window.STPlacePhoto && trip) STPlacePhoto.tripImg(body.querySelector('.wx-trip img'), trip, { width: 400 });
     }
     function bindCommon(body, scr) {
       fillPhotos(body);
@@ -776,7 +928,7 @@
             try {
               const list = (await searchCity(v)).filter(c => !/^PCL|^ADM1$/.test(c.fc || ''));
               if (q.value.trim() !== v) return;
-              res.innerHTML = list.length ? list.map((c, i) => row(`data-r="${i}"`, 'plus', c.name, c.region)).join('') : '<div class="st-muted" style="font-size:.85rem;padding:4px">Город не найден</div>';
+              res.innerHTML = list.length ? list.map((c, i) => row(`data-r="${i}"`, 'plus', c.name, c.region)).join('') : '<div class="st-muted" style="font-size:.85rem;padding:4px">Не нашли такое место. Проверьте название или выберите «Моё местоположение» — погода будет по координатам GPS.</div>';
               if (typeof initializeIcons === 'function') initializeIcons(res);
               res.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { addPlace(list[+b.dataset.r], true); ctx.toast('Добавлено: ' + list[+b.dataset.r].name); go(); }));
             } catch (_) { res.innerHTML = '<div class="st-muted" style="font-size:.85rem;padding:4px">Нет интернета</div>'; }

@@ -39,7 +39,7 @@
     ...n('/img/covers/', 'nature route travel city global beach q64 q365', '.webp'),
     ...n('/img/trips/', 'abstract beach silk', '.jpg'),
     ...n('/img/bookings/', 'castle hero-flight hero-stay hero-ticket hero-transport stay trip-coast', '.jpg'),
-    ...n('/img/weather/', 'night rain sun', '.jpg'),
+    ...n('/img/weather/', 'sil-q64 sil-q365', '.webp'),
     ...n('/img/', 'participant-couple participant-family participant-man participant-men participant-woman participant-women participants-emoji', '.png'),
     '/img/translator/hero.webp', '/img/offline/banner.webp', '/img/assistant/hero.webp', '/img/assistant/bot.webp',
     '/data/airlines.json', '/data/airports.json', '/vendor/pdfjs/pdf.min.js', '/vendor/pdfjs/pdf.worker.min.js',
