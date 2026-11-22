@@ -682,7 +682,7 @@
         p{white-space:pre-wrap;line-height:1.5;margin:6px 0} .ph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
         .ph figure{margin:0} .ph img{width:100%;height:150px;object-fit:cover;border-radius:8px} figcaption{font-size:11px;color:#6b7280;margin-top:2px}
         @page{margin:14mm}</style></head><body>
-        <h1>${esc(trip.name || 'Дневник путешествия')}</h1><div class="sub">${esc(long(tripRange().start))} — ${esc(long(tripRange().end))} · Splitaway Team</div>
+        <h1>${esc(trip.name || 'Дневник путешествия')}</h1><div class="sub">${esc(long(tripRange().start))} — ${esc(long(tripRange().end))} · Useaway</div>
         ${es.map(e => { const mood = MOODS.find(m => m.id === e.mood), ex = linked(e);
           return `<div class="day"><h2>${esc(dayLabel(e.date))}${e.title ? ' — ' + esc(e.title) : ''}</h2>
             <div class="meta">${[WD[parse(e.date).getDay()], e.place && e.place.name, e.rating ? '★'.repeat(e.rating) : '', mood && mood.em + ' ' + mood.name, ex.length ? 'расходы: ' + money(expSum(ex)) : ''].filter(Boolean).map(esc).join(' · ')}</div>

@@ -258,3 +258,10 @@ img.st-flag{object-position:70% center!important;filter:none!important}
 .dh-cover.c-photo::after{background:linear-gradient(180deg,rgba(110,70,210,.55) 0%,rgba(230,110,170,.32) 55%,rgba(40,20,90,.55) 100%)}
 .dh-cover.c-flag::after{background:radial-gradient(70% 70% at 50% 50%,rgba(0,0,0,.22),rgba(0,0,0,.05) 70%,rgba(0,0,0,0))}
 #pg-app #pg-dash .dh-hero.has-cover .dh-amt{text-shadow:0 2px 14px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3)}
+
+/* Useaway: логотип в шапке (тёмная тема по умолчанию, светлая — через data-theme) */
+.hub-wordmark{height:40px;width:auto;display:block}
+.hub-wordmark-lt{display:none}
+[data-theme=light] .hub-wordmark-lt{display:block}
+[data-theme=light] .hub-wordmark-dk{display:none}
+.hub-hero-mark{height:28px;width:auto;display:block}
