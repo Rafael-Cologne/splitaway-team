@@ -242,6 +242,91 @@
     return p.then(h => wrap(h, o));
   }
 
+  // ---------- Узнаваемое фото места (заставка погоды) ----------
+  // Только свободные лицензии Wikimedia Commons (CC0, CC BY, CC BY-SA, Public domain) — автор и лицензия
+  // возвращаются вместе с фото и показываются на заставке. Порядок выбора:
+  //   1) главное фото статьи о месте в Википедии (выбор редакторов; фото, выбранное в нескольких языках, — первым);
+  //   2) оценённые фото (Quality / Featured / Valued image), на которых изображено это место;
+  //   3) оценённое фото самой известной достопримечательности места, затем её главное фото;
+  //   4) главное фото места в Wikidata.
+  // Берём только крупные горизонтальные снимки; карты, гербы, флаги, интерьеры, аэропорты, портреты — нет.
+  const SC_C = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=1200&iiextmetadatafilter=LicenseShortName|Artist';
+  const SC_BAD = /(^|[\s_(\-,.])(map|mapa|karte|carte|plan|plano|mtn\d+|coa|coat of arms|escudo|wappen|flag|bandera|flagge|logo|diagram|locator|location|signature|stamp|banknote|coin|poster|cover|portrait|winners|team|award|conference|meeting|press|interior|innen|innenraum|inside|airport|flughafen|aeropuerto|terminal|collage|коллаж)([\s_).\-,]|$)/i;
+  const scOk = (t, i) => !!i && /^image\/(jpeg|webp)$/.test(i.mime) && i.width >= 1000 && i.width / i.height >= 1.25 && i.width / i.height <= 2.8 && !SC_BAD.test(t) &&
+    /^(CC0|CC BY|Public domain|PD)/i.test(((i.extmetadata || {}).LicenseShortName || {}).value || '');
+  const scPack = (t, i, how) => ({ url: i.thumburl, how, page: 'https://commons.wikimedia.org/wiki/' + encodeURIComponent(t.replace(/ /g, '_')),
+    license: i.extmetadata.LicenseShortName.value, author: ((i.extmetadata.Artist || {}).value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 48) });
+  async function scSearch(q) {
+    const r = await getJSON(SC_C + '&generator=search&gsrnamespace=6&gsrlimit=15&gsrsearch=' + encodeURIComponent(q), 10000);
+    return Object.values((r.query || {}).pages || {}).sort((a, b) => a.index - b.index).map(p => [p.title, (p.imageinfo || [])[0]]);
+  }
+  async function scInfos(files) {
+    files = files.filter((f, n, a) => f && a.indexOf(f) === n).slice(0, 40);
+    if (!files.length) return [];
+    const r = await getJSON(SC_C + '&titles=' + encodeURIComponent(files.map(f => 'File:' + f).join('|')), 10000);
+    const by = {}, nm = {};
+    ((r.query || {}).normalized || []).forEach(n => { nm[n.to] = n.from.slice(5); });
+    Object.values((r.query || {}).pages || {}).forEach(p => { by[nm[p.title] || p.title.slice(5)] = [p.title, (p.imageinfo || [])[0]]; });
+    return files.map(f => by[f]).filter(Boolean);
+  }
+  // место в Wikidata: то же название и не дальше 80 км от координат
+  async function scPlace(q, lat, lon) {
+    let ids = [];
+    for (const lang of ['ru', 'en']) {
+      const s = await getJSON(API + '&action=wbsearchentities&type=item&limit=6&language=' + lang + '&uselang=' + lang + '&search=' + encodeURIComponent(q));
+      ids = (s.search || []).filter(x => sameName(q, (x.match && x.match.text) || x.label)).map(x => x.id);
+      if (ids.length) break;
+    }
+    if (!ids.length) return null;
+    const e = await getJSON(API + '&action=wbgetentities&props=claims|sitelinks&ids=' + ids.join('|'));
+    for (const id of ids) {
+      const ent = (e.entities || {})[id], s = ent && (((ent.claims || {}).P625 || [])[0] || {}).mainsnak, v = s && s.datavalue && s.datavalue.value;
+      if (!v || (lat != null && !isNaN(lat) && dist(lat, lon, v.latitude, v.longitude) > 80)) continue;
+      return { id, ent };
+    }
+    return null;
+  }
+  async function scLead(ent) {
+    const sl = ent.sitelinks || {}, wikis = ['enwiki', 'ruwiki', 'dewiki', 'eswiki', 'frwiki', 'itwiki'].filter(w => sl[w]).slice(0, 4), got = {};
+    await Promise.all(wikis.map(w => getJSON('https://' + w.slice(0, -4) + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=name&titles=' + encodeURIComponent(sl[w].title), 8000)
+      .then(r => { const p = Object.values((r.query || {}).pages || {})[0]; if (p && p.pageimage) got[w] = p.pageimage; }, () => {})));
+    const list = wikis.map(w => got[w]).filter(Boolean), cnt = {};
+    list.forEach(f => { cnt[f] = (cnt[f] || 0) + 1; });
+    return list.sort((a, b) => cnt[b] - cnt[a]);
+  }
+  async function scFind(q, lat, lon) {
+    const pl = await scPlace(q, lat, lon);
+    if (!pl) return null;
+    const id = pl.id;
+    for (const [t, i] of await scInfos(await scLead(pl.ent))) if (scOk(t, i)) return scPack(t, i, 'wiki');
+    for (const [t, i] of await scSearch('haswbstatement:P180=' + id + ' haswbstatement:P6731 filetype:bitmap')) if (scOk(t, i)) return scPack(t, i, 'quality');
+    let lm = [];
+    try {
+      const qs = 'SELECT ?item ?image ?links WHERE { ?item wdt:P131 wd:' + id + ' ; wdt:P18 ?image ; wikibase:sitelinks ?links . FILTER(?links >= 3) FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 } } ORDER BY DESC(?links) LIMIT 6';
+      lm = ((await getJSON(SPARQL + encodeURIComponent(qs), 12000)).results.bindings || []).map(b => ({ item: b.item.value.split('/').pop(), file: fileOf(b.image.value) }));
+    } catch (_) {}
+    for (const l of lm.slice(0, 3)) for (const [t, i] of await scSearch('haswbstatement:P180=' + l.item + ' haswbstatement:P6731 filetype:bitmap')) if (scOk(t, i)) return scPack(t, i, 'landmark');
+    for (const [t, i] of await scInfos(lm.map(l => l.file))) if (scOk(t, i)) return scPack(t, i, 'landmark');
+    const own = ((pl.ent.claims || {}).P18 || []).map(c => c.mainsnak.datavalue && c.mainsnak.datavalue.value);
+    for (const [t, i] of await scInfos(own)) if (scOk(t, i)) return scPack(t, i, 'main');
+    return null;
+  }
+  // кэш на устройстве: найденное — 30 дней, «нет фото» — 3 дня; сбой сети не запоминаем
+  const scMem = {};
+  const scKey = (name, o) => 'st_scenic1_' + norm(name) + '|' + (o.lat != null ? (+o.lat).toFixed(1) + ',' + (+o.lon).toFixed(1) : '');
+  function peekScenic(q, opts) {
+    const o = opts || {}, name = clean(q); if (!name) return null;
+    const c = lsGet(scKey(name, o));
+    return c && Date.now() - c.t < (c.hit ? 30 : 3) * DAY ? c.hit : undefined;
+  }
+  function scenic(q, opts) {
+    const o = opts || {}, name = clean(q); if (!name) return Promise.resolve(null);
+    const pk = peekScenic(name, o); if (pk !== undefined) return Promise.resolve(pk);
+    const k = scKey(name, o);
+    if (scMem[k]) return scMem[k];
+    return (scMem[k] = scFind(name, o.lat, o.lon).then(hit => { lsSet(k, { t: Date.now(), hit }); delete scMem[k]; return hit; }, () => { delete scMem[k]; return null; }));
+  }
+
   // ---------- Флаг страны «из шёлка» ----------
   // Плоский флаг (flagcdn) накладываем на фото белого шёлка (/img/trips/silk.jpg):
   // складки ткани слегка изгибают полосы, тени шёлка мягко затемняют цвет (в тени цвет насыщеннее),
@@ -288,5 +373,5 @@
     }).catch(() => url));
   }
 
-  window.STPlacePhoto = { photo, peek, forTrip, peekTrip, tripImg, refreshTrip, clean, moodPhoto, peekMood, wavyFlag };
+  window.STPlacePhoto = { photo, peek, forTrip, peekTrip, tripImg, refreshTrip, clean, moodPhoto, peekMood, wavyFlag, scenic, peekScenic };
 })();
