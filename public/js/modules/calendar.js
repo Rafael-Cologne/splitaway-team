@@ -261,6 +261,12 @@
     .cal-row>img:first-child{border-radius:7px;object-fit:cover}
     .cal-row input:not(.cal-native){flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-size:1.05rem;outline:none;min-height:56px}
     .cal-row input::placeholder{color:var(--t2)}
+    .cal-row.in{cursor:text}
+    .cal-docs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+    .cal-docs>div{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:var(--cal-soft);cursor:pointer}
+    .cal-docs img{width:100%;height:100%;object-fit:cover;display:block}
+    .cal-docs button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+    .cal-docs button svg{width:15px;height:15px}
     .cal-row-v{flex:1;font-size:1.05rem}
     .cal-row-v.ph{color:var(--t2)}
     .cal-row .cal-fchev{width:22px;height:22px;color:var(--text);flex-shrink:0}
@@ -571,8 +577,10 @@
     // ===== Страница 3: добавить / изменить событие =====
     const REMIND = [[0.5, 'За 30 минут'], [1, 'За 1 час'], [2, 'За 2 часа'], [24, 'За 1 день']];
     function openForm(ev, day, back) {
-      const draft = ev ? Object.assign({}, ev, { type: typeOf(ev.type).id })
-        : { id: uid(), title: '', date: day || selected, time: '', type: 'transport', endDate: '', endTime: '', place: '', note: '', remind: false, doc: '' };
+      const draft = ev ? Object.assign({}, ev, { type: typeOf(ev.type).id, docs: ev.docs ? ev.docs.slice() : ev.doc ? [ev.doc] : [] })
+        : { id: uid(), title: '', date: day || selected, time: '', type: 'transport', endDate: '', endTime: '', place: '', note: '', remind: false, docs: [] };
+      delete draft.doc;
+      const MAX_DOCS = 4; // фото хранятся на телефоне — больше 4 на событие не даём, чтобы не переполнить память
       const screen = ctx.openScreen({
         title: ev ? 'Событие' : 'Добавить событие',
         onBack: back,
@@ -594,27 +602,29 @@
                   ${tIcon(x)}<span style="color:var(--text)">${esc(x.name)}</span></button>`).join('')}
                 <button class="cal-type plus" type="button" data-a="new-type" aria-label="Свой тип события"><i data-lucide="plus"></i><span style="color:var(--text)">Своё</span></button>
               </div>
-              <div class="cal-row" style="margin-top:4px">${tIcon(t)}<input id="f-title" maxlength="80" placeholder="Название" value="${esc(draft.title)}"></div>
+              <div class="cal-row in" style="margin-top:4px">${tIcon(t)}<input id="f-title" maxlength="80" placeholder="Название" value="${esc(draft.title)}"></div>
               ${dateRow('f-date', draft.date, 'calendar', 'Дата')}
               ${timeRow('f-time', draft.time, 'Время (необязательно)')}
               ${showEnd ? `<div class="cal-endlbl">${l2}</div>
                 ${dateRow('f-edate', draft.endDate, 'calendar-check', 'Дата (если другой день)')}
                 ${timeRow('f-etime', draft.endTime, 'Время (необязательно)')}`
                 : `<button class="cal-row sub" type="button" data-a="end"><i data-lucide="plus"></i>${l2}: дата и время</button>`}
-              <div class="cal-row"><i data-lucide="map-pin"></i><input id="f-place" maxlength="120" placeholder="Место" value="${esc(draft.place)}"><i data-lucide="chevron-right" class="cal-fchev"></i></div>
-              <div class="cal-row"><i data-lucide="file-text"></i><input id="f-note" maxlength="200" placeholder="Заметка (необязательно)" value="${esc(draft.note)}"></div>
+              <div class="cal-row in"><i data-lucide="map-pin"></i><input id="f-place" maxlength="120" placeholder="Место" value="${esc(draft.place)}"></div>
+              <div class="cal-row in"><i data-lucide="file-text"></i><input id="f-note" maxlength="200" placeholder="Заметка (необязательно)" value="${esc(draft.note)}"></div>
               <div class="cal-card cal-rem" style="margin-top:4px">
                 <i data-lucide="bell"></i>
                 <div class="cal-rem-txt"><b>Напоминание</b>
                   <select id="f-rem"${draft.remind ? '' : ' disabled'}>${REMIND.map(([h, n]) => `<option value="${h}"${+(draft.remind || 2) === h ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
                 <label class="cal-switch"><input type="checkbox" id="f-rem-on"${draft.remind ? ' checked' : ''}><span></span></label>
               </div>
-              <button class="cal-card cal-doc" type="button" id="f-doc">
-                <span class="cal-doc-ic">${draft.doc ? `<img src="${draft.doc}" alt="">` : '<i data-lucide="ticket"></i>'}</span>
-                <span class="cal-doc-txt">${draft.doc ? 'Билет прикреплён<br><small style="color:var(--t2)">Нажмите, чтобы открыть</small>' : 'Добавить документ / билет'}</span>
-                ${draft.doc ? '<i data-lucide="x" id="f-doc-x" style="width:20px;height:20px;color:var(--t3)"></i>' : ''}
-              </button>
-              <input type="file" id="f-file" accept="image/*" hidden>
+              <div class="cal-card" style="padding:10px 12px">
+                <button class="cal-doc" type="button" id="f-doc" style="padding:0;border:0;background:none"${draft.docs.length >= MAX_DOCS ? ' disabled' : ''}>
+                  <span class="cal-doc-ic"><i data-lucide="${draft.docs.length ? 'plus' : 'ticket'}"></i></span>
+                  <span class="cal-doc-txt">${draft.docs.length >= MAX_DOCS ? 'Прикреплено ' + MAX_DOCS + ' — это максимум' : draft.docs.length ? 'Добавить ещё билет' : 'Добавить документ / билет'}<br><small style="color:var(--t2)">${draft.docs.length ? 'Прикреплено: ' + draft.docs.length + ' · нажмите на фото, чтобы открыть' : 'Можно несколько фото, например билеты на двоих'}</small></span>
+                </button>
+                ${draft.docs.length ? `<div class="cal-docs">${draft.docs.map((d, i) => `<div data-doc="${i}"><img src="${d}" alt="Билет ${i + 1}"><button type="button" data-doc-x="${i}" aria-label="Убрать фото"><i data-lucide="x"></i></button></div>`).join('')}</div>` : ''}
+              </div>
+              <input type="file" id="f-file" accept="image/*" multiple hidden>
               ${ev ? '<button class="cal-del" type="button" id="f-del"><i data-lucide="trash-2"></i>Удалить событие</button>' : ''}
               <div style="height:12px"></div>
             </div>`;
@@ -653,17 +663,25 @@
           body.querySelector('[data-a="end"]')?.addEventListener('click', () => { read(); draft._end = true; screen.refresh(); });
           body.querySelector('#f-rem-on').addEventListener('change', e => { body.querySelector('#f-rem').disabled = !e.target.checked; });
           const file = body.querySelector('#f-file');
-          body.querySelector('#f-doc').addEventListener('click', e => {
-            if (e.target.closest('#f-doc-x')) { read(); draft.doc = ''; screen.refresh(); return; }
-            if (draft.doc) { const w = window.open(); if (w) w.document.write(`<img src="${draft.doc}" style="max-width:100%">`); else file.click(); return; }
-            file.click();
-          });
+          body.querySelector('#f-doc').addEventListener('click', () => { if (draft.docs.length < MAX_DOCS) file.click(); });
+          body.querySelectorAll('[data-doc]').forEach(el => el.addEventListener('click', e => {
+            const x = e.target.closest('[data-doc-x]');
+            if (x) { read(); draft.docs.splice(+x.dataset.docX, 1); screen.refresh(); return; }
+            const src = draft.docs[+el.dataset.doc]; const w = window.open(); if (w) w.document.write(`<img src="${src}" style="max-width:100%">`);
+          }));
           file.addEventListener('change', async () => {
-            const f = file.files[0]; if (!f) return;
-            if (!f.type.startsWith('image/')) { ctx.toast('Пока можно прикрепить только фото или скриншот'); return; }
-            try { read(); draft.doc = await compress(f); screen.refresh(); }
-            catch (_) { ctx.toast('Не получилось открыть картинку'); }
+            const files = [...file.files]; file.value = '';
+            if (!files.length) return;
+            const imgs = files.filter(f => f.type.startsWith('image/'));
+            if (imgs.length < files.length) ctx.toast('Пока можно прикрепить только фото или скриншот');
+            const free = MAX_DOCS - draft.docs.length;
+            if (imgs.length > free) ctx.toast('Можно прикрепить не больше ' + MAX_DOCS + ' фото');
+            read();
+            for (const f of imgs.slice(0, free)) { try { draft.docs.push(await compress(f)); } catch (_) { ctx.toast('Не получилось открыть картинку'); } }
+            screen.refresh();
           });
+          // нажатие на иконку или пустое место строки — курсор в поле
+          body.querySelectorAll('.cal-row.in').forEach(row => row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') row.querySelector('input')?.focus(); }));
           body.querySelector('#f-del')?.addEventListener('click', () => {
             if (!confirm('Удалить событие «' + draft.title + '»?')) return;
             events = events.filter(x => x.id !== draft.id); saveEvents(); ctx.toast('Событие удалено'); back();
