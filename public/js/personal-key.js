@@ -16,6 +16,9 @@
 // Шифрование на устройстве: ключ = PBKDF2(номер + PIN) → AES-GCM (WebCrypto).
 // В ссылке ключ стоит после «#» — такая часть адреса не отправляется на сервер.
 // При появлении новых поездок ключ на сервере обновляется сам (ключ шифрования хранится в IndexedDB, без PIN).
+// Аккаунт создаётся сам: как только на устройстве появилась первая поездка (создал или вошёл по приглашению),
+// приложение выдаёт личный номер и сохраняет кабинет в personal_keys. PIN необязателен — его можно добавить,
+// выпустив новый ключ («Новый ключ с PIN-кодом»). Без PIN секрет — сам номер (60 бит), его хранят как пароль.
 // Данные модулей (календарь, брони …) восстановятся этим же ключом, когда они будут в Supabase.
 // ============================================================
 (function () {
@@ -278,7 +281,7 @@
             st.ids = all.map(x => x.i); st.gone = gone; st.skip = m0.skip || [];
             st.srv = await serverSave(st.num, st.blob).catch(() => 'error');
             if (old && st.srv === 'ok') { try { const c = await sb(); const k = await ids(old); await c.rpc('delete_personal_key', { p_id: k.id, p_write: k.write }); } catch (_) {} }
-            lsSet(META, { t: Date.now(), ids: st.ids, num: st.num, blob: st.blob, srv: st.srv, me: trips[0].m, skip: st.skip, gone: st.gone });
+            lsSet(META, { t: Date.now(), ids: st.ids, num: st.num, blob: st.blob, srv: st.srv, me: trips[0].m, skip: st.skip, gone: st.gone, nopin: false });
             st.step = 'show';
           } catch (_) { st.err = 'Не удалось создать ключ'; }
           st.busy = false; st.pin = st.pin2 = ''; api.draw();
@@ -291,14 +294,14 @@
       const sv = SRV[st.srv] || SRV.missing;
       const m = lsGet(META, {}) || {};
       b.innerHTML = `
-        <div class="pk-warn"><i data-lucide="shield-alert"></i><span><b>Никому не показывайте и не отправляйте в чаты.</b> С ключом и PIN можно войти в ваши поездки от вашего имени. Друзей приглашайте QR-кодом «Пригласить» в поездке.</span></div>
+        <div class="pk-warn"><i data-lucide="shield-alert"></i><span><b>Никому не показывайте и не отправляйте в чаты.</b> С этим ключом${m.nopin ? '' : ' и PIN'} можно войти в ваши поездки от вашего имени. Друзей приглашайте QR-кодом «Пригласить» в поездке.</span></div>
         <div class="pk-key">
           <span class="pk-badge"><i data-lucide="lock"></i>МОЙ КЛЮЧ ВХОДА</span>
           <h3>${esc(m.me || (trips[0] ? trips[0].m : ''))}</h3>
           <small>${esc(plural((m.ids || trips).length, 'поездка', 'поездки', 'поездок'))} · обновлён ${esc(fmtDate(m.t || Date.now()))}</small>
           <div class="pk-qr" data-a="reveal"><div id="pk-qr"></div>${st.shown ? '' : '<div class="veil"><i data-lucide="eye-off"></i>Нажмите, чтобы показать</div>'}</div>
           <div class="pk-num" data-a="reveal">${st.shown ? esc(prettyNum(st.num)) : '••••-••••-••••'}</div>
-          <small>Личный номер · вход: «Войти по личному ключу» → номер → PIN</small>
+          <small>Личный номер · вход: «Войти по личному ключу» → номер${m.nopin ? '' : ' → PIN'}</small>
         </div>
         <div class="pk-srv" style="color:${sv[1]}"><i data-lucide="${sv[0]}"></i>${esc(sv[2])}</div>
         ${isLocal() ? '<div class="pk-srv" style="color:#c27a00"><i data-lucide="monitor"></i>Это локальная версия (localhost): QR откроется только на этом компьютере. С телефона проверим на сайте после загрузки (превью PR).</div>' : ''}
@@ -306,9 +309,9 @@
           <button class="pk-btn gold" type="button" data-a="png"><i data-lucide="download"></i>Сохранить</button>
           <button class="pk-btn lite" type="button" data-a="copy"><i data-lucide="copy"></i>Номер</button>
         </div>
-        <button class="pk-btn lite" type="button" data-a="new"><i data-lucide="refresh-cw"></i>Создать новый ключ (сменить PIN)</button>
+        <button class="pk-btn lite" type="button" data-a="new"><i data-lucide="${m.nopin ? 'shield-check' : 'refresh-cw'}"></i>${m.nopin ? 'Новый ключ с PIN-кодом (надёжнее)' : 'Создать новый ключ (сменить PIN)'}</button>
         <button class="pk-btn lite" type="button" data-a="login"><i data-lucide="log-in"></i>Войти другим ключом</button>
-        <p class="pk-p" style="margin-top:12px">Сохраните картинку заранее — в фото или распечатайте. Новые поездки добавляются в ключ сами, номер и PIN остаются прежними.</p>`;
+        <p class="pk-p" style="margin-top:12px">Сохраните картинку заранее — в фото или распечатайте. Новые поездки добавляются в ключ сами, номер${m.nopin ? '' : ' и PIN'} остаются прежними.</p>`;
       qrInto(b.querySelector('#pk-qr'), url);
       b.querySelectorAll('[data-a="reveal"]').forEach(x => x.addEventListener('click', () => { st.shown = !st.shown; api.draw(); }));
       b.querySelector('[data-a="copy"]').addEventListener('click', async () => { try { await navigator.clipboard.writeText(prettyNum(st.num)); say('Номер скопирован — храните как пароль'); } catch (_) { say('Не удалось скопировать'); } });
@@ -354,12 +357,12 @@
     const api = sheet('Вход по личному ключу', (b, api) => {
       if (!st.data) {
         b.innerHTML = `
-          <p class="pk-p">Откройте свои поездки на этом устройстве. Нужен <b>личный ключ входа</b> (тёмный QR с замком или номер) и ваш PIN.</p>
+          <p class="pk-p">Откройте свои поездки на этом устройстве. Нужен ваш <b>личный номер</b> (или тёмный QR с замком). PIN — только если вы его задавали.</p>
           ${st.blob ? `<div class="pk-card"><div class="pk-row"><i data-lucide="key-round"></i><span>QR-ключ получен</span><small>${esc(prettyNum(st.num).slice(0, 4))}-…</small></div></div>`
             : `<span class="pk-lbl">Личный номер</span><input class="pk-in" id="pk-num" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase" value="${esc(st.num ? prettyNum(st.num) : '')}">
                <button class="pk-btn lite" type="button" data-a="scan"><i data-lucide="scan-line"></i>Или отсканировать QR-ключ</button>`}
-          <span class="pk-lbl">PIN</span>
-          <input class="pk-in pin" id="pk-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8">
+          <span class="pk-lbl">PIN — если задавали (иначе оставьте пустым)</span>
+          <input class="pk-in pin" id="pk-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" value="${esc(st.pin)}">
           ${st.err ? `<div class="pk-err">${esc(st.err)}</div>` : ''}
           <button class="pk-btn" type="button" data-a="open" ${st.busy ? 'disabled' : ''}><i data-lucide="log-in"></i>${st.busy ? 'Проверяю…' : 'Войти'}</button>`;
         const pin = b.querySelector('#pk-pin'), numIn = b.querySelector('#pk-num');
@@ -371,7 +374,7 @@
         b.querySelector('[data-a="open"]').addEventListener('click', async () => {
           if (numIn && /[?&]trip=/.test(numIn.value)) { st.err = 'Это приглашение в поездку, а не личный ключ. Его вводят на главном экране в поле «Код поездки».'; api.draw(); return; }
           if (!isNum(st.num)) { st.err = 'Номер — 12 символов, например K7QM-2XPA-9RTD'; api.draw(); return; }
-          if (st.pin.length < 4) { st.err = 'Введите PIN'; api.draw(); return; }
+          if (st.pin && st.pin.length < 4) { st.err = 'PIN — минимум 4 цифры'; api.draw(); return; }
           st.busy = true; st.err = ''; api.draw();
           try {
             const blob = st.blob || await serverGet(st.num);
@@ -383,7 +386,7 @@
             st.extra.forEach(t => { st.add[t.i] = !(cur.num === st.num && (cur.skip || []).includes(t.i)); });
           } catch (e) {
             const m = e && e.message;
-            st.err = m === 'pin' ? 'Неверный номер или PIN' : m === 'notfound' ? 'Ключ с таким номером не найден — проверьте номер' : m === 'missing' ? 'Вход по номеру ещё не включён на сервере — отсканируйте QR-ключ'
+            st.err = m === 'pin' ? (st.pin ? 'Неверный номер или PIN' : 'Для этого ключа нужен PIN — введите его') : m === 'notfound' ? 'Ключ с таким номером не найден — проверьте номер' : m === 'missing' ? 'Вход по номеру ещё не включён на сервере — отсканируйте QR-ключ'
               : m === 'offline' || m === 'server' ? 'Нет связи с сервером — проверьте интернет или отсканируйте QR-ключ' : 'Ключ повреждён — попробуйте ещё раз';
           }
           st.busy = false; api.draw();
@@ -410,8 +413,10 @@
         st.busy = true; st.err = ''; api.draw();
         try {
           await adopt(st.num, st.pin, st.used);
+          // автоматически созданный кабинет этого устройства больше не нужен: его поездки переходят в этот кабинет
+          if (cur.num && cur.num !== st.num && cur.auto) { const old = cur.num; sb().then(async c => { if (!c) return; const k = await ids(old); await c.rpc('delete_personal_key', { p_id: k.id, p_write: k.write }); }).catch(() => {}); }
           lsSet(META, { t: st.data.at || Date.now(), num: st.num, blob: st.used, ids: st.data.t.map(t => t.i), srv: '', me: st.data.me || '',
-            skip: st.extra.filter(t => !st.add[t.i]).map(t => t.i), gone: [] });
+            skip: st.extra.filter(t => !st.add[t.i]).map(t => t.i), gone: [], nopin: !st.pin });
         } catch (_) { st.busy = false; st.err = 'Не удалось сохранить ключ на этом устройстве'; api.draw(); return; }
         api.onClose = null; restore(st.data.t.filter(t => st.pick[t.i]));
       });
@@ -491,8 +496,51 @@
     const srv = await serverSave(m.num, blob).catch(() => 'error');
     lsSet(META, Object.assign(m, { t: Date.now(), ids: t.map(x => x.i), blob, srv, me }));
   }
-  setTimeout(autoUpdate, 4000);
+  // ---------- Аккаунт создаётся сам — при первой поездке на устройстве ----------
+  let making = false;
+  async function ensureAccount() {
+    const m = lsGet(META, null);
+    if (making || (m && m.num) || !(window.crypto && crypto.subtle)) return;
+    if (extract(location.hash) || document.querySelector('.pk-ov')) return; // идёт вход по ключу
+    const own = ownLocal(m);
+    if (!own.length) return;
+    making = true;
+    try {
+      const num = newNumber(), t = merge([], own, []), me = own[0].m;
+      const blob = await pack({ v: 2, me, at: Date.now(), t, x: [] }, num, '');
+      const srv = await serverSave(num, blob).catch(() => 'error');
+      lsSet(META, { t: Date.now(), ids: t.map(x => x.i), num, blob, srv, me, skip: [], gone: [], auto: true, nopin: true });
+      welcome(num, me, srv);
+    } catch (_) {} finally { making = false; }
+  }
+  function welcome(num, me, srv) {
+    sheet('Ваш личный кабинет создан', (b, api) => {
+      b.innerHTML = `
+        <p class="pk-p">Ваши поездки теперь сохраняются в личном кабинете. Чтобы открыть их на другом телефоне или компьютере, достаточно этого номера:</p>
+        <div class="pk-key">
+          <span class="pk-badge"><i data-lucide="lock"></i>МОЙ ЛИЧНЫЙ НОМЕР</span>
+          <h3>${esc(me)}</h3>
+          <div class="pk-num">${esc(prettyNum(num))}</div>
+          <small>Вход на другом устройстве: «Войти по личному ключу» → номер</small>
+        </div>
+        ${srv === 'ok' ? '' : '<div class="pk-srv" style="color:#c27a00"><i data-lucide="clock"></i>Номер сохранится на сервере, как только появится связь</div>'}
+        <div class="pk-warn"><i data-lucide="shield-alert"></i><span>Номер — как пароль: не отправляйте его в общие чаты. Друзей приглашайте QR-кодом «Пригласить» в поездке.</span></div>
+        <div class="pk-2">
+          <button class="pk-btn gold" type="button" data-a="copy"><i data-lucide="copy"></i>Скопировать</button>
+          <button class="pk-btn lite" type="button" data-a="more"><i data-lucide="qr-code"></i>QR и картинка</button>
+        </div>
+        <button class="pk-btn lite" type="button" data-a="login"><i data-lucide="log-in"></i>У меня уже есть номер — войти</button>
+        <button class="pk-btn" type="button" data-a="ok"><i data-lucide="check"></i>Готово</button>
+        <p class="pk-p" style="margin-top:12px">Номер всегда можно посмотреть: «Ещё» → «Мой ключ входа». Там же можно выпустить ключ с PIN-кодом.</p>`;
+      b.querySelector('[data-a="copy"]').addEventListener('click', async () => { try { await navigator.clipboard.writeText(prettyNum(num)); say('Номер скопирован — храните как пароль'); } catch (_) { say('Не удалось скопировать'); } });
+      b.querySelector('[data-a="more"]').addEventListener('click', () => { api.close(); openMyKey(); });
+      b.querySelector('[data-a="login"]').addEventListener('click', () => { api.close(); openRestore(); });
+      b.querySelector('[data-a="ok"]').addEventListener('click', () => api.close());
+    });
+  }
+  setTimeout(() => { ensureAccount().then(autoUpdate); }, 2500);
+  setInterval(() => { const m = lsGet(META, null); if (!m || !m.num) ensureAccount(); }, 3000); // создал поездку или вошёл по приглашению
   window.addEventListener('online', () => setTimeout(autoUpdate, 3000));
 
-  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate, forget };
+  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate, forget, ensureAccount };
 })();
