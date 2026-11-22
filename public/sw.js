@@ -221,7 +221,7 @@ async function notifyClientsToSync() {
 // ============================================================
 self.addEventListener('push', event => {
   let data = {
-    title: 'Splitaway',
+    title: 'Useaway',
     body: 'Новое обновление в поездке',
     icon: '/icons/icon-192.png'
   };

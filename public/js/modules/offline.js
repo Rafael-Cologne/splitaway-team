@@ -33,7 +33,7 @@
   // ---------- Что входит в «Приложение» ----------
   const n = (dir, names, ext) => names.split(' ').map(x => dir + x + ext);
   const FILES = [
-    '/', '/index.html', '/offline.html', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/splitaway-team.svg',
+    '/', '/index.html', '/offline.html', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/useaway-icon.png', '/img/brand/useaway-logo.png', '/img/brand/useaway-logo-dark.png', '/img/brand/useaway-mark-white.png',
     ...n('/img/hub/', 'assistant bookings calendar checklist currency diary emergency expenses guide nearby offline route stats translator transport weather', '.webp'),
     ...n('/img/emergency/', 'hero phone cross embassy shield passport warning idcard kit', '.webp'),
     ...n('/img/covers/', 'nature route travel city global beach q64 q365', '.webp'),

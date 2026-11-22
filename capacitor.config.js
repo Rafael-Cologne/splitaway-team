@@ -1,7 +1,7 @@
 /** @type {import('@capacitor/cli').CapacitorConfig} */
 const config = {
   appId:   'com.splitaway.app',
-  appName: 'Splitaway',
+  appName: 'Useaway',
   webDir:  'public',
 
   android: {

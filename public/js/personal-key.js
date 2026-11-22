@@ -333,7 +333,7 @@
     g.fillStyle = '#f3c25b'; g.font = '900 34px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('🔒 МОЙ КЛЮЧ ВХОДА', W / 2, 110);
     g.fillStyle = '#fff'; g.font = '800 44px system-ui, sans-serif'; g.fillText(name, W / 2, 175);
     g.font = '500 26px system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,.8)';
-    g.fillText('Splitaway Team · ' + plural(count, 'поездка', 'поездки', 'поездок') + ' · ' + fmtDate(Date.now()), W / 2, 220);
+    g.fillText('Useaway · ' + plural(count, 'поездка', 'поездки', 'поездок') + ' · ' + fmtDate(Date.now()), W / 2, 220);
     g.fillStyle = '#fff'; g.fillRect(150, 250, 420, 420);
     g.imageSmoothingEnabled = false; g.drawImage(src, 170, 270, 380, 380);
     g.fillStyle = '#f3c25b'; g.font = '800 40px ui-monospace, Menlo, Consolas, monospace'; g.fillText(prettyNum(num), W / 2, 760);

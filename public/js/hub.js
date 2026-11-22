@@ -1,5 +1,5 @@
 // ============================================================
-// Splitaway Team — главная страница (Travel Hub)
+// Useaway (Splitaway Team) — главная страница (Travel Hub)
 // ------------------------------------------------------------
 // Новый главный экран поверх существующего приложения.
 // Ничего не дублирует: создание поездки, вход по коду / QR,
@@ -14,7 +14,7 @@
   // ---------- Тексты (ru / en / de, остальные языки → en) ----------
   const TXT = {
     ru: {
-      brand: 'Splitaway Team', tagline: 'Все инструменты для путешествий',
+      brand: 'Useaway', tagline: 'Все инструменты для путешествий',
       create: 'Создать поездку', create_sub: 'Планируйте, делитесь и считайте расходы вместе',
       join_code: 'Ввести код приглашения', my_trips: 'Мои поездки',
       services: 'Сервисы', search: 'Поиск сервиса', nothing: 'Ничего не найдено',
@@ -29,7 +29,7 @@
       members: n => n + ' ' + plRu(n, 'участник', 'участника', 'участников')
     },
     en: {
-      brand: 'Splitaway Team', tagline: 'All your travel tools',
+      brand: 'Useaway', tagline: 'All your travel tools',
       create: 'Create a trip', create_sub: 'Plan, share and split costs together',
       join_code: 'Enter invite code', my_trips: 'My trips',
       services: 'Services', search: 'Search services', nothing: 'Nothing found',
@@ -44,7 +44,7 @@
       members: n => n + (n === 1 ? ' member' : ' members')
     },
     de: {
-      brand: 'Splitaway Team', tagline: 'Alle Reise-Tools an einem Ort',
+      brand: 'Useaway', tagline: 'Alle Reise-Tools an einem Ort',
       create: 'Reise erstellen', create_sub: 'Gemeinsam planen, teilen und Kosten aufteilen',
       join_code: 'Einladungscode eingeben', my_trips: 'Meine Reisen',
       services: 'Dienste', search: 'Dienst suchen', nothing: 'Nichts gefunden',
@@ -416,7 +416,7 @@
     } else {
       top =
         '<button class="hub-hero" type="button" data-hub="create">' +
-        '<span class="hub-hero-ic"><i data-lucide="plane"></i></span>' +
+        '<span class="hub-hero-ic"><img src="/img/brand/useaway-mark-white.png" alt="" class="hub-hero-mark"></span>' +
         `<span class="hub-hero-txt"><span class="hub-hero-ttl">${esc(tx('create'))}</span><span class="hub-hero-sub">${esc(tx('create_sub'))}</span></span>` +
         '<span class="hub-hero-plus"><i data-lucide="plus"></i></span></button>' +
         '<div class="hub-row2">' +
@@ -475,7 +475,7 @@
       ? `<button class="hub-icbtn" type="button" data-hub="bell" aria-label="${esc(tx('notifications'))}"><i data-lucide="bell"></i></button>` : '';
     root.innerHTML =
       '<div class="hub-wrap"><header class="hub-hd">' +
-      `<div class="hub-brand"><img src="/icons/splitaway-team.svg" alt="" class="hub-logo"><div><div class="hub-brand-name">${esc(tx('brand'))}</div><div class="hub-brand-sub">${esc(tx('tagline'))}</div></div></div>` +
+      `<div class="hub-brand"><img src="/img/brand/useaway-logo.png" alt="${esc(tx('brand'))}" class="hub-wordmark hub-wordmark-lt"><img src="/img/brand/useaway-logo-dark.png" alt="${esc(tx('brand'))}" class="hub-wordmark hub-wordmark-dk"></div>` +
       `<div class="hub-hd-act"><button class="hub-icbtn${searchOpen ? ' on' : ''}" type="button" data-hub="search" aria-label="${esc(tx('search'))}"><i data-lucide="search"></i></button>${bell}</div>` +
       `</header><main class="hub-main">${view === 'trips' ? tripsHtml() : homeHtml()}</main></div>` + navHtml();
     icons(root);
