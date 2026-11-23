@@ -293,9 +293,17 @@
       ['light', 'dark'].map(m => `<button class="hub-chip${theme === m ? ' on' : ''}" type="button" data-hub="theme" data-v="${m}"><i data-lucide="${m === 'light' ? 'sun' : 'moon'}"></i>${esc(tx(m))}</button>`).join('') +
       `</div><div class="hub-sheet-lbl">${esc(tx('language'))}</div><div class="hub-chips">` +
       LANGS.map(([code, name]) => `<button class="hub-chip${cur === code ? ' on' : ''}" type="button" data-hub="lang" data-v="${code}">${esc(name)}</button>`).join('') +
-      '</div>' + keyRow();
+      '</div>' + tripRow() + keyRow();
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
     icons(ov);
+  }
+
+  // Текущая поездка: выйти из неё (кнопка была только внизу настроек «Расходов» — её не находили)
+  function tripRow() {
+    if (!hasTrip()) return '';
+    return `<div class="hub-sheet-lbl">Поездка</div>` +
+      `<button class="hub-row" type="button" data-hub="leave-trip" style="margin-top:4px"><i data-lucide="log-out" style="color:#d93a3a"></i>` +
+      `<span style="flex:1;min-width:0;text-align:left"><b style="display:block">Выйти из поездки</b><small style="color:var(--t2)">«${esc(S.trip.name || '')}» — вернуться можно по ссылке или QR-коду</small></span><i data-lucide="chevron-right"></i></button>`;
   }
 
   // Личный ключ входа (js/personal-key.js): тёмный QR с замком — только для себя, в отличие от QR-приглашения
@@ -324,6 +332,7 @@
       ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
       ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
       hasTrip() ? ['invite', 'qr-code', 'Пригласить в поездку', 'QR для друзей'] : null,
+      hasTrip() ? ['leave', 'log-out', 'Выйти из поездки', '«' + (S.trip.name || '') + '» — вернуться можно по ссылке или QR-коду'] : null,
       window.STKey ? ['mykey', 'key-round', 'Мой ключ входа', 'Только для вас: вернуть поездки на новом телефоне'] : null,
       window.STKey ? ['keylogin', 'log-in', 'Войти по личному ключу', 'Открыть свой кабинет на этом устройстве'] : null
     ].filter(Boolean);
@@ -509,6 +518,7 @@
       case 'mod-back': if (moduleBack) moduleBack(); else show('home'); break;
       case 'close-profile': if (typeof closeModal === 'function') closeModal('m-hub-profile'); break;
       case 'my-key': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (window.STKey) STKey.openMyKey(); break;
+      case 'leave-trip': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (typeof leaveTrip === 'function') setTimeout(leaveTrip, 80); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
       case 'nav':
@@ -523,6 +533,7 @@
         else if (v === 'saved') say('Сохранённое — ' + tx('soon'));
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
         else if (v === 'invite' && typeof openQR === 'function') openQR();
+        else if (v === 'leave' && typeof leaveTrip === 'function') setTimeout(leaveTrip, 80); // leaveTrip сам спрашивает подтверждение
         else if (v === 'mykey' && window.STKey) setTimeout(() => STKey.openMyKey(), 60);
         else if (v === 'keylogin' && window.STKey) setTimeout(() => STKey.openRestore(), 60);
         break;
