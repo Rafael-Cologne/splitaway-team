@@ -239,10 +239,10 @@
   const SRV = { ok: ['circle-check', '#1b9a50', 'Вход по номеру включён'], missing: ['clock', '#c27a00', 'Вход по номеру заработает после обновления базы — пока входите по QR'],
     off: ['wifi-off', '#c27a00', 'Нет связи с сервером — номер сохранится позже, QR работает'], error: ['circle-alert', '#d93a3a', 'Сервер не принял ключ — входите по QR'],
     replaced: ['circle-alert', '#d93a3a', 'Ключ заменён на другом устройстве — войдите по новому ключу'] };
-  function openMyKey() {
+  function openMyKey(startWithPin = false) {
     const trips = myTrips();
     const meta = lsGet(META, null);
-    const st = { step: meta && meta.num && meta.blob ? 'show' : 'pin', pin: '', pin2: '', err: '', num: meta && meta.num || '', blob: meta && meta.blob || '', srv: meta && meta.srv || '', shown: false, busy: false };
+    const st = { step: startWithPin ? 'pin' : meta && meta.num && meta.blob ? 'show' : 'pin', pin: '', pin2: '', err: '', num: meta && meta.num || '', blob: meta && meta.blob || '', srv: meta && meta.srv || '', shown: false, busy: false };
     sheet('Мой ключ входа', (b, api) => {
       if (!trips.length && st.step === 'pin') {
         b.innerHTML = `<p class="pk-p">На этом устройстве пока нет поездок, в которые вы вошли под своим именем. Создайте поездку или войдите в неё — и ключ появится.</p>
@@ -359,7 +359,7 @@
         b.innerHTML = `
           <p class="pk-p">Откройте свои поездки на этом устройстве. Нужен ваш <b>личный номер</b> (или тёмный QR с замком). PIN — только если вы его задавали.</p>
           ${st.blob ? `<div class="pk-card"><div class="pk-row"><i data-lucide="key-round"></i><span>QR-ключ получен</span><small>${esc(prettyNum(st.num).slice(0, 4))}-…</small></div></div>`
-            : `<span class="pk-lbl">Личный номер</span><input class="pk-in" id="pk-num" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase" value="${esc(st.num ? prettyNum(st.num) : '')}">
+            : `<span class="pk-lbl">Личный номер</span><input class="pk-in" id="pk-num" type="text" inputmode="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="font-family:var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase" value="${esc(st.num ? prettyNum(st.num) : '')}">
                <button class="pk-btn lite" type="button" data-a="scan"><i data-lucide="scan-line"></i>Или отсканировать QR-ключ</button>`}
           <span class="pk-lbl">PIN — если задавали (иначе оставьте пустым)</span>
           <input class="pk-in pin" id="pk-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" value="${esc(st.pin)}">
@@ -391,7 +391,7 @@
           }
           st.busy = false; api.draw();
         });
-        setTimeout(() => (numIn && !st.num ? numIn : pin).focus(), 60);
+        setTimeout(() => (numIn || pin).focus(), 60);
         return;
       }
       const n = st.data.t.filter(t => st.pick[t.i]).length;
@@ -529,11 +529,13 @@
           <button class="pk-btn gold" type="button" data-a="copy"><i data-lucide="copy"></i>Скопировать</button>
           <button class="pk-btn lite" type="button" data-a="more"><i data-lucide="qr-code"></i>QR и картинка</button>
         </div>
+        <button class="pk-btn lite" type="button" data-a="pin"><i data-lucide="shield-check"></i>Добавить PIN-код</button>
         <button class="pk-btn lite" type="button" data-a="login"><i data-lucide="log-in"></i>У меня уже есть номер — войти</button>
         <button class="pk-btn" type="button" data-a="ok"><i data-lucide="check"></i>Готово</button>
         <p class="pk-p" style="margin-top:12px">Номер всегда можно посмотреть: «Ещё» → «Мой ключ входа». Там же можно выпустить ключ с PIN-кодом.</p>`;
       b.querySelector('[data-a="copy"]').addEventListener('click', async () => { try { await navigator.clipboard.writeText(prettyNum(num)); say('Номер скопирован — храните как пароль'); } catch (_) { say('Не удалось скопировать'); } });
       b.querySelector('[data-a="more"]').addEventListener('click', () => { api.close(); openMyKey(); });
+      b.querySelector('[data-a="pin"]').addEventListener('click', () => { api.close(); openMyKey(true); });
       b.querySelector('[data-a="login"]').addEventListener('click', () => { api.close(); openRestore(); });
       b.querySelector('[data-a="ok"]').addEventListener('click', () => api.close());
     });
