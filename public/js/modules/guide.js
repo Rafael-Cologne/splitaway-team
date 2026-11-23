@@ -37,6 +37,7 @@
     cafe: 'Кафе',
     restaurant: 'Ресторан',
     bakery: 'Пекарня',
+    fast_food: 'Быстрое питание',
     bar: 'Бар',
     theatre: 'Театр'
   };
@@ -141,7 +142,7 @@
     const a = tags.amenity || '';
     if (t === 'museum' || t === 'gallery' || a === 'theatre') return 'museum';
     if (l === 'park' || l === 'garden' || t === 'zoo') return 'park';
-    if (a === 'cafe' || a === 'restaurant' || a === 'bakery' || a === 'bar') return 'food';
+    if (['cafe', 'restaurant', 'bakery', 'bar', 'fast_food', 'ice_cream', 'pub'].includes(a) || tags.shop === 'bakery') return 'food';
     return 'sights';
   }
 
@@ -152,6 +153,16 @@
 
   function formatAddress(tags) {
     return [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(' ');
+  }
+
+  function placeInCity(data, lat, lon) {
+    const bounds = data.searchBounds;
+    const distance = haversineKm(data.lat, data.lon, lat, lon);
+    if (distance > 35) return false;
+    if (!Array.isArray(bounds) || bounds.length !== 4 || bounds.some(v => !Number.isFinite(v))) return distance <= 20;
+    // Небольшой запас для объектов у административной границы города.
+    return lat >= bounds[0] - 0.02 && lat <= bounds[1] + 0.02 &&
+      lon >= bounds[2] - 0.02 && lon <= bounds[3] + 0.02;
   }
 
   function googleMapsUrl(p, city) {
@@ -289,13 +300,13 @@
     const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
     return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 25000))).then(ov =>
       osmElementsToPlaces(ov.elements, data.lat, data.lon, data.displayName.split(',')[0].trim())
-        .filter(p => matchesPlaceQuery(p, query) && p.distKm <= 12));
+        .filter(p => matchesPlaceQuery(p, query) && placeInCity(data, p.lat, p.lon)));
   }
 
   // Photon индексирует названия заведений OSM и поддерживает поиск по части слова.
   async function photonSearchPlaces(query, data) {
     const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(query) +
-      `&lat=${data.lat}&lon=${data.lon}&limit=20`;
+      `&lat=${data.lat}&lon=${data.lon}&limit=30&lang=en`;
     const j = await fetchJSON(url, null, 10000);
     return (j.features || []).map(f => {
       const p = f.properties || {};
@@ -311,7 +322,7 @@
         hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
         distKm: haversineKm(data.lat, data.lon, lat, lon), score: 5, lat, lon
       };
-    }).filter(p => p && p.distKm <= 12 && matchesPlaceQuery(p, query));
+    }).filter(p => p && placeInCity(data, p.lat, p.lon) && matchesPlaceQuery(p, query));
   }
 
   function osmElementsToPlaces(elements, lat, lon, cityShort) {
@@ -452,7 +463,7 @@
     return Object.values(j?.query?.pages || {}).filter(p => {
       const c = p.coordinates?.[0];
       return c && p.title && Number.isFinite(c.lat) && Number.isFinite(c.lon) &&
-        haversineKm(data.lat, data.lon, c.lat, c.lon) <= 20 &&
+        placeInCity(data, c.lat, c.lon) &&
         matchesPlaceQuery({ name: p.title, typeLabel: p.description || '', addr: '' }, query);
     }).map(p => {
       const c = p.coordinates[0];
@@ -469,7 +480,8 @@
   }
 
   function matchesPlaceQuery(place, query) {
-    const words = text => String(text || '').toLowerCase().replace(/ё/g, 'е').replace(/ј/g, 'й')
+    const words = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/ё/g, 'е').replace(/ј/g, 'й')
       .split(/[^a-zа-я0-9]+/).filter(Boolean).map(w => w.length >= 5 ? w.slice(0, 4) : w);
     const wanted = words(query);
     const available = words([place.name, place.typeLabel, place.addr].join(' '));
@@ -485,7 +497,8 @@
     const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
     for (const p of b) {
       const n = norm(p.name);
-      const dup = out.find(x => norm(x.name) === n || (haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 && (norm(x.name).includes(n) || n.includes(norm(x.name)))));
+      const dup = out.find(x => haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 &&
+        (norm(x.name) === n || norm(x.name).includes(n) || n.includes(norm(x.name))));
       if (dup) { // берём лучшее из обоих: часы и сайт из OSM, фото из Википедии
         ['hours', 'website', 'cuisine', 'addr'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
         if (p.free) dup.free = true;
@@ -573,6 +586,7 @@
 
     const geo = nomJson[0];
     const lat = Number(geo.lat), lon = Number(geo.lon);
+    const searchBounds = (geo.boundingbox || []).map(Number);
     const cityShort = geo.display_name.split(',')[0].trim();
     const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cityShort)}`, null, 8000).catch(() => null);
 
@@ -584,7 +598,7 @@
         isCountry: true,
         city,
         displayName: cityShort,
-        lat, lon,
+        lat, lon, searchBounds,
         wiki: wiki && wiki.extract ? {
           title: wiki.title,
           extract: wiki.extract,
@@ -612,7 +626,7 @@
       isCountry: false,
       city,
       displayName: (geo.display_name || city).split(',').slice(0, 2).join(', '),
-      lat, lon,
+      lat, lon, searchBounds,
       wiki: wiki && wiki.extract ? {
         title: wiki.title,
         extract: wiki.extract,
