@@ -276,9 +276,25 @@
     `.trim();
     const body = 'data=' + encodeURIComponent(query);
     const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body };
-    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, ms))).then(ov => {
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, ms))).then(ov => osmElementsToPlaces(ov.elements, lat, lon, cityShort));
+  }
+
+  // Ищем по части названия, включая кафе и рестораны вне стартовой подборки.
+  function osmSearchPlaces(query, data) {
+    const words = query.trim().split(/[^a-zа-яё0-9]+/i).filter(w => w.length >= 3);
+    const term = words.sort((a, b) => b.length - a.length)[0];
+    if (!term) return Promise.resolve([]);
+    const pattern = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const q = `[out:json][timeout:20];(nwr["name"~"${pattern}",i](around:12000,${data.lat},${data.lon});nwr["name:ru"~"${pattern}",i](around:12000,${data.lat},${data.lon}););out center 80;`;
+    const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 25000))).then(ov =>
+      osmElementsToPlaces(ov.elements, data.lat, data.lon, data.displayName.split(',')[0].trim())
+        .filter(p => matchesPlaceQuery(p, query) && p.distKm <= 12));
+  }
+
+  function osmElementsToPlaces(elements, lat, lon, cityShort) {
       const out = [];
-      for (const el of ov.elements || []) {
+      for (const el of elements || []) {
         const tags = el.tags || {};
         const name = (tags['name:ru'] || tags.name || '').trim();
         const pLat = el.lat ?? el.center?.lat, pLon = el.lon ?? el.center?.lon;
@@ -304,7 +320,6 @@
         });
       }
       return out;
-    });
   }
 
   // Места из Википедии рядом с центром города (быстро и надёжно)
@@ -708,13 +723,15 @@
 
     async function searchBeyondLoaded(screen, body, query, data) {
       const key = data.city + '|' + query.toLowerCase();
-      if (searchAttempts.has(key) || filteredPlaces().length) return;
+      if (searchAttempts.has(key)) return;
       searchAttempts.add(key);
       state.searchPending = true;
       const box = body.querySelector('#st-guide-list');
-      if (box) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
+      if (box && !filteredPlaces().length) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
       try {
-        const found = await wikiSearchPlaces(query, data);
+        const results = await Promise.allSettled([wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
+        const found = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+        if (results.every(r => r.status === 'rejected')) throw new Error('place search failed');
         if (state.alive && state.data === data && found.length) data.places = mergePlaces(data.places, found);
       } catch (_) {
         searchAttempts.delete(key); // после ошибки сети разрешаем повторный поиск
@@ -1277,6 +1294,7 @@
                 }).join('')}
               </div>
               <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Поиск места по названию, улице или типу…">
+              <a id="st-guide-google-search" class="st-btn st-btn-g" style="display:${state.query.trim() ? 'inline-flex' : 'none'};align-self:flex-start;text-decoration:none" href="${esc(googleMapsUrl({ name: state.query.trim() }, state.data.displayName))}" target="_blank" rel="noopener noreferrer"><i data-lucide="external-link"></i>Все результаты в Google Maps</a>
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
                   ? visible.map(p => placeCardHtml(p, saved, false)).join('')
@@ -1339,7 +1357,12 @@
           const savedNow = getSaved();
           const query = state.query.trim();
           const data = state.data;
-          const willSearch = !list.length && query.length >= 3 && !data.isCountry &&
+          const googleLink = body.querySelector('#st-guide-google-search');
+          if (googleLink) {
+            googleLink.style.display = query ? 'inline-flex' : 'none';
+            googleLink.href = googleMapsUrl({ name: query }, data.displayName);
+          }
+          const willSearch = query.length >= 3 && !data.isCountry &&
             !searchAttempts.has(data.city + '|' + query.toLowerCase());
           state.searchPending = willSearch;
           box.innerHTML = visible.length
