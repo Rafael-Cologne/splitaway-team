@@ -20,8 +20,6 @@
     { id: 'food',   label: 'Еда и кофе', icon: 'utensils' }
   ];
 
-  const QUICK_CITIES = ['Рим', 'Прага', 'Париж', 'Стамбул', 'Барселона', 'Берлин'];
-
   const TAG_LABELS = {
     attraction: 'Достопримечательность',
     museum: 'Музей',
@@ -45,10 +43,22 @@
 
   STHub.addStyles(ID, `
     .st-guide-tabs{display:flex;gap:7px;flex-wrap:wrap}
+    .st-guide-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    @media (max-width:340px){.st-guide-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .st-guide-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid var(--hub-card-b);background:var(--hub-card);color:var(--text);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s}
-    .st-guide-chip svg{width:14px;height:14px}
+    .st-guide-filters .st-guide-chip{width:100%;min-width:0;min-height:38px;padding:7px 8px;justify-content:center;text-align:center;white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+    .st-guide-chip svg{width:14px;height:14px;flex-shrink:0}
     .st-guide-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
     .st-guide-chip.free-on{background:#16a34a;border-color:#16a34a;color:#fff}
+    .st-guide-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    @media (max-width:380px){.st-guide-facts{grid-template-columns:1fr}}
+    .st-guide-fact{padding:10px 12px;border-radius:14px;background:var(--hub-soft);display:flex;flex-direction:column;gap:3px;min-width:0}
+    .st-guide-fact-l{font-size:.7rem;color:var(--t2);font-weight:600;display:flex;align-items:center;gap:5px}
+    .st-guide-fact-l svg{width:13px;height:13px;color:var(--accent);flex-shrink:0}
+    .st-guide-fact-v{font-size:.85rem;font-weight:700;color:var(--text);word-break:break-word}
+    .st-guide-plugs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+    .st-guide-plug-ico{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:8px;background:var(--hub-card);border:1px solid var(--hub-card-b);font-size:.75rem;font-weight:700}
+    .st-guide-plug-ico svg{width:18px;height:18px;flex-shrink:0}
     .st-guide-search{display:flex;gap:8px;align-items:center}
     .st-guide-search .st-input{flex:1;min-width:0}
     .st-guide-map-wrap{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow)}
@@ -176,9 +186,68 @@
   //  4) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
   const CITY_TTL = 7 * 86400000;
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const lsKey = key => 'st_guide_city2_' + key;
+  const lsKey = key => 'st_guide_city3_' + key;
   const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
   const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
+
+  const PLUG_MAP = [
+    [/europlug|type\s*c\b/i, 'C'],
+    [/schuko|type\s*f\b/i, 'F'],
+    [/type\s*e\b|french/i, 'E'],
+    [/nema\s*1-15|type\s*a\b/i, 'A'],
+    [/nema\s*5-15|type\s*b\b/i, 'B'],
+    [/bs\s*1363|type\s*g\b/i, 'G'],
+    [/as\/nzs|type\s*i\b/i, 'I'],
+    [/sev\s*1011|type\s*j\b/i, 'J'],
+    [/cei\s*23-50|type\s*l\b/i, 'L'],
+    [/type\s*d\b/i, 'D'],
+    [/type\s*h\b/i, 'H'],
+    [/type\s*k\b/i, 'K'],
+    [/type\s*m\b/i, 'M'],
+    [/type\s*n\b/i, 'N']
+  ];
+
+  function parsePlugTypes(raw) {
+    const out = [];
+    for (const part of String(raw || '').split(',')) {
+      const s = part.trim();
+      if (!s) continue;
+      let letter = '';
+      for (const [re, code] of PLUG_MAP) {
+        if (re.test(s)) { letter = code; break; }
+      }
+      if (!letter) {
+        const m = s.match(/\b([A-O])\b/);
+        if (m) letter = m[1];
+      }
+      if (letter && !out.includes(letter)) out.push(letter);
+    }
+    return out;
+  }
+
+  function plugSvg(letter) {
+    let holes = '<circle cx="8.5" cy="12" r="1.4" fill="currentColor"/><circle cx="15.5" cy="12" r="1.4" fill="currentColor"/>';
+    if (letter === 'A' || letter === 'B') {
+      holes = '<rect x="7.5" y="9" width="2" height="5" rx=".5" fill="currentColor"/><rect x="14.5" y="9" width="2" height="5" rx=".5" fill="currentColor"/>' +
+        (letter === 'B' ? '<circle cx="12" cy="16.5" r="1.3" fill="currentColor"/>' : '');
+    } else if (letter === 'G') {
+      holes = '<rect x="11" y="6.5" width="2" height="3.5" fill="currentColor"/><rect x="7" y="13" width="3.5" height="2" fill="currentColor"/><rect x="13.5" y="13" width="3.5" height="2" fill="currentColor"/>';
+    } else if (letter === 'I') {
+      holes = '<rect x="7.5" y="8.5" width="1.8" height="4.5" transform="rotate(-25 8.4 10.7)" fill="currentColor"/><rect x="14.7" y="8.5" width="1.8" height="4.5" transform="rotate(25 15.6 10.7)" fill="currentColor"/><rect x="11.1" y="14.5" width="1.8" height="3.5" fill="currentColor"/>';
+    } else if (letter === 'F') {
+      holes += '<rect x="11" y="4" width="2" height="2.3" fill="currentColor"/><rect x="11" y="17.7" width="2" height="2.3" fill="currentColor"/>';
+    } else if (letter === 'E' || letter === 'J' || letter === 'L') {
+      holes += '<circle cx="12" cy="8" r="1.2" fill="currentColor"/>';
+    }
+    return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.6"/>${holes}</svg>`;
+  }
+
+  function isFreeByDefault(text, cat) {
+    const d = String(text || '').toLowerCase();
+    if (/зоопарк|аквапарк|аттракцион|музей|галере|театр|опер|казино|аквариум|zoo|aquarium|theme_park|museum|gallery|theatre/.test(d)) return false;
+    if (cat === 'park') return true;
+    return /парк\b|сад\b|сады|смотров|памятник|монумент|площадь|бульвар|набережн|руины|мемориал|мост\b|фонтан|ворота|арка|monument|memorial|square|plaza|park|garden|viewpoint|bridge|fountain/.test(d);
+  }
 
   async function fetchJSON(url, opts, ms) {
     const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), ms || 10000);
@@ -216,11 +285,18 @@
         if (!name || pLat == null || pLon == null) continue;
         const latNum = Number(pLat), lonNum = Number(pLon);
         const hasWiki = Boolean(tags['wikipedia:ru'] || tags.wikipedia);
+        const cat = classifyPlace(tags);
+        const freeOsm = tags.fee === 'no' || (tags.fee !== 'yes' && (
+          tags.leisure === 'park' || tags.leisure === 'garden' ||
+          tags.tourism === 'viewpoint' || tags.tourism === 'artwork' ||
+          tags.historic === 'monument' || tags.historic === 'memorial' || tags.historic === 'ruins' ||
+          tags.place === 'square'
+        ));
         out.push({
           id: `${el.type}-${el.id}`, name, city: cityShort,
-          cat: classifyPlace(tags), typeLabel: placeTypeLabel(tags), addr: formatAddress(tags),
+          cat, typeLabel: placeTypeLabel(tags), addr: formatAddress(tags),
           hours: tags.opening_hours || '', website: safeUrl(tags.website || tags['contact:website'] || ''),
-          cuisine: tags.cuisine ? tags.cuisine.replace(/;/g, ', ') : '', free: tags.fee === 'no',
+          cuisine: tags.cuisine ? tags.cuisine.replace(/;/g, ', ') : '', free: freeOsm,
           wikiTag: tags['wikipedia:ru'] || tags.wikipedia || '',
           distKm: haversineKm(lat, lon, latNum, lonNum),
           score: (hasWiki ? 3 : 0) + (tags.website ? 1 : 0) + (tags.opening_hours ? 1 : 0) + (tags['name:ru'] ? 1 : 0),
@@ -232,7 +308,7 @@
   }
 
   // Места из Википедии рядом с центром города (быстро и надёжно)
-  const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|университет|больниц|кладбищ|компани|предприяти|министерств|правительств|посольств|партия|профсоюз|издательств|газет|футбольн|клуб|отель|гостиниц|город в|муниципалитет|провинци|коммуна|община|деревн|село|олимпийск|municipality|province|university/i;
+  const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|университет|больниц|кладбищ|компани|предприяти|министерств|правительств|посольств|партия|профсоюз|издательств|газет|футбольн|клуб|отель|гостиниц|город в|муниципалитет|провинци|коммуна|община|деревн|село|олимпийск|евровидени|eurovision|фестивал|чемпионат|турнир|конкурс|матч|концерт|municipality|province|university/i;
 
   function guessPlaceCat(text) {
     const d = String(text || '').toLowerCase();
@@ -263,6 +339,8 @@
         FILTER NOT EXISTS { ?item wdt:P31 wd:Q55488 }
         FILTER NOT EXISTS { ?item wdt:P31 wd:Q3918 }
         FILTER NOT EXISTS { ?item wdt:P31 wd:Q1656682 }
+        FILTER NOT EXISTS { ?item wdt:P585 [] }
+        FILTER NOT EXISTS { ?item wdt:P580 [] }
         BIND(geof:latitude(?loc) AS ?lat)
         BIND(geof:longitude(?loc) AS ?lon)
         OPTIONAL { ?item wdt:P18 ?img . }
@@ -286,13 +364,14 @@
       const rawImg = b.photo?.value || '';
       const thumb = rawImg ? rawImg.replace(/^http:\/\//i, 'https://') + '?width=240' : '';
       const qid = (b.item?.value || '').split('/').pop() || name;
+      const cat = guessPlaceCat(desc + ' ' + name);
       out.push({
         id: 'wd-' + qid,
         name: name.replace(/\s*\([^)]*\)\s*$/, ''),
         city: cityShort,
-        cat: guessPlaceCat(desc + ' ' + name),
+        cat,
         typeLabel: desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : 'Достопримечательность',
-        addr: '', hours: '', website: '', cuisine: '', free: false,
+        addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault(desc + ' ' + name, cat),
         wikiTag: 'ru:' + name,
         thumb,
         distKm: haversineKm(lat, lon, pLat, pLon),
@@ -312,11 +391,12 @@
     return pages.filter(p => p.coordinates && p.coordinates[0] && p.title && p.title.toLowerCase() !== cityN && !WIKI_SKIP.test((p.description || '') + ' ' + p.title))
       .map(p => {
         const c = p.coordinates[0];
+        const cat = guessPlaceCat((p.description || '') + ' ' + p.title);
         return {
           id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
-          cat: guessPlaceCat((p.description || '') + ' ' + p.title),
+          cat,
           typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
-          addr: '', hours: '', website: '', cuisine: '', free: false,
+          addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault((p.description || '') + ' ' + p.title, cat),
           wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
           distKm: haversineKm(lat, lon, c.lat, c.lon),
           score: 3 + (p.thumbnail ? 2 : 0) + (p.description ? 1 : 0),
@@ -342,6 +422,69 @@
     return out.sort((x, y) => y.score - x.score || x.distKm - y.distKm);
   }
 
+  async function fetchCountryFacts(qid) {
+    if (!qid || !/^Q\d+$/.test(qid)) return null;
+    const factsQ = `
+      SELECT
+        (GROUP_CONCAT(DISTINCT ?capLabel; separator=", ") AS ?capitals)
+        (SAMPLE(?pop) AS ?population)
+        (SAMPLE(?area) AS ?areaKm2)
+        (GROUP_CONCAT(DISTINCT ?langLabel; separator=", ") AS ?langs)
+        (GROUP_CONCAT(DISTINCT ?curLabel; separator=", ") AS ?currencies)
+        (GROUP_CONCAT(DISTINCT ?tzLabel; separator=", ") AS ?timezones)
+        (GROUP_CONCAT(DISTINCT ?phone; separator=", ") AS ?phones)
+        (GROUP_CONCAT(DISTINCT ?sideLabel; separator=", ") AS ?driveSide)
+        (GROUP_CONCAT(DISTINCT ?plugLabel; separator=", ") AS ?plugs)
+        (GROUP_CONCAT(DISTINCT ?volt; separator=", ") AS ?volts)
+        (SAMPLE(?highLabel) AS ?highestName)
+        (SAMPLE(?highElev) AS ?highestElev)
+      WHERE {
+        BIND(wd:${qid} AS ?c)
+        OPTIONAL { ?c wdt:P36 ?cap . ?cap rdfs:label ?capLabel . FILTER(LANG(?capLabel) = "ru") }
+        OPTIONAL { ?c wdt:P1082 ?pop . }
+        OPTIONAL { ?c wdt:P2046 ?area . }
+        OPTIONAL { ?c wdt:P37 ?lang . ?lang rdfs:label ?langLabel . FILTER(LANG(?langLabel) = "ru") }
+        OPTIONAL { ?c wdt:P38 ?cur . ?cur rdfs:label ?curLabel . FILTER(LANG(?curLabel) = "ru") }
+        OPTIONAL { ?c wdt:P421 ?tz . ?tz rdfs:label ?tzLabel . FILTER(LANG(?tzLabel) = "en") }
+        OPTIONAL { ?c wdt:P474 ?phone . }
+        OPTIONAL { ?c wdt:P1622 ?side . ?side rdfs:label ?sideLabel . FILTER(LANG(?sideLabel) = "ru") }
+        OPTIONAL { ?c wdt:P2853 ?plug . ?plug rdfs:label ?plugLabel . FILTER(LANG(?plugLabel) = "en") }
+        OPTIONAL { ?c wdt:P2884 ?volt . }
+        OPTIONAL { ?c wdt:P610 ?high . OPTIONAL { ?high rdfs:label ?highLabel . FILTER(LANG(?highLabel) = "ru") } OPTIONAL { ?high wdt:P2044 ?highElev . } }
+      }
+    `.trim();
+    const unescoQ = `SELECT (COUNT(DISTINCT ?h) AS ?unesco) WHERE { ?h wdt:P17 wd:${qid} ; wdt:P1435 wd:Q9259 . }`;
+    const headers = { Accept: 'application/sparql-results+json' };
+    const [fRes, uRes] = await Promise.all([
+      fetchJSON('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(factsQ), { headers }, 9000).catch(() => null),
+      fetchJSON('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(unescoQ), { headers }, 9000).catch(() => null)
+    ]);
+    const b = fRes?.results?.bindings?.[0];
+    if (!b) return null;
+    const popNum = Number(b.population?.value);
+    const areaNum = Number(b.areaKm2?.value);
+    const elevNum = Number(b.highestElev?.value);
+    const unescoNum = Number(uRes?.results?.bindings?.[0]?.unesco?.value);
+    const tzList = (b.timezones?.value || '').split(',').map(s => s.trim()).filter(s => /^UTC/i.test(s));
+    const plugTypes = parsePlugTypes(b.plugs?.value || '');
+    const voltList = [...new Set((b.volts?.value || '').split(',').map(s => s.trim()).filter(Boolean))];
+    return {
+      capital: b.capitals?.value || '',
+      population: Number.isFinite(popNum) && popNum > 0 ? popNum.toLocaleString('ru-RU') : '',
+      area: Number.isFinite(areaNum) && areaNum > 0 ? `${Math.round(areaNum).toLocaleString('ru-RU')} км²` : '',
+      langs: b.langs?.value || '',
+      currencies: b.currencies?.value || '',
+      timezones: tzList.length ? [...new Set(tzList)].slice(0, 3).join(', ') : (b.timezones?.value || '').split(',').slice(0, 2).join(', '),
+      phone: b.phones?.value || '',
+      driveSide: b.driveSide?.value || '',
+      plugTypes,
+      plugsRaw: b.plugs?.value || '',
+      volts: voltList.length ? `${voltList.join(' / ')} В` : '',
+      highest: b.highestName?.value ? `${b.highestName.value}${Number.isFinite(elevNum) && elevNum > 0 ? ` (${Math.round(elevNum).toLocaleString('ru-RU')} м)` : ''}` : '',
+      unesco: Number.isFinite(unescoNum) && unescoNum > 0 ? String(unescoNum) : ''
+    };
+  }
+
   async function fetchCityData(city) {
     const key = city.trim().toLowerCase();
     if (cityCache.has(key)) return cityCache.get(key);
@@ -350,15 +493,37 @@
 
     let nomJson;
     try {
-      nomJson = await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ru&q=${encodeURIComponent(city)}`, null, 10000);
+      nomJson = await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&extratags=1&accept-language=ru&q=${encodeURIComponent(city)}`, null, 10000);
     } catch (_) { throw new Error('Нет связи с сервисом поиска. Проверьте интернет и попробуйте ещё раз'); }
-    if (!nomJson.length) throw new Error(`Город «${city}» не найден`);
+    if (!nomJson.length) throw new Error(`Место «${city}» не найдено`);
 
     const geo = nomJson[0];
     const lat = Number(geo.lat), lon = Number(geo.lon);
     const cityShort = geo.display_name.split(',')[0].trim();
+    const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cityShort)}`, null, 8000).catch(() => null);
 
-    const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`, null, 8000).catch(() => null);
+    // Если в поездке указана только страна — показываем факты о стране вместо поиска мест
+    if (geo.addresstype === 'country' || geo.type === 'country') {
+      const qid = geo.extratags?.wikidata || '';
+      const [wiki, facts] = await Promise.all([wikiP, fetchCountryFacts(qid)]);
+      const result = {
+        isCountry: true,
+        city,
+        displayName: cityShort,
+        lat, lon,
+        wiki: wiki && wiki.extract ? {
+          title: wiki.title,
+          extract: wiki.extract,
+          url: safeUrl(wiki.content_urls?.mobile?.page || wiki.content_urls?.desktop?.page || wikiUrlFromTag('ru:' + (wiki.title || cityShort)))
+        } : null,
+        facts,
+        places: []
+      };
+      cityCache.set(key, result);
+      lsWrite(key, result);
+      return result;
+    }
+
     const wdP = wikidataTopPlaces(lat, lon, city, cityShort).catch(() => []);
     const listP = wikiPlaces(lat, lon, city, cityShort).catch(() => []);
     const ovFull = overpassPlaces(lat, lon, cityShort, 30000);
@@ -370,6 +535,7 @@
     if (!places.length) throw new Error('Не удалось загрузить места: сервисы карт перегружены. Попробуйте ещё раз через минуту');
 
     const result = {
+      isCountry: false,
       city,
       displayName: (geo.display_name || city).split(',').slice(0, 2).join(', '),
       lat, lon,
@@ -378,12 +544,24 @@
         extract: wiki.extract,
         url: safeUrl(wiki.content_urls?.mobile?.page || wiki.content_urls?.desktop?.page || wikiUrlFromTag('ru:' + (wiki.title || city)))
       } : null,
-      places
+      places,
+      osmPending: !ov
     };
     cityCache.set(key, result);
-    lsWrite(key, result);
-    // OSM ответил позже — дополним сохранённый город (будет видно при следующем открытии)
-    if (!ov) ovFull.then(list => { if (list && list.length) { result.places = mergePlaces(result.places, list); lsWrite(key, result); } }).catch(() => {});
+    if (ov) lsWrite(key, result);
+    // OSM ответил позже — дополним места и обновим кэш
+    if (!ov) {
+      result.ovPromise = ovFull.then(list => {
+        result.osmPending = false;
+        if (list && list.length) result.places = mergePlaces(result.places, list);
+        lsWrite(key, Object.assign({}, result, { ovPromise: undefined, osmPending: false }));
+        return true;
+      }).catch(() => {
+        result.osmPending = false;
+        lsWrite(key, Object.assign({}, result, { ovPromise: undefined, osmPending: false }));
+        return false;
+      });
+    }
     return result;
   }
 
@@ -448,8 +626,9 @@
   }
 
   STHub.registerService(ID, ctx => {
+    const savedCity = ctx.store.get('lastCity', '').trim();
     const tripCity = (ctx.trip?.dest || '').trim();
-    const initialCity = tripCity || ctx.store.get('lastCity', '').trim();
+    const initialCity = savedCity || tripCity;
 
     const state = {
       tab: 'explore', // 'explore' | 'plan'
@@ -458,6 +637,7 @@
       query: '',
       limit: 20,
       loading: false,
+      osmLoading: false,
       error: '',
       data: null,
       selectedId: null,
@@ -596,14 +776,60 @@
         if (!state.alive) return;
         state.data = data;
         state.loading = false;
+        state.osmLoading = Boolean(data.osmPending);
         ctx.store.set('lastCity', clean);
         screen.refresh();
+        if (data.ovPromise) {
+          data.ovPromise.then(() => {
+            if (!state.alive || state.data !== data) return;
+            state.osmLoading = false;
+            if (state.tab === 'explore') screen.refresh();
+          });
+        }
       } catch (err) {
         if (!state.alive) return;
         state.loading = false;
+        state.osmLoading = false;
         state.error = err?.message || 'Ошибка загрузки города';
         screen.refresh();
       }
+    }
+
+    function detectByGeolocation(screen, silent) {
+      if (!('geolocation' in navigator)) {
+        if (!silent) ctx.toast('Геолокация недоступна');
+        return;
+      }
+      if (!silent) {
+        state.loading = true;
+        state.error = '';
+        screen.refresh();
+      }
+      navigator.geolocation.getCurrentPosition(async pos => {
+        if (!state.alive) return;
+        try {
+          const r = await fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=ru`, null, 8000);
+          const a = r?.address || {};
+          const city = (a.city || a.town || a.village || a.municipality || a.state || '').trim();
+          if (city) {
+            loadCity(city, screen);
+          } else {
+            state.loading = false;
+            if (!silent) ctx.toast('Не удалось определить город');
+            screen.refresh();
+          }
+        } catch (_) {
+          state.loading = false;
+          if (!silent) ctx.toast('Не удалось определить город');
+          screen.refresh();
+        }
+      }, () => {
+        state.loading = false;
+        if (!silent) {
+          ctx.toast('Нет доступа к геолокации');
+          screen.refresh();
+        }
+      }, { timeout: 8000 });
     }
 
     function enrichVisibleCards(places, body) {
@@ -829,6 +1055,8 @@
           state.query = '';
           state.filter = 'all';
           state.error = '';
+          state.osmLoading = false;
+          ctx.store.set('lastCity', '');
           destroyMap();
           screen.refresh();
         }
@@ -870,25 +1098,86 @@
         } else {
           const searchBarHtml = `
             <form class="st-guide-search" id="st-guide-city-form">
-              <input class="st-input" id="st-guide-city-inp" value="${esc(state.city)}" placeholder="Город, например: Кёльн или Рим">
+              <input class="st-input" id="st-guide-city-inp" value="${esc(state.city)}" placeholder="Город, например: Дюссельдорф или Аликанте">
+              <button class="st-btn st-btn-g" type="button" id="st-guide-geo" aria-label="Моё местоположение" title="Определить по геолокации"><i data-lucide="locate-fixed"></i></button>
               <button class="st-btn" type="submit"><i data-lucide="search"></i>Найти</button>
             </form>
-            <div class="st-guide-tabs">
-              ${QUICK_CITIES.map(c =>
-                `<button class="st-guide-chip${state.city.toLowerCase() === c.toLowerCase() ? ' on' : ''}" type="button" data-quick-city="${esc(c)}">${esc(c)}</button>`
-              ).join('')}
-            </div>
           `;
 
           if (state.loading) {
-            body.innerHTML = tabsHtml + searchBarHtml + '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Загружаю карту и интересные места…</div></div>';
+            body.innerHTML = tabsHtml + searchBarHtml + '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Загружаю данные…</div></div>';
           } else if (state.error) {
             body.innerHTML = tabsHtml + searchBarHtml + `<div class="st-empty"><i data-lucide="alert-circle"></i><div>${esc(state.error)}</div></div>`;
           } else if (!state.data) {
-            body.innerHTML = tabsHtml + searchBarHtml + '<div class="st-empty"><i data-lucide="compass"></i><div>Введите город или выберите из списка выше, чтобы увидеть места на карте.</div></div>';
+            body.innerHTML = tabsHtml + searchBarHtml + '<div class="st-empty"><i data-lucide="compass"></i><div>Введите город или нажмите на иконку геолокации, чтобы увидеть места на карте.</div></div>';
+          } else if (state.data.isCountry) {
+            destroyMap();
+            const f = state.data.facts || {};
+            const factItems = [
+              f.capital && { icon: 'landmark', label: 'Столица', val: f.capital },
+              f.population && { icon: 'users', label: 'Население', val: f.population },
+              f.area && { icon: 'maximize-2', label: 'Площадь', val: f.area },
+              f.langs && { icon: 'languages', label: 'Официальный язык', val: f.langs },
+              f.currencies && { icon: 'coins', label: 'Валюта', val: f.currencies },
+              f.timezones && { icon: 'clock', label: 'Часовой пояс', val: f.timezones },
+              f.phone && { icon: 'phone', label: 'Телефонный код', val: f.phone },
+              f.driveSide && { icon: 'car', label: 'Движение', val: f.driveSide },
+              f.highest && { icon: 'mountain', label: 'Высшая точка', val: f.highest },
+              f.unesco && { icon: 'award', label: 'Объектов ЮНЕСКО', val: f.unesco }
+            ].filter(Boolean);
+
+            const plugTypes = f.plugTypes || [];
+            const plugLabel = plugTypes.length ? `Тип ${plugTypes.join(', ')}${f.volts ? ' · ' + f.volts : ''}` : (f.volts || '');
+
+            body.innerHTML = `
+              ${tabsHtml}
+              ${searchBarHtml}
+              <div class="st-card">
+                <div class="st-guide-city-hd">
+                  <div>
+                    <div class="st-card-title">${esc(state.data.displayName)}</div>
+                    <div class="st-muted">Факты о стране (Wikidata и Википедия)</div>
+                  </div>
+                  ${state.data.wiki?.url ? `<a class="st-btn st-btn-g" style="min-height:32px;padding:0 10px;font-size:.76rem;border-radius:10px;text-decoration:none" href="${esc(state.data.wiki.url)}" target="_blank" rel="noopener noreferrer"><i data-lucide="book-open"></i>Википедия</a>` : ''}
+                </div>
+                ${state.data.wiki?.extract ? (() => {
+                  const cs = wikiSnippet(state.data.wiki.extract, 320);
+                  return `<div class="st-guide-city-wiki" data-city-wiki>${esc(cs.short)}${cs.truncated ? '<button class="st-guide-more-txt" type="button" id="st-guide-city-more">Читать полностью</button>' : ''}</div>`;
+                })() : ''}
+                ${(factItems.length || plugLabel) ? `
+                  <div class="st-guide-facts">
+                    ${factItems.map(it => `
+                      <div class="st-guide-fact">
+                        <div class="st-guide-fact-l"><i data-lucide="${it.icon}"></i>${esc(it.label)}</div>
+                        <div class="st-guide-fact-v">${esc(it.val)}</div>
+                      </div>
+                    `).join('')}
+                    ${plugLabel ? `
+                      <div class="st-guide-fact" style="grid-column:1 / -1">
+                        <div class="st-guide-fact-l"><i data-lucide="plug"></i>Розетки и напряжение</div>
+                        <div class="st-guide-fact-v">${esc(plugLabel)}</div>
+                        ${plugTypes.length ? `<div class="st-guide-plugs">${plugTypes.map(t => `<span class="st-guide-plug-ico">${plugSvg(t)}<span>Тип ${esc(t)}</span></span>`).join('')}</div>` : ''}
+                      </div>
+                    ` : ''}
+                  </div>
+                ` : ''}
+              </div>
+              <div class="st-card">
+                <div class="st-card-title" style="margin-bottom:8px">Выберите город</div>
+                <div class="st-muted" style="margin-bottom:10px">В поездке указана страна — введите конкретный город, чтобы увидеть карту и достопримечательности.</div>
+                <form class="st-guide-search" id="st-guide-country-city-form">
+                  <input class="st-input" id="st-guide-country-city-inp" placeholder="Например: Аликанте, Барселона, Мадрид…">
+                  <button class="st-btn" type="submit"><i data-lucide="arrow-right"></i>Места</button>
+                </form>
+              </div>
+            `;
           } else {
             const list = filteredPlaces();
             const visible = list.slice(0, state.limit);
+            const emptyMsg = state.filter === 'free' && state.osmLoading
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
+              : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено по этому фильтру</div></div>';
+
             body.innerHTML = `
               ${tabsHtml}
               ${searchBarHtml}
@@ -912,19 +1201,22 @@
                   <span>Нажмите на точку на карте</span>
                 </div>
               </div>
-              <div class="st-guide-tabs">
+              <div class="st-guide-filters">
                 ${FILTERS.map(f => {
                   const active = state.filter === f.id;
                   const cls = active ? (f.id === 'free' ? ' free-on' : ' on') : '';
-                  return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i>${esc(f.label)}</button>`;
+                  return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i><span>${esc(f.label)}</span></button>`;
                 }).join('')}
               </div>
               <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Фильтр по названию, улице или типу…">
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
                   ? visible.map(p => placeCardHtml(p, saved, false)).join('')
-                  : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено по этому фильтру</div></div>'}
+                  : emptyMsg}
               </div>
+              ${state.filter === 'free' && state.osmLoading && visible.length
+                ? '<div class="st-muted" style="text-align:center;font-size:.78rem">Данные о входе из OpenStreetMap ещё догружаются…</div>'
+                : ''}
               ${list.length > state.limit
                 ? `<button class="st-btn st-btn-g st-btn-fw" type="button" id="st-guide-more">Показать ещё (${list.length - state.limit})</button>`
                 : ''}
@@ -949,8 +1241,14 @@
           loadCity(val, screen);
         });
 
-        body.querySelectorAll('[data-quick-city]').forEach(btn => {
-          btn.addEventListener('click', () => loadCity(btn.dataset.quickCity, screen));
+        body.querySelector('#st-guide-country-city-form')?.addEventListener('submit', e => {
+          e.preventDefault();
+          const val = body.querySelector('#st-guide-country-city-inp')?.value || '';
+          loadCity(val, screen);
+        });
+
+        body.querySelector('#st-guide-geo')?.addEventListener('click', () => {
+          detectByGeolocation(screen, false);
         });
 
         body.querySelectorAll('[data-cat-filter]').forEach(btn => {
@@ -971,7 +1269,9 @@
           const savedNow = getSaved();
           box.innerHTML = visible.length
             ? visible.map(p => placeCardHtml(p, savedNow, false)).join('')
-            : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено</div></div>';
+            : (state.filter === 'free' && state.osmLoading
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
+              : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено</div></div>');
           if (typeof initializeIcons === 'function') initializeIcons(box);
           bindListEvents(box, body, screen);
           enrichVisibleCards(visible, body);
@@ -995,9 +1295,11 @@
       }
     });
 
-    // Автоматически загружаем город поездки или последний открытый город
+    // Автоматически загружаем последний выбранный город, город поездки или геолокацию
     if (initialCity && !state.data) {
       loadCity(initialCity, screenApi);
+    } else if (!initialCity && !state.data) {
+      detectByGeolocation(screenApi, true);
     }
   });
 })();
