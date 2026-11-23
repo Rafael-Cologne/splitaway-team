@@ -778,9 +778,12 @@
       const box = body.querySelector('#st-guide-list');
       if (box && !filteredPlaces().length) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
       try {
-        const results = await Promise.allSettled([photonSearchPlaces(query, data), wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
-        const found = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-        if (results.every(r => r.status === 'rejected')) throw new Error('place search failed');
+        let found = await photonSearchPlaces(query, data).catch(() => []);
+        if (!found.length) {
+          const results = await Promise.allSettled([wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
+          found = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+          if (results.every(r => r.status === 'rejected')) throw new Error('place search failed');
+        }
         if (state.alive && state.data === data && found.length) data.places = mergePlaces(data.places, found);
       } catch (_) {
         searchAttempts.delete(key); // после ошибки сети разрешаем повторный поиск
