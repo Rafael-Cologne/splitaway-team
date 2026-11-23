@@ -485,19 +485,35 @@
     };
   }
 
-  async function fetchCityData(city) {
+  async function fetchCityData(city, expectedDestination = '') {
     const key = city.trim().toLowerCase();
-    if (cityCache.has(key)) return cityCache.get(key);
+    const matchesTrip = data => !expectedDestination ||
+      (/^(city|town|village|municipality|hamlet|suburb|quarter|borough|neighbourhood|locality)$/.test(data.geoType || '') &&
+        (data.geoFullName || '').toLocaleLowerCase().includes(expectedDestination.toLocaleLowerCase()));
+    const notFound = () => new Error(`Место «${city}» не найдено`);
+    if (cityCache.has(key)) {
+      const cached = cityCache.get(key);
+      if (!expectedDestination || cached.geoType) {
+        if (!matchesTrip(cached)) throw notFound();
+        return cached;
+      }
+    }
     const saved = lsRead(key);
-    if (saved) { cityCache.set(key, saved); return saved; }
+    if (saved && (!expectedDestination || saved.geoType)) {
+      if (!matchesTrip(saved)) throw notFound();
+      cityCache.set(key, saved); return saved;
+    }
 
     let nomJson;
     try {
       nomJson = await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&extratags=1&accept-language=ru&q=${encodeURIComponent(city)}`, null, 10000);
     } catch (_) { throw new Error('Нет связи с сервисом поиска. Проверьте интернет и попробуйте ещё раз'); }
-    if (!nomJson.length) throw new Error(`Место «${city}» не найдено`);
+    if (!nomJson.length) throw notFound();
 
     const geo = nomJson[0];
+    const geoType = geo.addresstype || geo.type || '';
+    const geoFullName = geo.display_name || '';
+    if (!matchesTrip({ geoType, geoFullName })) throw notFound();
     const lat = Number(geo.lat), lon = Number(geo.lon);
     const cityShort = geo.display_name.split(',')[0].trim();
     const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cityShort)}`, null, 8000).catch(() => null);
@@ -510,6 +526,7 @@
         isCountry: true,
         city,
         displayName: cityShort,
+        geoType, geoFullName,
         lat, lon,
         wiki: wiki && wiki.extract ? {
           title: wiki.title,
@@ -538,6 +555,7 @@
       isCountry: false,
       city,
       displayName: (geo.display_name || city).split(',').slice(0, 2).join(', '),
+      geoType, geoFullName,
       lat, lon,
       wiki: wiki && wiki.extract ? {
         title: wiki.title,
@@ -766,7 +784,7 @@
       `;
     }
 
-    async function loadCity(cityName, screen, fallback = '') {
+    async function loadCity(cityName, screen, fallback = '', expectedDestination = '') {
       const clean = cityName.trim();
       if (!clean) return;
       state.city = clean;
@@ -778,7 +796,7 @@
       screen.refresh();
 
       try {
-        const data = await fetchCityData(clean);
+        const data = await fetchCityData(clean, expectedDestination);
         if (!state.alive) return;
         state.data = data;
         state.loading = false;
@@ -1306,7 +1324,7 @@
 
     // Сначала место текущей поездки, затем сохранённый поиск или геолокация.
     if (initialCity && !state.data) {
-      loadCity(initialCity, screenApi, fallbackCity);
+      loadCity(initialCity, screenApi, fallbackCity, tripPlace !== tripDest ? tripDest : '');
     } else if (!initialCity && !state.data) {
       detectByGeolocation(screenApi, true);
     }
