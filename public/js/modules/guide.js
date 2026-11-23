@@ -405,6 +405,40 @@
       });
   }
 
+  // Поиск по названию за пределами начальной подборки мест.
+  async function wikiSearchPlaces(query, data) {
+    const cityShort = data.displayName.split(',')[0].trim();
+    const url = 'https://ru.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search' +
+      `&gsrsearch=${encodeURIComponent(query + ' ' + cityShort)}&gsrlimit=12` +
+      '&prop=coordinates|pageimages|description&colimit=max&pilimit=max&pithumbsize=240';
+    const j = await fetchJSON(url, null, 10000);
+    return Object.values(j?.query?.pages || {}).filter(p => {
+      const c = p.coordinates?.[0];
+      return c && p.title && Number.isFinite(c.lat) && Number.isFinite(c.lon) &&
+        haversineKm(data.lat, data.lon, c.lat, c.lon) <= 20 &&
+        matchesPlaceQuery({ name: p.title, typeLabel: p.description || '', addr: '' }, query);
+    }).map(p => {
+      const c = p.coordinates[0];
+      const cat = guessPlaceCat((p.description || '') + ' ' + p.title);
+      return {
+        id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
+        cat, typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
+        addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault((p.description || '') + ' ' + p.title, cat),
+        wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
+        distKm: haversineKm(data.lat, data.lon, c.lat, c.lon), score: 15,
+        lat: c.lat, lon: c.lon
+      };
+    });
+  }
+
+  function matchesPlaceQuery(place, query) {
+    const words = text => String(text || '').toLowerCase().replace(/ё/g, 'е').replace(/ј/g, 'й')
+      .split(/[^a-zа-я0-9]+/).filter(Boolean).map(w => w.length >= 5 ? w.slice(0, 4) : w);
+    const wanted = words(query);
+    const available = words([place.name, place.typeLabel, place.addr].join(' '));
+    return wanted.length > 0 && wanted.every(word => available.some(item => item.startsWith(word)));
+  }
+
   // Объединить: одно и то же место из Википедии/Wikidata и OSM — один раз
   function mergePlaces(a, b) {
     const out = a.slice();
@@ -635,6 +669,7 @@
       city: initialCity,
       filter: 'all',
       query: '',
+      searchPending: false,
       limit: 20,
       loading: false,
       osmLoading: false,
@@ -649,6 +684,8 @@
 
     const getSaved = () => ctx.store.get('saved', []);
     const setSaved = list => ctx.store.set('saved', list);
+    const searchAttempts = new Set();
+    let searchTimer = null;
 
     function destroyMap() {
       if (state.map) {
@@ -661,12 +698,39 @@
 
     function filteredPlaces() {
       const all = state.data?.places || [];
-      const q = state.query.trim().toLowerCase();
+      const q = state.query.trim();
       return all.filter(p => {
         const okCat = state.filter === 'all' ? true : (state.filter === 'free' ? p.free : p.cat === state.filter);
-        const okQ = !q || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q) || p.addr.toLowerCase().includes(q);
+        const okQ = !q || matchesPlaceQuery(p, q);
         return okCat && okQ;
       });
+    }
+
+    async function searchBeyondLoaded(screen, body, query, data) {
+      const key = data.city + '|' + query.toLowerCase();
+      if (searchAttempts.has(key) || filteredPlaces().length) return;
+      searchAttempts.add(key);
+      state.searchPending = true;
+      const box = body.querySelector('#st-guide-list');
+      if (box) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
+      try {
+        const found = await wikiSearchPlaces(query, data);
+        if (state.alive && state.data === data && found.length) data.places = mergePlaces(data.places, found);
+      } catch (_) {
+        searchAttempts.delete(key); // после ошибки сети разрешаем повторный поиск
+      }
+      if (state.alive && state.data === data && state.query === query) {
+        state.searchPending = false;
+        const input = body.querySelector('#st-guide-q');
+        const focused = document.activeElement === input;
+        const cursor = focused ? input.selectionStart : null;
+        screen.refresh();
+        if (focused) {
+          const next = body.querySelector('#st-guide-q');
+          next?.focus();
+          if (cursor != null) next?.setSelectionRange(cursor, cursor);
+        }
+      }
     }
 
     function toggleSave(place) {
@@ -768,6 +832,8 @@
       state.error = '';
       state.limit = 20;
       state.selectedId = null;
+      state.searchPending = false;
+      clearTimeout(searchTimer);
       destroyMap();
       screen.refresh();
 
@@ -1174,7 +1240,9 @@
           } else {
             const list = filteredPlaces();
             const visible = list.slice(0, state.limit);
-            const emptyMsg = state.filter === 'free' && state.osmLoading
+            const emptyMsg = state.searchPending
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>'
+              : state.filter === 'free' && state.osmLoading
               ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
               : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено по этому фильтру</div></div>';
 
@@ -1208,7 +1276,7 @@
                   return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i><span>${esc(f.label)}</span></button>`;
                 }).join('')}
               </div>
-              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Фильтр по названию, улице или типу…">
+              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Поиск места по названию, улице или типу…">
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
                   ? visible.map(p => placeCardHtml(p, saved, false)).join('')
@@ -1260,22 +1328,36 @@
         });
 
         body.querySelector('#st-guide-q')?.addEventListener('input', e => {
+          clearTimeout(searchTimer);
           state.query = e.target.value;
+          state.searchPending = false;
           state.limit = 20;
           const box = body.querySelector('#st-guide-list');
           if (!box || !state.data) return;
           const list = filteredPlaces();
           const visible = list.slice(0, state.limit);
           const savedNow = getSaved();
+          const query = state.query.trim();
+          const data = state.data;
+          const willSearch = !list.length && query.length >= 3 && !data.isCountry &&
+            !searchAttempts.has(data.city + '|' + query.toLowerCase());
+          state.searchPending = willSearch;
           box.innerHTML = visible.length
             ? visible.map(p => placeCardHtml(p, savedNow, false)).join('')
-            : (state.filter === 'free' && state.osmLoading
+            : (willSearch
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>'
+              : state.filter === 'free' && state.osmLoading
               ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
               : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено</div></div>');
           if (typeof initializeIcons === 'function') initializeIcons(box);
           bindListEvents(box, body, screen);
           enrichVisibleCards(visible, body);
           updateMapMarkers(body, screen);
+          if (willSearch) {
+            searchTimer = setTimeout(() => {
+              if (state.data === data && state.query.trim() === query) searchBeyondLoaded(screen, body, query, data);
+            }, 450);
+          }
         });
 
         body.querySelector('#st-guide-more')?.addEventListener('click', () => {
