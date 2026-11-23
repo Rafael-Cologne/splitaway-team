@@ -627,8 +627,14 @@
 
   STHub.registerService(ID, ctx => {
     const savedCity = ctx.store.get('lastCity', '').trim();
-    const tripCity = (ctx.trip?.dest || '').trim();
-    const initialCity = savedCity || tripCity;
+    const tripName = (ctx.trip?.name || '').trim();
+    const tripDest = (ctx.trip?.dest || '').trim();
+    // В текущей поездке название может быть городом, а место — страной.
+    // Уточняем город страной и не даём прошлому поиску заслонить место поездки.
+    const tripPlace = tripName && tripDest && tripName.toLocaleLowerCase() !== tripDest.toLocaleLowerCase()
+      ? `${tripName}, ${tripDest}` : tripName || tripDest;
+    const initialCity = tripPlace || savedCity;
+    const fallbackCity = tripPlace && tripDest && tripPlace !== tripDest ? tripDest : savedCity;
 
     const state = {
       tab: 'explore', // 'explore' | 'plan'
@@ -760,7 +766,7 @@
       `;
     }
 
-    async function loadCity(cityName, screen) {
+    async function loadCity(cityName, screen, fallback = '') {
       const clean = cityName.trim();
       if (!clean) return;
       state.city = clean;
@@ -788,6 +794,9 @@
         }
       } catch (err) {
         if (!state.alive) return;
+        if (fallback && fallback !== clean && /^Место «/.test(err?.message || '')) {
+          return loadCity(fallback, screen);
+        }
         state.loading = false;
         state.osmLoading = false;
         state.error = err?.message || 'Ошибка загрузки города';
@@ -1295,9 +1304,9 @@
       }
     });
 
-    // Автоматически загружаем последний выбранный город, город поездки или геолокацию
+    // Сначала место текущей поездки, затем сохранённый поиск или геолокация.
     if (initialCity && !state.data) {
-      loadCity(initialCity, screenApi);
+      loadCity(initialCity, screenApi, fallbackCity);
     } else if (!initialCity && !state.data) {
       detectByGeolocation(screenApi, true);
     }
