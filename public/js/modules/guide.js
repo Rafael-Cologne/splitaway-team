@@ -292,6 +292,28 @@
         .filter(p => matchesPlaceQuery(p, query) && p.distKm <= 12));
   }
 
+  // Photon индексирует названия заведений OSM и поддерживает поиск по части слова.
+  async function photonSearchPlaces(query, data) {
+    const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(query) +
+      `&lat=${data.lat}&lon=${data.lon}&limit=20`;
+    const j = await fetchJSON(url, null, 10000);
+    return (j.features || []).map(f => {
+      const p = f.properties || {};
+      const [lon, lat] = f.geometry?.coordinates || [];
+      if (!p.name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      const tags = { [p.osm_key || 'amenity']: p.osm_value || '' };
+      if (p.osm_key === 'shop' && p.osm_value === 'bakery') tags.amenity = 'bakery';
+      const cat = classifyPlace(tags);
+      return {
+        id: `photon-${p.osm_type || 'place'}-${p.osm_id || p.name}`,
+        name: p.name, city: p.city || data.displayName.split(',')[0].trim(), cat,
+        typeLabel: placeTypeLabel(tags), addr: [p.street, p.housenumber].filter(Boolean).join(' '),
+        hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
+        distKm: haversineKm(data.lat, data.lon, lat, lon), score: 5, lat, lon
+      };
+    }).filter(p => p && p.distKm <= 12 && matchesPlaceQuery(p, query));
+  }
+
   function osmElementsToPlaces(elements, lat, lon, cityShort) {
       const out = [];
       for (const el of elements || []) {
@@ -451,7 +473,10 @@
       .split(/[^a-zа-я0-9]+/).filter(Boolean).map(w => w.length >= 5 ? w.slice(0, 4) : w);
     const wanted = words(query);
     const available = words([place.name, place.typeLabel, place.addr].join(' '));
-    return wanted.length > 0 && wanted.every(word => available.some(item => item.startsWith(word)));
+    if (wanted.length > 0 && wanted.every(word => available.some(item => item.startsWith(word)))) return true;
+    // В запросе может быть дописан город: «Princess Puff Belgrade».
+    const name = words(place.name);
+    return name.length >= 2 && name.every(word => wanted.some(item => word.startsWith(item) || item.startsWith(word)));
   }
 
   // Объединить: одно и то же место из Википедии/Wikidata и OSM — один раз
@@ -753,7 +778,7 @@
       const box = body.querySelector('#st-guide-list');
       if (box && !filteredPlaces().length) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
       try {
-        const results = await Promise.allSettled([wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
+        const results = await Promise.allSettled([photonSearchPlaces(query, data), wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
         const found = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
         if (results.every(r => r.status === 'rejected')) throw new Error('place search failed');
         if (state.alive && state.data === data && found.length) data.places = mergePlaces(data.places, found);
