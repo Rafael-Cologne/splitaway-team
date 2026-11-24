@@ -38,6 +38,7 @@
     restaurant: 'Ресторан',
     bakery: 'Пекарня',
     bar: 'Бар',
+    fast_food: 'Быстрое питание',
     theatre: 'Театр'
   };
 
@@ -141,12 +142,12 @@
     const a = tags.amenity || '';
     if (t === 'museum' || t === 'gallery' || a === 'theatre') return 'museum';
     if (l === 'park' || l === 'garden' || t === 'zoo') return 'park';
-    if (a === 'cafe' || a === 'restaurant' || a === 'bakery' || a === 'bar') return 'food';
+    if (['cafe', 'restaurant', 'bakery', 'bar', 'fast_food', 'pub', 'ice_cream'].includes(a) || tags.shop === 'bakery') return 'food';
     return 'sights';
   }
 
   function placeTypeLabel(tags) {
-    const key = tags.tourism || tags.leisure || tags.historic || tags.amenity || '';
+    const key = tags.tourism || tags.leisure || tags.historic || tags.amenity || tags.shop || '';
     return TAG_LABELS[key] || 'Интересное место';
   }
 
@@ -307,6 +308,34 @@
     });
   }
 
+  // Дополнительная подборка заведений: бесплатный поиск Photon по OSM.
+  async function photonFoodPlaces(data) {
+    const city = data.displayName.split(',')[0].trim();
+    const terms = ['restaurant', 'cafe', 'bakery', 'ресторан'];
+    const results = await Promise.allSettled(terms.map(async term => {
+      const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(term + ' ' + city) +
+        `&lat=${data.lat}&lon=${data.lon}&limit=50&lang=en`;
+      const json = await fetchJSON(url, null, 10000);
+      return (json.features || []).map(f => {
+        const props = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        if (!props.name || !Number.isFinite(lat) || !Number.isFinite(lon) ||
+          haversineKm(data.lat, data.lon, lat, lon) > 20) return null;
+        const tags = { [props.osm_key || 'amenity']: props.osm_value || '' };
+        if (classifyPlace(tags) !== 'food') return null;
+        return {
+          id: `photon-${props.osm_type || 'place'}-${props.osm_id || props.name}`,
+          name: props.name, city: props.city || city, cat: 'food', typeLabel: placeTypeLabel(tags),
+          addr: [props.street, props.housenumber].filter(Boolean).join(' '),
+          hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
+          distKm: haversineKm(data.lat, data.lon, lat, lon), score: 4, lat, lon
+        };
+      }).filter(Boolean);
+    }));
+    if (results.every(r => r.status === 'rejected')) throw new Error('food search unavailable');
+    return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  }
+
   // Места из Википедии рядом с центром города (быстро и надёжно)
   const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|университет|больниц|кладбищ|компани|предприяти|министерств|правительств|посольств|партия|профсоюз|издательств|газет|футбольн|клуб|отель|гостиниц|город в|муниципалитет|провинци|коммуна|община|деревн|село|олимпийск|евровидени|eurovision|фестивал|чемпионат|турнир|конкурс|матч|концерт|municipality|province|university/i;
 
@@ -411,7 +440,8 @@
     const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
     for (const p of b) {
       const n = norm(p.name);
-      const dup = out.find(x => norm(x.name) === n || (haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 && (norm(x.name).includes(n) || n.includes(norm(x.name)))));
+      const dup = out.find(x => haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 &&
+        (norm(x.name) === n || norm(x.name).includes(n) || n.includes(norm(x.name))));
       if (dup) { // берём лучшее из обоих: часы и сайт из OSM, фото из Википедии
         ['hours', 'website', 'cuisine', 'addr'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
         if (p.free) dup.free = true;
@@ -638,6 +668,7 @@
       limit: 20,
       loading: false,
       osmLoading: false,
+      foodLoading: false,
       error: '',
       data: null,
       selectedId: null,
@@ -667,6 +698,27 @@
         const okQ = !q || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q) || p.addr.toLowerCase().includes(q);
         return okCat && okQ;
       });
+    }
+
+    async function loadFoodPlaces(screen) {
+      const data = state.data;
+      if (!data || data.isCountry || data.foodLoaded || state.foodLoading) return;
+      state.foodLoading = true;
+      screen.refresh();
+      try {
+        const found = await photonFoodPlaces(data);
+        if (!state.alive || state.data !== data) return;
+        data.places = mergePlaces(data.places, found);
+        data.foodLoaded = true;
+        lsWrite(data.city.trim().toLowerCase(), data);
+      } catch (_) {
+        // При сетевой ошибке можно повторить загрузку, вновь выбрав фильтр.
+      } finally {
+        if (state.alive && state.data === data) {
+          state.foodLoading = false;
+          screen.refresh();
+        }
+      }
     }
 
     function toggleSave(place) {
@@ -1174,7 +1226,9 @@
           } else {
             const list = filteredPlaces();
             const visible = list.slice(0, state.limit);
-            const emptyMsg = state.filter === 'free' && state.osmLoading
+            const emptyMsg = state.filter === 'food' && state.foodLoading
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу рестораны и кафе…</div></div>'
+              : state.filter === 'free' && state.osmLoading
               ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
               : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено по этому фильтру</div></div>';
 
@@ -1208,6 +1262,8 @@
                   return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i><span>${esc(f.label)}</span></button>`;
                 }).join('')}
               </div>
+              ${state.filter === 'food' && state.foodLoading && visible.length
+                ? '<div class="st-muted" style="text-align:center;font-size:.78rem">Ищу ещё рестораны и кафе…</div>' : ''}
               <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Фильтр по названию, улице или типу…">
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
@@ -1256,6 +1312,7 @@
             state.filter = btn.dataset.catFilter;
             state.limit = 20;
             screen.refresh();
+            if (state.filter === 'food') loadFoodPlaces(screen);
           });
         });
 
