@@ -293,22 +293,24 @@
   // Ищем по части названия, включая кафе и рестораны вне стартовой подборки.
   function osmSearchPlaces(query, data) {
     const words = query.trim().split(/[^a-zа-яё0-9]+/i).filter(w => w.length >= 3);
-    const term = words.sort((a, b) => b.length - a.length)[0];
+    const term = words.slice(0, 2).sort((a, b) => b.length - a.length)[0];
     if (!term) return Promise.resolve([]);
     const pattern = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const q = `[out:json][timeout:20];(nwr["name"~"${pattern}",i](around:12000,${data.lat},${data.lon});nwr["name:ru"~"${pattern}",i](around:12000,${data.lat},${data.lon}););out center 80;`;
     const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
-    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 25000))).then(ov =>
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 8000))).then(ov =>
       osmElementsToPlaces(ov.elements, data.lat, data.lon, data.displayName.split(',')[0].trim())
         .filter(p => matchesPlaceQuery(p, query) && placeInCity(data, p.lat, p.lon)));
   }
 
   // Photon индексирует названия заведений OSM и поддерживает поиск по части слова.
   async function photonSearchPlaces(query, data) {
-    const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(query) +
-      `&lat=${data.lat}&lon=${data.lon}&limit=30&lang=en`;
-    const j = await fetchJSON(url, null, 10000);
-    return (j.features || []).map(f => {
+    const city = data.displayName.split(',')[0].trim();
+    const fetchMatches = async text => {
+      const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(text) +
+        `&lat=${data.lat}&lon=${data.lon}&limit=50&lang=en`;
+      const j = await fetchJSON(url, null, 10000);
+      return (j.features || []).map(f => {
       const p = f.properties || {};
       const [lon, lat] = f.geometry?.coordinates || [];
       if (!p.name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
@@ -322,7 +324,11 @@
         hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
         distKm: haversineKm(data.lat, data.lon, lat, lon), score: 5, lat, lon
       };
-    }).filter(p => p && placeInCity(data, p.lat, p.lon) && matchesPlaceQuery(p, query));
+      }).filter(p => p && placeInCity(data, p.lat, p.lon) && matchesPlaceQuery(p, query));
+    };
+    // Короткое слово без города Photon ранжирует по всему миру.
+    const local = await fetchMatches(query + ' ' + city);
+    return local.length ? local : fetchMatches(query);
   }
 
   function osmElementsToPlaces(elements, lat, lon, cityShort) {
@@ -480,11 +486,17 @@
   }
 
   function matchesPlaceQuery(place, query) {
+    const cyrillic = {
+      а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m',
+      н:'n', о:'o', п:'p', р:'r', с:'s', т:'t', у:'u', ф:'f', х:'h', ц:'ts', ч:'ch', ш:'sh', щ:'sh',
+      ы:'y', э:'e', ю:'yu', я:'ya', ј:'j', ћ:'c', ђ:'dj', љ:'lj', њ:'nj', џ:'dz'
+    };
     const words = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/ё/g, 'е').replace(/ј/g, 'й')
-      .split(/[^a-zа-я0-9]+/).filter(Boolean).map(w => w.length >= 5 ? w.slice(0, 4) : w);
+      .replace(/[а-яёјћђљњџ]/g, c => cyrillic[c] || c)
+      .split(/[^a-z0-9]+/).filter(Boolean)
+      .map(w => /^(muze|muse)/.test(w) ? 'muse' : w.length >= 5 ? w.slice(0, 4) : w);
     const wanted = words(query);
-    const available = words([place.name, place.typeLabel, place.addr].join(' '));
+    const available = words(place.name);
     if (wanted.length > 0 && wanted.every(word => available.some(item => item.startsWith(word)))) return true;
     // В запросе может быть дописан город: «Princess Puff Belgrade».
     const name = words(place.name);
@@ -498,7 +510,8 @@
     for (const p of b) {
       const n = norm(p.name);
       const dup = out.find(x => haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 &&
-        (norm(x.name) === n || norm(x.name).includes(n) || n.includes(norm(x.name))));
+        (norm(x.name) === n || norm(x.name).includes(n) || n.includes(norm(x.name)) ||
+          (x.cat === p.cat && matchesPlaceQuery(x, p.name) && matchesPlaceQuery(p, x.name))));
       if (dup) { // берём лучшее из обоих: часы и сайт из OSM, фото из Википедии
         ['hours', 'website', 'cuisine', 'addr'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
         if (p.free) dup.free = true;
@@ -700,7 +713,8 @@
       if (!ruTitle) {
         const gUrl = `https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${place.lat}|${place.lon}&gsradius=200&gslimit=1&format=json&origin=*`;
         const gRes = await fetch(gUrl).then(r => (r.ok ? r.json() : null));
-        ruTitle = gRes?.query?.geosearch?.[0]?.title || '';
+        const nearbyTitle = gRes?.query?.geosearch?.[0]?.title || '';
+        if (nearbyTitle && matchesPlaceQuery({ name: nearbyTitle }, place.name)) ruTitle = nearbyTitle;
       }
 
       if (ruTitle) {
@@ -802,7 +816,7 @@
       } catch (_) {
         searchAttempts.delete(key); // после ошибки сети разрешаем повторный поиск
       }
-      if (state.alive && state.data === data && state.query === query) {
+      if (state.alive && state.data === data && state.query.trim() === query) {
         state.searchPending = false;
         const input = body.querySelector('#st-guide-q');
         const focused = document.activeElement === input;
@@ -1362,7 +1376,7 @@
                   return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i><span>${esc(f.label)}</span></button>`;
                 }).join('')}
               </div>
-              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Поиск места по названию, улице или типу…">
+              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Поиск места по названию…">
               <a id="st-guide-google-search" class="st-btn st-btn-g" style="display:${state.query.trim() ? 'inline-flex' : 'none'};align-self:flex-start;text-decoration:none" href="${esc(googleMapsUrl({ name: state.query.trim() }, state.data.displayName))}" target="_blank" rel="noopener noreferrer"><i data-lucide="external-link"></i>Все результаты в Google Maps</a>
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
