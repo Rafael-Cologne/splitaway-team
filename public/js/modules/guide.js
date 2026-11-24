@@ -197,7 +197,7 @@
   //  4) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
   const CITY_TTL = 7 * 86400000;
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const lsKey = key => 'st_guide_city3_' + key;
+  const lsKey = key => 'st_guide_city4_' + key;
   const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
   const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
 
