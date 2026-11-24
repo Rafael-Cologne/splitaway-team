@@ -114,7 +114,13 @@
     .ckl-prog-ttl{font-weight:700;font-size:.95rem}
     .ckl-prog-sub{color:var(--t2);font-size:.8rem;margin-top:3px}
     .ckl-secs{display:flex;flex-direction:column;gap:10px}
-    .ckl-sec{display:flex;align-items:center;gap:14px;padding:12px 14px;width:100%;text-align:left;cursor:pointer;color:var(--text);font:inherit}
+    .ckl-sec{display:flex;align-items:center;gap:14px;padding:12px 14px;width:100%;color:var(--text)}
+    .ckl-sec-open{display:flex;align-items:center;gap:14px;flex:1;min-width:0;text-align:left;cursor:pointer;color:inherit;font:inherit;background:none;border:0;padding:0}
+    .ckl-sec-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}
+    .ckl-sec-action{display:flex;align-items:center;justify-content:center;width:36px;height:40px;border:0;background:none;color:var(--t2);cursor:pointer;border-radius:10px;padding:0}
+    .ckl-sec-action:hover,.ckl-sec-action:focus-visible{background:var(--ckl-track);color:var(--text)}
+    .ckl-sec-action svg{width:17px;height:17px}
+    .ckl-sec-action[data-del]:hover,.ckl-sec-action[data-del]:focus-visible{color:#E5484D}
     .ckl-sec-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:7px}
     [data-theme=dark] .ckl-sec-ic,[data-theme=dark] .ckl-pick-ic{filter:saturate(1.1);background:rgba(255,255,255,.08)!important}
     .ckl-sec-name{flex:1;min-width:0;font-weight:700;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -210,16 +216,23 @@
             </div>
             ${sections.length ? `<div class="ckl-secs">${sections.map(s => {
               const sc = countOf(s.items);
-              return `<button class="ckl-card ckl-sec" type="button" data-sec="${s.id}">
+              return `<div class="ckl-card ckl-sec" data-sec="${s.id}"><button class="ckl-sec-open" type="button" data-open aria-label="Открыть раздел «${esc(s.name)}»">
                 <span class="ckl-sec-ic" style="background:${iconBg(s.icon)}">${iconHtml(s.icon)}</span>
                 <span class="ckl-sec-name">${esc(s.name)}</span>
                 <span class="ckl-sec-cnt${sc.total && sc.done === sc.total ? ' full' : ''}">${sc.done} / ${sc.total}</span>
-                <i data-lucide="chevron-right" class="ckl-chev"></i></button>`;
+                <i data-lucide="chevron-right" class="ckl-chev"></i></button>
+                <span class="ckl-sec-actions"><button class="ckl-sec-action" type="button" data-rename aria-label="Изменить название раздела «${esc(s.name)}»" title="Изменить название"><i data-lucide="pencil"></i></button>
+                <button class="ckl-sec-action" type="button" data-del aria-label="Удалить раздел «${esc(s.name)}»" title="Удалить раздел"><i data-lucide="trash-2"></i></button></span></div>`;
             }).join('')}</div>`
             : '<div class="ckl-card ckl-empty">Список пуст.<br>Добавьте свой раздел, например «Документы» или «Одежда».</div>'}
             <button class="ckl-add-sec" type="button" id="ckl-add-sec"><i data-lucide="plus"></i>Добавить раздел</button>
           `;
-          body.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click', () => openSection(b.dataset.sec)));
+          body.querySelectorAll('[data-sec]').forEach(row => {
+            const sec = sections.find(s => s.id === row.dataset.sec);
+            row.querySelector('[data-open]').addEventListener('click', () => openSection(sec.id));
+            row.querySelector('[data-rename]').addEventListener('click', () => sectionForm(sec, true));
+            row.querySelector('[data-del]').addEventListener('click', () => deleteSection(sec, openOverview));
+          });
           body.querySelector('#ckl-add-sec').addEventListener('click', () => sectionForm(null));
         }
       });
@@ -239,7 +252,12 @@
     }
 
     // Создать или изменить раздел
-    function sectionForm(sec) {
+    function deleteSection(sec, refresh) {
+      if (!confirm(`Удалить раздел «${sec.name}» вместе с пунктами?`)) return;
+      sections = sections.filter(s => s.id !== sec.id); save(); refresh();
+    }
+
+    function sectionForm(sec, returnToOverview = false) {
       let icon = sec ? sec.icon : 'suitcase';
       sheet(sec ? 'Изменить раздел' : 'Новый раздел', `
         <input class="st-input" id="ckl-sec-name" maxlength="40" placeholder="Название, например «Документы»" value="${esc(sec ? sec.name : '')}">
@@ -254,7 +272,7 @@
           const ok = () => {
             const name = input.value.trim();
             if (!name) { input.focus(); return; }
-            if (sec) { sec.name = name; sec.icon = icon; save(); close(); openSection(sec.id); }
+            if (sec) { sec.name = name; sec.icon = icon; save(); close(); returnToOverview ? openOverview() : openSection(sec.id); }
             else { const s = { id: uid(), name, icon, items: [] }; sections.push(s); save(); close(); openSection(s.id); }
           };
           root.querySelector('[data-a="ok"]').addEventListener('click', ok);
