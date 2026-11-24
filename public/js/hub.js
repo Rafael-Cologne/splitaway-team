@@ -310,7 +310,63 @@
       `<span style="flex:1;min-width:0;text-align:left"><b style="display:block">Мой ключ входа</b><small style="color:var(--t2)">${esc(sub)}</small></span><i data-lucide="chevron-right"></i></button>`;
   }
 
-  // «Ещё»: профиль и настройки, сохранённое, все сервисы (то же окно снизу, что и профиль)
+  // Настройки и быстрые кнопки нижней панели.
+  const NAV_DEFAULT = ['expenses', 'bookings', 'calendar'];
+  const NAV_ICONS = { expenses:'wallet', trips:'plane', bookings:'bed-double', calendar:'calendar-days', route:'map', guide:'map-pinned', translator:'languages', currency:'coins', weather:'cloud-sun', checklist:'list-checks', transport:'car', nearby:'map-pin', stats:'chart-no-axes-column', emergency:'briefcase-medical', offline:'download', diary:'book-open', assistant:'sparkles' };
+  function navOptions() {
+    return [{ id:'expenses', label:'Расходы' }, { id:'trips', label:'Поездки' },
+      ...(window.ST_SERVICES || []).filter(s => s.id !== 'expenses' && isActive(s)).map(s => ({ id:s.id, label:s.id === 'bookings' ? 'Брони' : s.title.ru || svcTitle(s) }))];
+  }
+  function navSlots() {
+    const allowed = new Set(navOptions().map(x => x.id));
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem('st_hub_nav_slots')); } catch (_) {}
+    const result = [];
+    const preferred = Array.isArray(saved) ? saved.slice(0, 3) : NAV_DEFAULT;
+    for (let i = 0; i < 3; i++) {
+      const id = preferred[i];
+      result.push(allowed.has(id) && !result.includes(id) ? id : NAV_DEFAULT.find(x => allowed.has(x) && !result.includes(x)) || navOptions().find(x => !result.includes(x.id))?.id || 'expenses');
+    }
+    return result;
+  }
+  function saveNavSlot(index, id) {
+    const slots = navSlots();
+    const previous = slots.indexOf(id);
+    if (previous >= 0 && previous !== index) slots[previous] = slots[index];
+    slots[index] = id;
+    try { localStorage.setItem('st_hub_nav_slots', JSON.stringify(slots)); } catch (_) {}
+    render(); openNavSettings();
+  }
+  function navIcon(id) { return `<i data-lucide="${esc(id === 'home' ? 'house' : id === 'more' ? 'settings' : NAV_ICONS[id] || 'circle')}"></i>`; }
+  function navLabel(id) { return id === 'home' ? 'Главная' : id === 'more' ? 'Настройки' : navOptions().find(o => o.id === id)?.label || id; }
+  function navPreview(id) { return `<span class="hub-nav-preview-item">${navIcon(id)}<span>${esc(navLabel(id))}</span></span>`; }
+  function openNavSettings() {
+    let ov = $('m-hub-profile');
+    if (!ov) { ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'm-hub-profile'; ov.innerHTML = '<div class="mdl hub-sheet"></div>'; document.body.appendChild(ov); }
+    const slots = navSlots();
+    ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd"><div class="mdl-title">Нижняя панель</div>' +
+      `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
+      '<div class="hub-sheet-lbl">Так выглядит ваша панель</div>' +
+      `<div class="hub-nav-preview">${[slots[0], slots[1], 'home', slots[2], 'more'].map(navPreview).join('')}</div>` +
+      '<div class="hub-sheet-lbl">Заменить быстрый раздел</div>' +
+      slots.map((id, i) => `<div class="hub-nav-choice"><span class="hub-nav-choice-current">${navIcon(id)}<b>${esc(navLabel(id))}</b></span><button class="hub-nav-replace" type="button" data-hub="nav-pick" data-v="${i}" aria-label="Заменить ${esc(navLabel(id))}">Заменить <i data-lucide="chevron-right"></i></button></div>`).join('') +
+      '<button class="btn btn-g btn-fw" type="button" data-hub="nav-reset">Вернуть стандартные кнопки</button>';
+    if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
+    icons(ov);
+  }
+  function openNavPicker(index) {
+    const ov = $('m-hub-profile'), slots = navSlots(), options = navOptions();
+    if (!ov || !Number.isInteger(index) || index < 0 || index > 2) return;
+    ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd">' +
+      '<button class="hub-nav-picker-back" type="button" data-hub="nav-settings" aria-label="Назад"><i data-lucide="arrow-left"></i></button>' +
+      `<div class="mdl-title">Заменить ${esc(navLabel(slots[index]))}</div>` +
+      `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
+      '<div class="hub-sheet-lbl">Выберите раздел для нижней панели</div><div class="hub-nav-options">' +
+      options.map(o => `<button class="hub-nav-option${o.id === slots[index] ? ' on' : ''}" type="button" data-hub="nav-select" data-v="${esc(o.id)}" data-slot="${index}">${navIcon(o.id)}<span>${esc(o.label)}</span>${o.id === slots[index] ? '<i data-lucide="check"></i>' : ''}</button>`).join('') + '</div>';
+    icons(ov);
+  }
+
+  // Настройки: профиль, нижняя панель и остальные разделы.
   function openMore() {
     let ov = $('m-hub-profile');
     if (!ov) {
@@ -321,6 +377,7 @@
     }
     const rows = [
       ['profile', 'user', 'Профиль и настройки', 'Язык и тема'],
+      ['nav-settings', 'panel-bottom', 'Нижняя панель', 'Выбрать быстрые разделы'],
       ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
       ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
       hasTrip() ? ['invite', 'qr-code', 'Пригласить в поездку', 'QR для друзей'] : null,
@@ -329,7 +386,7 @@
     ].filter(Boolean);
     ov.firstChild.innerHTML =
       '<div class="mdl-handle"></div>' +
-      `<div class="hub-sheet-hd"><div class="mdl-title">Ещё</div>` +
+      `<div class="hub-sheet-hd"><div class="mdl-title">Настройки</div>` +
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x" style="width:15px;height:15px"></i></button></div>` +
       rows.map(([v, ic, t, sub]) => rowHtml('more', v, ic, esc(t), sub)).join('');
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
@@ -456,12 +513,11 @@
       `<div class="hub-sec-hd">${esc(tx('on_device'))}</div>` + rows;
   }
 
-  // Нижнее меню: всегда на русском (решение команды). Календарь и Расходы — то, что открывают в поездке чаще всего.
+  // Главная по центру, Настройки справа; остальные три кнопки выбирает пользователь.
   function navHtml() {
-    const items = [
-      ['home', 'house', 'Главная'], ['trips', 'plane', 'Поездки'], ['calendar', 'calendar-days', 'Календарь'],
-      ['expenses', 'wallet', 'Расходы'], ['more', 'ellipsis', 'Ещё']
-    ];
+    const options = navOptions();
+    const slots = navSlots();
+    const items = [slots[0], slots[1], 'home', slots[2], 'more'].map(id => [id, id === 'home' ? 'house' : id === 'more' ? 'settings' : NAV_ICONS[id] || 'circle', id === 'home' ? 'Главная' : id === 'more' ? 'Настройки' : options.find(o => o.id === id)?.label || id]);
     const active = view === 'trips' ? 'trips' : 'home';
     return '<nav class="hub-nav"><div class="hub-nav-in">' +
       items.map(([v, ic, label]) => `<button class="hub-ni${v === active ? ' on' : ''}" type="button" data-hub="nav" data-v="${v}"><i data-lucide="${ic}"></i><span>${esc(label)}</span></button>`).join('') +
@@ -511,15 +567,21 @@
       case 'my-key': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (window.STKey) STKey.openMyKey(); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
+      case 'nav-reset': try { localStorage.removeItem('st_hub_nav_slots'); } catch (_) {} render(); openNavSettings(); break;
+      case 'nav-settings': openNavSettings(); break;
+      case 'nav-pick': openNavPicker(Number(v)); break;
+      case 'nav-select': saveNavSlot(Number(el.dataset.slot), v); break;
       case 'nav':
         if (v === 'home' || v === 'trips') { view = v; render(); window.scrollTo(0, 0); }
         else if (v === 'calendar') openService('calendar');
         else if (v === 'expenses') openExpenses('pg-dash');
         else if (v === 'more') openMore();
+        else openService(v);
         break;
       case 'more':
         if (typeof closeModal === 'function') closeModal('m-hub-profile');
         if (v === 'profile') setTimeout(openProfile, 60);
+        else if (v === 'nav-settings') setTimeout(openNavSettings, 60);
         else if (v === 'saved') say('Сохранённое — ' + tx('soon'));
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
         else if (v === 'invite' && typeof openQR === 'function') openQR();
@@ -541,5 +603,5 @@
     return true;
   }
 
-  window.STHub = { show, render, openExpenses, openService, handleBack, registerService, openScreen, addStyles, refreshTripBg };
+  window.STHub = { show, render, openCreate, openExpenses, openService, handleBack, registerService, openScreen, addStyles, refreshTripBg };
 })();
