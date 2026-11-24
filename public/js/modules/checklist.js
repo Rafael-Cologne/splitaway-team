@@ -130,12 +130,16 @@
     .ckl-sprog button svg{width:20px;height:20px;transition:transform .2s}
     .ckl-sprog button.up svg{transform:rotate(180deg)}
     .ckl-items{display:flex;flex-direction:column;gap:8px}
-    .ckl-item{display:flex;align-items:center;gap:12px;padding:12px 10px 12px 14px;touch-action:pan-y}
+    .ckl-item{display:flex;align-items:center;gap:8px;padding:10px 8px 10px 12px;touch-action:pan-y}
     .ckl-item.dragging{opacity:.85;box-shadow:0 10px 24px rgba(30,30,80,.18);transform:scale(1.02)}
     .ckl-box{width:24px;height:24px;flex-shrink:0;border-radius:6px;border:2px solid var(--b2);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff}
     .ckl-box svg{width:15px;height:15px;stroke-width:3.2}
     .ckl-item.done .ckl-box{background:var(--ckl-green);border-color:var(--ckl-green)}
     .ckl-txt{flex:1;min-width:0;font-size:.93rem;overflow-wrap:anywhere;cursor:pointer;background:none;border:0;color:var(--text);font:inherit;text-align:left;padding:0}
+    .ckl-item-action{width:32px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:none;color:var(--t2);cursor:pointer;padding:0}
+    .ckl-item-action:hover,.ckl-item-action:focus-visible{background:var(--ckl-track);color:var(--text)}
+    .ckl-item-action[data-delete]:hover,.ckl-item-action[data-delete]:focus-visible{color:#E5484D}
+    .ckl-item-action svg{width:17px;height:17px}
     .ckl-handle{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--t3);cursor:grab;touch-action:none}
     .ckl-handle svg{width:18px;height:18px}
     .ckl-add-item{display:flex;align-items:center;gap:10px;padding:14px;border:0;background:var(--hub-card);border-radius:16px;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;width:100%;border:1px solid var(--hub-card-b)}
@@ -298,6 +302,8 @@
               <div class="ckl-card ckl-item${i.done ? ' done' : ''}" data-id="${i.id}">
                 <button class="ckl-box" type="button" data-toggle aria-label="${i.done ? 'Снять отметку' : 'Отметить'}">${i.done ? '<i data-lucide="check"></i>' : ''}</button>
                 <button class="ckl-txt" type="button" data-edit>${esc(i.text)}</button>
+                <button class="ckl-item-action" type="button" data-edit aria-label="Изменить пункт «${esc(i.text)}»" title="Изменить пункт"><i data-lucide="pencil"></i></button>
+                <button class="ckl-item-action" type="button" data-delete aria-label="Удалить пункт «${esc(i.text)}»" title="Удалить пункт"><i data-lucide="trash-2"></i></button>
                 <span class="ckl-handle" data-drag aria-label="Перетащить"><i data-lucide="grip-vertical"></i></span>
               </div>`).join('')}
             </div>
@@ -313,6 +319,7 @@
             if (it) { it.done = !it.done; save(); screen.refresh(); }
           }));
           body.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => itemForm(sec, b.closest('[data-id]').dataset.id, screen)));
+          body.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => deleteItem(sec, b.closest('[data-id]').dataset.id, screen)));
           body.querySelector('#ckl-add')?.addEventListener('click', () => { adding = true; screen.refresh(); });
           const input = body.querySelector('#ckl-new');
           if (input) {
@@ -334,6 +341,12 @@
       });
     }
 
+    function deleteItem(sec, itemId, screen, close) {
+      const it = sec.items.find(i => i.id === itemId);
+      if (!it || !confirm(`Удалить пункт «${it.text}»?`)) return;
+      sec.items = sec.items.filter(i => i.id !== itemId); save(); close?.(); screen.refresh();
+    }
+
     // Изменить или удалить пункт
     function itemForm(sec, itemId, screen) {
       const it = sec.items.find(i => i.id === itemId);
@@ -347,7 +360,7 @@
           const ok = () => { const v = input.value.trim(); if (!v) return; it.text = v; save(); close(); screen.refresh(); };
           root.querySelector('[data-a="ok"]').addEventListener('click', ok);
           input.addEventListener('keydown', e => { if (e.key === 'Enter') ok(); });
-          root.querySelector('[data-a="del"]').addEventListener('click', () => { sec.items = sec.items.filter(i => i.id !== itemId); save(); close(); screen.refresh(); });
+          root.querySelector('[data-a="del"]').addEventListener('click', () => deleteItem(sec, itemId, screen, close));
         });
     }
 
