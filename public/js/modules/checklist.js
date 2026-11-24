@@ -45,15 +45,6 @@
   const iconHtml = key => (ICONS[key] || ICONS.suitcase).svg;
   const iconBg = key => (ICONS[key] || ICONS.suitcase).bg;
 
-  // Иллюстрация поездки (вместо фото)
-  const TRIP_ART = `<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><defs>
-    <linearGradient id="ck-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EC8FF"/><stop offset="1" stop-color="#CDEBFF"/></linearGradient>
-    <linearGradient id="ck-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FB6D9"/><stop offset="1" stop-color="#1A8FC0"/></linearGradient></defs>
-    <rect width="64" height="64" fill="url(#ck-sky)"/><circle cx="47" cy="17" r="7" fill="#FFE27A"/>
-    <path d="M0 36c10-3 22-3 32 0s22 3 32 0v28H0z" fill="url(#ck-sea)"/><path d="M0 50c14-5 30-6 44-3 8 2 14 2 20 1v16H0z" fill="#F6D9A1"/>
-    <path d="M18 50c1-9 3-17 7-24" stroke="#8A5A2B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M25 26c-5-4-12-3-15 1 5-1 9 0 15-1zM25 26c2-6 9-8 14-6-5 1-9 3-14 6zM25 26c5-3 12-2 15 3-5-2-9-2-15-3zM25 26c-2-5-1-11 4-13-2 4-3 8-4 13z" fill="#2E9E58"/></svg>`;
-
   // ---------- Данные ----------
   // sections: [{ id, name, icon, items: [{ id, text, done }] }]
   const OLD_CAT_ICON = { 'Документы': 'passport', 'Одежда': 'shirt', 'Техника': 'plug', 'Аптечка': 'aid', 'Гигиена': 'bottle', 'Другое': 'suitcase' };
@@ -104,10 +95,7 @@
     [data-module="checklist"] .hub-title-row .hub-icbtn{background:none;border:0;box-shadow:none}
     [data-module="checklist"] .hub-title-row h2{font-size:1.12rem}
     .ckl-card{border-radius:18px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:var(--hub-shadow)}
-    .ckl-trip{display:flex;align-items:center;gap:14px;padding:12px}
-    .ckl-trip-art{width:64px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0}
-    .ckl-trip-name{font-weight:800;font-size:1.05rem}
-    .ckl-trip-sub{color:var(--t2);font-size:.8rem;margin-top:3px}
+    .ckl-trip-ph img{display:block;width:100%;height:100%;object-fit:cover}
     .ckl-prog{display:flex;align-items:center;gap:16px;padding:14px 16px}
     .ckl-ring{flex-shrink:0}
     .ckl-ring-txt{font-weight:800;fill:var(--text)}
@@ -205,11 +193,13 @@
           const t = ctx.trip || {};
           const members = ctx.members.length;
           body.innerHTML = `
-            <div class="ckl-card ckl-trip">
-              <div class="ckl-trip-art">${TRIP_ART}</div>
-              <div><div class="ckl-trip-name">${esc(t.name || 'Поездка')}</div>
-              <div class="ckl-trip-sub">${esc([t.dest, members ? members + ' ' + plural(members, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</div></div>
-            </div>
+            <button class="hub-trip2" type="button" id="ckl-trip" aria-label="Открыть текущую поездку">
+              <span class="hub-trip2-ph on ckl-trip-ph"><img id="ckl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
+              <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
+                <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
+                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(members + ' ' + plural(members, 'участник', 'участника', 'участников')) : ''}</span>
+              </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
+            </button>
             <div class="ckl-card ckl-prog">${ring(pctOf(c), 64, 7)}
               <div><div class="ckl-prog-ttl">Подготовка к поездке</div>
               <div class="ckl-prog-sub">${c.total ? `${c.done} из ${c.total} выполнено` : 'Добавьте разделы и пункты'}</div></div>
@@ -227,6 +217,8 @@
             : '<div class="ckl-card ckl-empty">Список пуст.<br>Добавьте свой раздел, например «Документы» или «Одежда».</div>'}
             <button class="ckl-add-sec" type="button" id="ckl-add-sec"><i data-lucide="plus"></i>Добавить раздел</button>
           `;
+          if (ctx.trip && window.STPlacePhoto?.tripImg) STPlacePhoto.tripImg(body.querySelector('#ckl-trip-photo'), ctx.trip, { width: 900 });
+          body.querySelector('#ckl-trip').addEventListener('click', () => STHub.openExpenses('pg-dash'));
           body.querySelectorAll('[data-sec]').forEach(row => {
             const sec = sections.find(s => s.id === row.dataset.sec);
             row.querySelector('[data-open]').addEventListener('click', () => openSection(sec.id));
