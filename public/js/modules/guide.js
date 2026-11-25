@@ -186,7 +186,7 @@
   //  4) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
   const CITY_TTL = 7 * 86400000;
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const lsKey = key => 'st_guide_city3_' + key;
+  const lsKey = key => 'st_guide_city6_' + key;
   const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
   const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
 
@@ -307,8 +307,8 @@
     });
   }
 
-  // Места из Википедии рядом с центром города (быстро и надёжно)
-  const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|университет|больниц|кладбищ|компани|предприяти|министерств|правительств|посольств|партия|профсоюз|издательств|газет|футбольн|клуб|отель|гостиниц|город в|муниципалитет|провинци|коммуна|община|деревн|село|олимпийск|евровидени|eurovision|фестивал|чемпионат|турнир|конкурс|матч|концерт|municipality|province|university/i;
+  // Места из Википедии рядом с центром города (запасной источник для малых городов)
+  const WIKI_SKIP = /несохранивш|снесён|станци|метрополитен|линия|вокзал|аэропорт|район|округ|квартал|улиц|площадь в|переулок|школ|гимнази|университет|больниц|кладбищ|компани|предприяти|производител|завод|министерств|правительств|посольств|партия|профсоюз|издательств|газет|радиостанц|телеканал|футбольн|хоккейн|клуб|команд|ипподром|отель|гостиниц|город в|бывший город|муниципалитет|провинци|коммуна|община|деревн|село|диалект|язык|олимпийск|евровидени|eurovision|фестивал|чемпионат|турнир|конкурс|выставк|ярмарк|матч|концерт|municipality|province|university|dialect|manufacturer|radio station|hockey|trade fair|city district|racecourse/i;
 
   function guessPlaceCat(text) {
     const d = String(text || '').toLowerCase();
@@ -317,7 +317,100 @@
     return 'sights';
   }
 
-  // Топ-достопримечательности из Wikidata по числу языковых разделов (sitelinks)
+  function cleanWikiMarkup(str) {
+    return String(str || '')
+      .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g, '$1')
+      .replace(/\[\[([^\]]+)\]\]/g, '$1')
+      .replace(/'''?/g, '')
+      .replace(/\{\{[^}]+\}\}/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Главный источник: путеводитель Викигид (ru.wikivoyage.org) — вручную отобранные туристические места
+  async function wikivoyagePlaces(cityName, cityShort, lat, lon) {
+    const titles = [...new Set([cityShort, cityName].filter(Boolean))];
+    let wt = '';
+    for (const t of titles) {
+      const url = `https://ru.wikivoyage.org/w/api.php?action=parse&page=${encodeURIComponent(t)}&prop=wikitext&redirects=1&format=json&origin=*`;
+      const j = await fetchJSON(url, null, 7000).catch(() => null);
+      if (j?.parse?.wikitext?.['*']) { wt = j.parse.wikitext['*']; break; }
+    }
+    if (!wt) return [];
+
+    const out = [];
+    const seen = new Set();
+    // Парсим шаблоны {{listing|...}} и {{see|...}} / {{do|...}} / {{eat|...}} / {{drink|...}}
+    const re = /\{\{(listing|see|do|eat|drink)\b([\s\S]*?)\}\}/gi;
+    let m;
+    let idx = 0;
+    while ((m = re.exec(wt)) !== null) {
+      const tpl = m[1].toLowerCase();
+      const body = m[2];
+      const fields = {};
+      // Разбираем параметры вида | key = value (учитывая возможные вложенные [[...|...]])
+      const parts = body.replace(/\[\[([^\]]+)\]\]/g, s => s.replace(/\|/g, '§§')).split('|');
+      for (const part of parts) {
+        const eq = part.indexOf('=');
+        if (eq <= 0) continue;
+        const k = part.slice(0, eq).trim().toLowerCase();
+        const v = part.slice(eq + 1).replace(/§§/g, '|').trim();
+        if (k && v) fields[k] = v;
+      }
+      const type = (fields.type || (tpl === 'listing' ? '' : tpl)).toLowerCase();
+      if (!['see', 'do', 'eat', 'drink'].includes(type)) continue;
+
+      const name = cleanWikiMarkup(fields.name || '');
+      const pLat = Number(fields.lat);
+      const pLon = Number(fields.long || fields.lon);
+      if (!name || !Number.isFinite(pLat) || !Number.isFinite(pLon)) continue;
+      const distKm = haversineKm(lat, lon, pLat, pLon);
+      if (distKm > 25) continue;
+
+      const norm = name.toLowerCase();
+      if (seen.has(norm)) continue;
+      seen.add(norm);
+
+      const desc = cleanWikiMarkup(fields.description || fields.content || '');
+      const price = cleanWikiMarkup(fields.price || '');
+      const isFood = type === 'eat' || type === 'drink';
+      const cat = isFood ? 'food' : guessPlaceCat(name + ' ' + desc);
+      const typeLabel = isFood
+        ? (type === 'drink' ? 'Бар / напитки' : 'Ресторан / кафе')
+        : (cat === 'museum' ? 'Музей / культура' : cat === 'park' ? 'Парк / природа' : 'Достопримечательность');
+      const free = !isFood && (/бесплат|free|^0\s*[€$₽]?$/i.test(price) || isFreeByDefault(name + ' ' + desc, cat));
+      const imgFile = (fields.image || '').replace(/^File:/i, '').trim();
+      const thumb = imgFile ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imgFile)}?width=240` : '';
+
+      out.push({
+        id: 'wv-' + (fields.wdid || idx),
+        name,
+        city: cityShort,
+        cat,
+        typeLabel,
+        addr: cleanWikiMarkup(fields.address || ''),
+        hours: cleanWikiMarkup(fields.hours || ''),
+        website: safeUrl(fields.url || ''),
+        cuisine: '',
+        free,
+        isTop: !isFood && idx < 30,
+        wikiTag: '',
+        wikiExtract: desc,
+        wikiChecked: false,
+        thumb,
+        distKm,
+        score: isFood ? 45 : (40 + (thumb ? 18 : 0) + (desc.length > 80 ? 8 : 0) + Math.max(0, 14 - Math.floor(idx / 2))),
+        lat: pLat,
+        lon: pLon
+      });
+      idx++;
+    }
+    return out;
+  }
+
+  // Топ-достопримечательности из Wikidata по СТРОГОМУ белому списку туристических типов (P31)
   async function wikidataTopPlaces(lat, lon, cityName, cityShort) {
     const sparql = `
       SELECT ?item ?itemLabel ?desc ?lat ?lon ?links (SAMPLE(?img) AS ?photo) WHERE {
@@ -328,17 +421,13 @@
         }
         ?item wikibase:sitelinks ?links .
         FILTER(?links >= 10)
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q515 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q1549591 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q3957 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q79529 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q2074737 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q79007 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q928830 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q55488 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q3918 }
-        FILTER NOT EXISTS { ?item wdt:P31 wd:Q1656682 }
+        VALUES ?type {
+          wd:Q570116 wd:Q33506 wd:Q207694 wd:Q16735822
+          wd:Q16970 wd:Q2977 wd:Q56242215 wd:Q120560 wd:Q32815
+          wd:Q23413 wd:Q16560 wd:Q22698 wd:Q167346 wd:Q43501
+          wd:Q4989906 wd:Q12280 wd:Q174782 wd:Q24354 wd:Q153562
+        }
+        ?item wdt:P31 ?type .
         FILTER NOT EXISTS { ?item wdt:P585 [] }
         FILTER NOT EXISTS { ?item wdt:P580 [] }
         BIND(geof:latitude(?loc) AS ?lat)
@@ -351,7 +440,7 @@
       LIMIT 40
     `.trim();
     const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(sparql);
-    const j = await fetchJSON(url, { headers: { Accept: 'application/sparql-results+json' } }, 8500);
+    const j = await fetchJSON(url, { headers: { Accept: 'application/sparql-results+json' } }, 14000);
     const cityN = String(cityName || '').toLowerCase();
     const out = [];
     for (const b of j?.results?.bindings || []) {
@@ -372,10 +461,11 @@
         cat,
         typeLabel: desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : 'Достопримечательность',
         addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault(desc + ' ' + name, cat),
+        isTop: links >= 15,
         wikiTag: 'ru:' + name,
         thumb,
         distKm: haversineKm(lat, lon, pLat, pLon),
-        score: 10 + Math.min(90, links),
+        score: 25 + Math.min(85, links * 2) + (thumb ? 12 : 0),
         lat: pLat, lon: pLon
       });
     }
@@ -405,21 +495,50 @@
       });
   }
 
-  // Объединить: одно и то же место из Википедии/Wikidata и OSM — один раз
+  const RELIGIOUS_RE = /собор|церков|храм|базилик|костёл|кирх|часовн|аббатств|монастыр|мечет|синагог|church|cathedral|basilica|mosque|synagogue|chapel|abbey|monastery/i;
+  const isReligiousPlace = p => RELIGIOUS_RE.test(`${p.name || ''} ${p.typeLabel || ''}`);
+
+  // Объединить: одно и то же место из Викигида, Wikidata и OSM — один раз, и разнообразить топ
   function mergePlaces(a, b) {
     const out = a.slice();
     const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
     for (const p of b) {
       const n = norm(p.name);
       const dup = out.find(x => norm(x.name) === n || (haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 && (norm(x.name).includes(n) || n.includes(norm(x.name)))));
-      if (dup) { // берём лучшее из обоих: часы и сайт из OSM, фото из Википедии
-        ['hours', 'website', 'cuisine', 'addr'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
+      if (dup) { // берём лучшее из обоих: описание и фото из Викигида/Википедии, часы и сайт из OSM
+        ['hours', 'website', 'cuisine', 'addr', 'wikiExtract'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
         if (p.free) dup.free = true;
+        if (p.isTop) dup.isTop = true;
         if (!dup.thumb && p.thumb) dup.thumb = p.thumb;
-        dup.score = Math.max(dup.score, p.score);
+        // Если место нашлось сразу в двух источниках (напр. Викигид + Wikidata) — повышаем приоритет
+        dup.score = Math.max(dup.score, p.score) + 12;
       } else out.push(p);
     }
-    return out.sort((x, y) => y.score - x.score || x.distKm - y.distKm);
+    out.sort((x, y) => y.score - x.score || x.distKm - y.distKm);
+
+    // Разнообразие топа: в первых 12 позициях оставляем не больше 2 главных храмов/церквей,
+    // чтобы известные музеи, мосты, парки и зоопарки шли в начале списка, а остальные церкви — ниже
+    const head = [];
+    const deferredChurches = [];
+    const tail = [];
+    let relInTop = 0;
+    for (const p of out) {
+      if (head.length < 12) {
+        if (isReligiousPlace(p)) {
+          if (relInTop < 2) {
+            relInTop++;
+            head.push(p);
+          } else {
+            deferredChurches.push(p);
+          }
+        } else {
+          head.push(p);
+        }
+      } else {
+        tail.push(p);
+      }
+    }
+    return [...head, ...deferredChurches, ...tail];
   }
 
   async function fetchCountryFacts(qid) {
@@ -524,14 +643,21 @@
       return result;
     }
 
+    const wvP = wikivoyagePlaces(city, cityShort, lat, lon).catch(() => []);
     const wdP = wikidataTopPlaces(lat, lon, city, cityShort).catch(() => []);
-    const listP = wikiPlaces(lat, lon, city, cityShort).catch(() => []);
     const ovFull = overpassPlaces(lat, lon, cityShort, 30000);
-    // Википедия/Wikidata отвечают быстро; если мест уже хватает, OSM ждём недолго
-    const ovQuick = Promise.all([wdP, listP]).then(([wd, l]) => Promise.race([ovFull, new Promise(res => setTimeout(() => res(null), wd.length + l.length >= 15 ? 2500 : 7000))])).catch(() => null);
+    // Сначала берём чистые туристические места (Викигид + белый список Wikidata)
+    const curatedP = Promise.all([wvP, wdP]).then(async ([wv, wd]) => {
+      const merged = mergePlaces(wv, wd);
+      if (merged.length >= 12) return merged;
+      // Для малых городов без статьи в Викигиде — добираем из геопоиска Википедии
+      const fallback = await wikiPlaces(lat, lon, city, cityShort).catch(() => []);
+      return mergePlaces(merged, fallback);
+    });
+    const ovQuick = curatedP.then(cur => Promise.race([ovFull, new Promise(res => setTimeout(() => res(null), cur.length >= 12 ? 2500 : 7000))])).catch(() => null);
 
-    const [wiki, wdList, wList, ov] = await Promise.all([wikiP, wdP, listP, ovQuick]);
-    const places = mergePlaces(mergePlaces(wdList, wList), ov || []);
+    const [wiki, curated, ov] = await Promise.all([wikiP, curatedP, ovQuick]);
+    const places = mergePlaces(curated, ov || []);
     if (!places.length) throw new Error('Не удалось загрузить места: сервисы карт перегружены. Попробуйте ещё раз через минуту');
 
     const result = {
@@ -591,21 +717,33 @@
         ruTitle = pages[0]?.langlinks?.[0]?.['*'] || '';
       }
 
-      if (!ruTitle) {
-        const gUrl = `https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${place.lat}|${place.lon}&gsradius=200&gslimit=1&format=json&origin=*`;
-        const gRes = await fetch(gUrl).then(r => (r.ok ? r.json() : null));
-        ruTitle = gRes?.query?.geosearch?.[0]?.title || '';
-      }
-
       if (ruTitle) {
         const sUrl = `https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(ruTitle)}`;
         const sRes = await fetch(sUrl).then(r => (r.ok ? r.json() : null));
-        if (sRes && sRes.extract) {
+        if (sRes && sRes.extract && sRes.type !== 'disambiguation') {
           info = {
             extract: sRes.extract,
             thumb: sRes.thumbnail?.source || '',
             wikiUrl: safeUrl(sRes.content_urls?.mobile?.page || sRes.content_urls?.desktop?.page || wikiUrlFromTag('ru:' + ruTitle))
           };
+        }
+      }
+
+      // Если по точному названию статьи нет или это страница значений — ищем реальную статью рядом по координатам
+      if (!info) {
+        const gUrl = `https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${place.lat}|${place.lon}&gsradius=250&gslimit=1&format=json&origin=*`;
+        const gRes = await fetch(gUrl).then(r => (r.ok ? r.json() : null));
+        const geoTitle = gRes?.query?.geosearch?.[0]?.title || '';
+        if (geoTitle && geoTitle !== ruTitle) {
+          const sUrl2 = `https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(geoTitle)}`;
+          const sRes2 = await fetch(sUrl2).then(r => (r.ok ? r.json() : null));
+          if (sRes2 && sRes2.extract && sRes2.type !== 'disambiguation') {
+            info = {
+              extract: sRes2.extract,
+              thumb: sRes2.thumbnail?.source || '',
+              wikiUrl: safeUrl(sRes2.content_urls?.mobile?.page || sRes2.content_urls?.desktop?.page || wikiUrlFromTag('ru:' + geoTitle))
+            };
+          }
         }
       }
 
@@ -662,8 +800,18 @@
     function filteredPlaces() {
       const all = state.data?.places || [];
       const q = state.query.trim().toLowerCase();
+      const topIds = new Set(all.filter(p => p.isTop).map(p => p.id));
+      if (topIds.size < 15) {
+        for (const p of all) {
+          if (topIds.size >= 20) break;
+          if (p.cat !== 'food') topIds.add(p.id);
+        }
+      }
       return all.filter(p => {
-        const okCat = state.filter === 'all' ? true : (state.filter === 'free' ? p.free : p.cat === state.filter);
+        const okCat = state.filter === 'all' ? true
+          : state.filter === 'free' ? p.free
+          : state.filter === 'sights' ? topIds.has(p.id)
+          : p.cat === state.filter;
         const okQ = !q || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q) || p.addr.toLowerCase().includes(q);
         return okCat && okQ;
       });
@@ -712,7 +860,7 @@
       const isVisited = Boolean(savedItem?.visited);
       const gMap = googleMapsUrl(p, p.city || state.city);
       const web = safeUrl(p.website);
-      const wikiLink = safeUrl(p.wikiUrl || wikiUrlFromTag(p.wikiTag));
+      const wikiLink = safeUrl(p.wikiUrl || (p.id && String(p.id).startsWith('wiki-') ? wikiUrlFromTag(p.wikiTag) : ''));
       const distText = p.distKm != null ? `${formatDist(p.distKm)} от центра` : '';
       const snip = wikiSnippet(p.wikiExtract, 280);
 
@@ -747,8 +895,10 @@
               : `<button class="st-btn st-btn-g" type="button" data-guide-focus="${esc(p.id)}">
                    <i data-lucide="locate-fixed"></i>На карте
                  </button>`}
-            <button class="st-btn ${isSaved ? 'st-btn-g' : ''}" type="button" data-guide-save="${esc(p.id)}">
-              <i data-lucide="${isSaved ? 'bookmark-check' : 'bookmark'}"></i>${isSaved ? 'В плане' : 'В план'}
+            <button class="st-btn ${isSaved || isPlanTab ? 'st-btn-g' : ''}" type="button" data-guide-save="${esc(p.id)}">
+              ${isPlanTab
+                ? '<i data-lucide="trash-2"></i>Удалить'
+                : `<i data-lucide="${isSaved ? 'bookmark-check' : 'bookmark'}"></i>${isSaved ? 'В плане' : 'В план'}`}
             </button>
             <a class="st-btn st-btn-g" href="${gMap}" target="_blank" rel="noopener noreferrer">
               <i data-lucide="map-pinned"></i>Карты
@@ -1080,8 +1230,15 @@
           const pct = saved.length ? Math.round((visitedCount / saved.length) * 100) : 0;
           const headerCard = saved.length ? `
             <div class="st-card">
-              <div class="st-card-title">Прогресс плана</div>
-              <div class="st-muted">Посещено ${visitedCount} из ${saved.length} мест</div>
+              <div class="st-guide-city-hd">
+                <div>
+                  <div class="st-card-title">Прогресс плана</div>
+                  <div class="st-muted">Посещено ${visitedCount} из ${saved.length} мест</div>
+                </div>
+                <button class="st-btn st-btn-g" type="button" id="st-guide-clear-plan" style="min-height:32px;padding:0 10px;font-size:.76rem;border-radius:10px">
+                  <i data-lucide="trash-2"></i>Очистить
+                </button>
+              </div>
               <div class="st-guide-progress"><div style="width:${pct}%"></div></div>
             </div>
             <div class="st-guide-route-hint">
@@ -1094,6 +1251,11 @@
             : '<div class="st-empty"><i data-lucide="bookmark"></i><div>План пока пуст. Отметьте места на карте или в списке, чтобы потом построить маршрут.</div></div>';
           body.innerHTML = tabsHtml + headerCard + listHtml;
           bindListEvents(body, body, screen);
+          body.querySelector('#st-guide-clear-plan')?.addEventListener('click', () => {
+            setSaved([]);
+            ctx.toast('План очищен');
+            screen.refresh();
+          });
 
         } else {
           const searchBarHtml = `
