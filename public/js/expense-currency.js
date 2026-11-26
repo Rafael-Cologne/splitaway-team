@@ -126,7 +126,7 @@
       const button=document.createElement('button');button.type='button';button.dataset.expCode=currency;
       button.textContent=(typeof currencyFlag==='function'?currencyFlag(currency)+' ':'')+currency;
       button.onclick=()=>{s.code=currency;s.rate=null;s.error=null;s.manual=false;++s.request;
-        if(prefix==='ae')remember(currency);paint(prefix);load(prefix)};
+        if(prefix==='ae')remember(currency);paint(prefix);load(prefix);if(prefix==='ae'&&typeof updateExactStatus==='function')updateExactStatus()};
       switcher.append(button);
     }
     root.append(switcher);
@@ -135,7 +135,7 @@
       return;
     }
     const panel=document.createElement('div');panel.dataset.expPanel='';panel.className='expense-currency-panel';
-    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
+    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-money-decimals="6" data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
     root.append(panel);
     panel.querySelector('[data-exp-manual]').onchange=event=>{s.manual=event.target.checked;++s.request;
       const field=panel.querySelector('[data-exp-rate]');
@@ -187,7 +187,9 @@
     schemaReady=Boolean(S.trip&&S.me&&getMemberKey());
     return schemaReady;
   }
-  window.SplitawayExpenseCurrency={open,resolve,words,backendReady};
+  // валюта, в которой сейчас вводится сумма (для «точных сумм по участникам»)
+  const code=prefix=>states[prefix]?.code||base();
+  window.SplitawayExpenseCurrency={open,resolve,words,backendReady,code};
   const style=document.createElement('style');style.textContent=`
     .expense-currency-switch{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
     .expense-currency-switch button{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rxs);color:var(--text);padding:6px 10px;font:inherit;font-size:.76rem;min-height:34px}

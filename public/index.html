@@ -3063,7 +3063,9 @@ function updateExactStatus(){
   if(!st.total){el.style.color='var(--t2)';el.textContent=t('exact_need_amount');return}
   if(diff===0){el.style.color='var(--green)';el.textContent=t('exact_ok');return}
   el.style.color='var(--red)';
-  el.textContent=diff>0?t('exact_left').replace('{amount}',fm(diff/100)):t('exact_over').replace('{amount}',fm(-diff/100));
+  // суммы участников вводятся в той же валюте, что и сумма расхода (например, EUR при поездке в HUF)
+  const cur=window.SplitawayExpenseCurrency?.code?.('ae');
+  el.textContent=diff>0?t('exact_left').replace('{amount}',fm(diff/100,cur)):t('exact_over').replace('{amount}',fm(-diff/100,cur));
 }
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='ae-exact-toggle'){_aeExactOn=e.target.checked;renderExactSplit();}});
 document.addEventListener('input',e=>{
@@ -3126,7 +3128,7 @@ async function saveExp(){
   let exactSplits=null;
   if(_aeExactOn){
     const st=exactState();
-    if(st.sum!==st.total){toast(t('exact_mismatch_toast').replace('{sum}',fm(st.sum/100)).replace('{total}',fm(st.total/100)));return}
+    if(st.sum!==st.total){const cur=window.SplitawayExpenseCurrency?.code?.('ae');toast(t('exact_mismatch_toast').replace('{sum}',fm(st.sum/100,cur)).replace('{total}',fm(st.total/100,cur)));return}
     const keep=st.names.filter(n=>st.cents[n]>0);
     if(!keep.length){toast(t('toast_select_participants'));return}
     // сумма расхода в основной валюте может отличаться от введённой (расход в другой валюте) — пересчёт с точной копейкой
@@ -7306,7 +7308,7 @@ function pickGender(hiddenId,btn,val){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <script src="js/receipt-ocr.js?v=1.0.25-112-team" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-112-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-124-team" defer></script>
 <script src="js/splitaway-update.js?v=1.0.25-112-team" defer></script>
 </body>
 </html>
