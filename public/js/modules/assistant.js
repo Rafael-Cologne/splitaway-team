@@ -377,7 +377,7 @@
     const w = CUR_WORDS.find(x => U(x[0]).test(t)); if (w) return w[1];
     const m = /\b([A-Z]{3})\b/.exec(String(t).toUpperCase()); return m && curOk(m[1]) ? m[1] : null;
   }
-  const curName = c => { try { return new Intl.DisplayNames(['ru'], { type: 'currency' }).of(c); } catch (_) { return c; } };
+  const curName = c => { if (window.STCurrency) return STCurrency.name(c, 'ru'); try { return new Intl.DisplayNames(['ru'], { type: 'currency' }).of(c); } catch (_) { return c; } };
   function tripFacts(text, ctx) {
     const dest = destOf(text);
     const only = U(/\bтолько\s+(меня|я|мне|себя)\b|\bодин\b|\bодна\b/i).test(text);
