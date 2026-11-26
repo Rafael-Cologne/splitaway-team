@@ -36,12 +36,28 @@
     hr: { n: 'Хорватский', cc: 'hr', v: 'hr-HR', o: 'hrv' }, tr: { n: 'Турецкий', cc: 'tr', v: 'tl-TR', o: 'tur' },
     el: { n: 'Греческий', cc: 'gr', v: 'el-GR', o: 'ell' }, uk: { n: 'Украинский', cc: 'ua', v: 'uk-UA' },
     ka: { n: 'Грузинский', cc: 'ge', v: 'ka-GE' }, hy: { n: 'Армянский', cc: 'am', v: 'hy-AM' },
-    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA' }
+    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA' },
+    sr: { n: 'Сербский', cc: 'rs', v: 'sr-RS' }, bs: { n: 'Боснийский', cc: 'ba', v: 'bs-BA' }, sl: { n: 'Словенский', cc: 'si', v: 'sl-SI' },
+    sk: { n: 'Словацкий', cc: 'sk', v: 'sk-SK' }, bg: { n: 'Болгарский', cc: 'bg', v: 'bg-BG' }, ro: { n: 'Румынский', cc: 'ro', v: 'ro-RO' },
+    hu: { n: 'Венгерский', cc: 'hu', v: 'hu-HU' }, da: { n: 'Датский', cc: 'dk', v: 'da-DK' }, sv: { n: 'Шведский', cc: 'se', v: 'sv-SE' },
+    no: { n: 'Норвежский', cc: 'no', v: 'nb-NO' }, fi: { n: 'Финский', cc: 'fi', v: 'fi-FI' }, is: { n: 'Исландский', cc: 'is', v: 'is-IS' },
+    et: { n: 'Эстонский', cc: 'ee', v: 'et-EE' }, lv: { n: 'Латышский', cc: 'lv', v: 'lv-LV' }, lt: { n: 'Литовский', cc: 'lt', v: 'lt-LT' },
+    sq: { n: 'Албанский', cc: 'al', v: 'sq-AL' }, mk: { n: 'Македонский', cc: 'mk', v: 'mk-MK' }, mt: { n: 'Мальтийский', cc: 'mt', v: 'mt-MT' },
+    he: { n: 'Иврит', cc: 'il', v: 'he-IL' }, fa: { n: 'Персидский', cc: 'ir', v: 'fa-IR' }, hi: { n: 'Хинди', cc: 'in', v: 'hi-IN' },
+    bn: { n: 'Бенгальский', cc: 'bd', v: 'bn-BD' }, ur: { n: 'Урду', cc: 'pk', v: 'ur-PK' }, ta: { n: 'Тамильский', cc: 'in', v: 'ta-IN' },
+    te: { n: 'Телугу', cc: 'in', v: 'te-IN' }, ml: { n: 'Малаялам', cc: 'in', v: 'ml-IN' }, mr: { n: 'Маратхи', cc: 'in', v: 'mr-IN' },
+    gu: { n: 'Гуджарати', cc: 'in', v: 'gu-IN' }, ne: { n: 'Непальский', cc: 'np', v: 'ne-NP' }, si: { n: 'Сингальский', cc: 'lk', v: 'si-LK' },
+    th: { n: 'Тайский', cc: 'th', v: 'th-TH' }, vi: { n: 'Вьетнамский', cc: 'vn', v: 'vi-VN' }, id: { n: 'Индонезийский', cc: 'id', v: 'id-ID' },
+    ms: { n: 'Малайский', cc: 'my', v: 'ms-MY' }, tl: { n: 'Филиппинский', cc: 'ph', v: 'fil-PH' }, ko: { n: 'Корейский', cc: 'kr', v: 'ko-KR' },
+    km: { n: 'Кхмерский', cc: 'kh', v: 'km-KH' }, lo: { n: 'Лаосский', cc: 'la', v: 'lo-LA' }, my: { n: 'Бирманский', cc: 'mm', v: 'my-MM' },
+    sw: { n: 'Суахили', cc: 'ke', v: 'sw-KE' }, am: { n: 'Амхарский', cc: 'et', v: 'am-ET' }, af: { n: 'Африкаанс', cc: 'za', v: 'af-ZA' },
+    zu: { n: 'Зулу', cc: 'za', v: 'zu-ZA' }, az: { n: 'Азербайджанский', cc: 'az', v: 'az-AZ' }, kk: { n: 'Казахский', cc: 'kz', v: 'kk-KZ' },
+    uz: { n: 'Узбекский', cc: 'uz', v: 'uz-UZ' }, ky: { n: 'Киргизский', cc: 'kg', v: 'ky-KG' }, mn: { n: 'Монгольский', cc: 'mn', v: 'mn-MN' }
   };
   const CODES = Object.keys(L);
-  const CC_LANG = { DE: 'de', AT: 'de', CH: 'de', LI: 'de', FR: 'fr', BE: 'fr', LU: 'fr', MC: 'fr', MA: 'fr', TN: 'fr', ES: 'es', AD: 'es', MX: 'es', AR: 'es', CU: 'es', DO: 'es',
-    IT: 'it', SM: 'it', VA: 'it', PT: 'pt', BR: 'pt', NL: 'nl', PL: 'pl', CZ: 'cs', SK: 'cs', HR: 'hr', SI: 'hr', BA: 'hr', RS: 'hr', ME: 'hr', TR: 'tr', GR: 'el', CY: 'el',
-    UA: 'uk', GE: 'ka', AM: 'hy', JP: 'ja', CN: 'zh', HK: 'zh', TW: 'zh', AE: 'ar', SA: 'ar', QA: 'ar', EG: 'ar', JO: 'ar', RU: 'ru', BY: 'ru', KZ: 'ru', KG: 'ru' };
+  const CC_LANG = { DE:'de', AT:'de', CH:'de', LI:'de', FR:'fr', BE:'fr', LU:'fr', MC:'fr', MA:'ar', TN:'ar', DZ:'ar', ES:'es', AD:'es', MX:'es', AR:'es', CU:'es', DO:'es', CO:'es', CL:'es', PE:'es', VE:'es', UY:'es', PY:'es', BO:'es', EC:'es', GT:'es', CR:'es', PA:'es', HN:'es', NI:'es', SV:'es',
+    IT:'it', SM:'it', VA:'it', PT:'pt', BR:'pt', NL:'nl', PL:'pl', CZ:'cs', SK:'sk', HR:'hr', SI:'sl', BA:'bs', RS:'sr', ME:'sr', TR:'tr', GR:'el', CY:'el', BG:'bg', RO:'ro', MD:'ro', HU:'hu', DK:'da', SE:'sv', NO:'no', FI:'fi', IS:'is', EE:'et', LV:'lv', LT:'lt', AL:'sq', MK:'mk', MT:'mt',
+    UA:'uk', GE:'ka', AM:'hy', JP:'ja', CN:'zh', HK:'zh', TW:'zh', AE:'ar', SA:'ar', QA:'ar', EG:'ar', JO:'ar', LB:'ar', IQ:'ar', SY:'ar', OM:'ar', BH:'ar', KW:'ar', YE:'ar', LY:'ar', SD:'ar', RU:'ru', BY:'ru', KZ:'kk', KG:'ky', AZ:'az', UZ:'uz', MN:'mn', IL:'he', IR:'fa', IN:'hi', PK:'ur', BD:'bn', NP:'ne', LK:'si', TH:'th', VN:'vi', ID:'id', MY:'ms', PH:'tl', KR:'ko', KH:'km', LA:'lo', MM:'my', KE:'sw', TZ:'sw', ET:'am', ZA:'af', US:'en', GB:'en', IE:'en', AU:'en', NZ:'en', CA:'en', SG:'en' };
   const flag = (c, cls) => `<img class="${cls || 'tl-flag'}" src="https://flagcdn.com/w80/${L[c] ? L[c].cc : 'un'}.png" alt="" onerror="this.style.visibility='hidden'">`;
   const nm = c => (L[c] ? L[c].n : c);
   const regionName = cc => { try { return new Intl.DisplayNames(['ru'], { type: 'region' }).of(cc); } catch (_) { return cc; } };
@@ -219,13 +235,13 @@
     const pk = placeKey(trip);
     const own = lsJSON('st_mod_translator_' + trip.id + '_ccTrip'); if (own && own.q === pk) return own.cc;
     const em = lsJSON('st_mod_emergency_' + trip.id + '_ccTrip'); if (em && em.q === pk) return em.cc;
-    return lsJSON('st_mod_emergency_' + trip.id + '_cc');
+    return null;
   }
   const detecting = {};
   function detectTripCC(trip) {
     if (!trip || tripCC(trip) || !online()) return Promise.resolve(tripCC(trip));
     if (!detecting[trip.id]) detecting[trip.id] = (async () => {
-      for (const q of [trip.dest, trip.name].filter(Boolean)) {
+      for (const q of [trip.dest || trip.name].filter(Boolean)) {
         try {
           const ctl = new AbortController(); setTimeout(() => ctl.abort(), 9000);
           const j = await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&accept-language=ru&q=' + encodeURIComponent(q), { signal: ctl.signal })).json();
@@ -239,9 +255,8 @@
   }
   const myLang = () => { const a = String(document.documentElement.lang || 'ru').slice(0, 2); return L[a] ? a : 'ru'; };
   function tripLang(trip) {
-    const cc = tripCC(trip), my = myLang();
-    const l = cc ? (CC_LANG[String(cc).toUpperCase()] || 'en') : 'en';
-    return l !== my ? l : (my === 'en' ? 'de' : 'en');
+    const cc = tripCC(trip);
+    return cc ? (CC_LANG[String(cc).toUpperCase()] || null) : null;
   }
 
   // ---------- Распознавание текста с фото (Tesseract, файлы в приложении) ----------
@@ -328,25 +343,22 @@
 
   // ---------- Стили ----------
   STHub.addStyles(ID, `
-    #pg-module[data-module="tl-home"] .hub-title-row{display:none}
-    #pg-module[data-module="tl-home"] .mod-wrap{padding-top:0}
-    .tl-hero{position:relative;margin:0 -16px;height:calc(300px + var(--st,0px));background:#dfe9fb url(${IMG}hero.webp) right top/cover no-repeat;overflow:hidden}
-    .tl-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(236,242,253,.75) 0%,rgba(236,242,253,.35) 45%,rgba(236,242,253,0) 70%)}
-    .tl-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 55%,var(--bg) 100%)}
-    [data-theme=dark] .tl-hero::before{background:linear-gradient(90deg,rgba(14,14,32,.72) 0%,rgba(14,14,32,.45) 55%,rgba(14,14,32,.25) 100%)}
-    .tl-hero>*{position:absolute;z-index:2}
-    .tl-back{top:calc(14px + var(--st,0px));left:6px;width:44px;height:44px;border:0;background:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
-    .tl-back svg{width:28px;height:28px;stroke-width:2.2}
-    .tl-hero h1{top:calc(18px + var(--st,0px));left:56px;right:56px;pointer-events:none;margin:0;text-align:center;font-size:1.9rem;font-weight:800;color:var(--text);letter-spacing:-.01em}
-    .tl-logo{top:calc(86px + var(--st,0px));left:22px;width:96px;height:80px}
-    .tl-logo svg{width:96px;height:80px}
-    .tl-hero p{pointer-events:none;top:calc(178px + var(--st,0px));left:22px;margin:0;font-size:1rem;line-height:1.35;color:var(--text);font-weight:500;max-width:78%;text-shadow:0 0 12px var(--bg)}
-    .tl-main{position:relative;z-index:3;margin-top:-58px;padding:14px;border-radius:28px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:0 14px 36px rgba(70,60,160,.12)}
+    [data-module="tl-home"] .hub-title-row h2{font-size:1.12rem}
+    .tl-trip-ph img{display:block;width:100%;height:100%;object-fit:cover}
+    .tl-create-trip{display:flex;align-items:center;gap:14px;width:100%;min-height:100px;padding:18px 20px;border:1px solid var(--hub-card-b);border-radius:24px;background:var(--hub-card);box-shadow:var(--hub-shadow);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+    .tl-create-trip>svg{width:28px;height:28px;color:var(--accent);flex-shrink:0}
+    .tl-create-trip span{display:flex;flex-direction:column;gap:4px;flex:1}
+    .tl-create-trip b{font-size:1.05rem}
+    .tl-create-trip small{font-size:.78rem;color:var(--t2)}
+    .tl-create-trip>svg:last-child{width:20px;height:20px;color:var(--t2)}
+    .tl-main{position:relative;margin-top:14px;padding:14px;border-radius:28px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:0 14px 36px rgba(70,60,160,.12)}
     .tl-pair{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
     .tl-lang{display:flex;align-items:center;justify-content:center;gap:10px;height:56px;border-radius:22px;border:0;background:rgba(106,77,244,.07);font:inherit;font-size:1.2rem;font-weight:800;color:var(--text);cursor:pointer}
+    .tl-select-lang{font-size:.85rem;font-weight:600;color:var(--t2)}
     .tl-flag{width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.18);flex-shrink:0}
     .tl-swap{width:48px;height:48px;border-radius:50%;border:0;background:rgba(106,77,244,.08);color:#5b4bd6;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .tl-swap svg{width:24px;height:24px;stroke-width:2.4}
+    .tl-swap:disabled{opacity:.45;cursor:default}
     .tl-input{display:flex;align-items:flex-end;gap:8px;margin-top:12px;padding:10px 10px 10px 16px;border-radius:20px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:inset 0 1px 3px rgba(40,30,120,.05),0 4px 14px rgba(70,60,160,.06)}
     .tl-input textarea{flex:1;min-width:0;min-height:44px;max-height:180px;resize:none;border:0;outline:0;background:none;font:inherit;font-size:1.05rem;line-height:1.4;color:var(--text);padding:10px 0}
     .tl-input textarea::placeholder{color:var(--t2)}
@@ -438,6 +450,7 @@
     .tl-sheet>div{width:100%;max-width:560px;max-height:82vh;overflow:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
     .tl-sheet h3{margin:0 0 12px;font-size:1.15rem;font-weight:800;text-align:center}
     .tl-opt{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:16px;background:none;font:inherit;font-size:1rem;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
+    .tl-lang-search{position:sticky;top:-18px;z-index:1;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid var(--hub-card-b);border-radius:14px;background:var(--hub-card);font:inherit;color:var(--text)}
     .tl-opt.on{background:rgba(106,77,244,.1)}
     .tl-opt>span:not(.tl-oc){flex:1}
     .tl-oc{font-size:.8rem;color:var(--t2);font-weight:700}
@@ -466,8 +479,14 @@
   }
   function pickLang(title, cur, onPick, filter) {
     const list = CODES.filter(c => !filter || filter(c));
-    sheet(title, list.map(c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`).join(''),
-      (root, close) => root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); onPick(b.dataset.c); })));
+    sheet(title, `<input class="tl-lang-search" type="search" placeholder="Найти язык" aria-label="Найти язык">` + list.map(c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`).join(''),
+      (root, close) => {
+        root.querySelector('.tl-lang-search').addEventListener('input', e => {
+          const q = e.target.value.trim().toLocaleLowerCase();
+          root.querySelectorAll('[data-c]').forEach(b => { b.style.display = !q || nm(b.dataset.c).toLocaleLowerCase().includes(q) || b.dataset.c.includes(q) ? '' : 'none'; });
+        });
+        root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); onPick(b.dataset.c); }));
+      });
   }
   function bigView(text, c, sub) {
     const el = document.createElement('div'); el.className = 'tl-big';
@@ -509,12 +528,14 @@
     const trip = ctx.trip;
     const my = myLang();
     const saved = ctx.store.get('pair', null);
-    const S = { a: saved ? saved.a : tripLang(trip), b: saved ? saved.b : my, text: '', res: null, err: '', note: '', chat: [], auto: LS.get('autoSay', true), favTab: 'fav', cat: 'basic', phLang: null, camLang: null };
-    const savePair = () => ctx.store.set('pair', { a: S.a, b: S.b });
+    const manual = saved?.manual === true && L[saved.target];
+    const S = { a: my, b: manual ? saved.target : tripLang(trip), text: '', res: null, err: '', note: '', chat: [], auto: LS.get('autoSay', true), favTab: 'fav', cat: 'basic', phLang: null, camLang: null };
+    const savePair = () => ctx.store.set('pair', { target: S.b, manual: true });
     const foreign = () => (S.a !== my ? S.a : S.b);
+    const chooseTarget = next => pickLang('Язык поездки', S.b, c => { S.b = c; savePair(); next(); }, c => c !== my);
 
     // язык поездки ещё не известен — определим и поправим пару (если пользователь её не менял)
-    if (!saved && trip && !tripCC(trip)) detectTripCC(trip).then(cc => { if (cc && !ctx.store.get('pair', null)) { S.a = tripLang(trip); if (cur && cur.refresh && cur.id === 'tl-home') cur.refresh(); } });
+    if (!manual && trip && !tripCC(trip)) detectTripCC(trip).then(cc => { if (cc && !ctx.store.get('pair', null)?.manual) { S.b = tripLang(trip); if (cur?.id === 'tl-home') cur.refresh(); } });
 
     let cur = null;
     const screenOf = (id, title, render, back) => { cur = ctx.openScreen({ id, title, render, onBack: back || home }); cur.id = id; return cur; };
@@ -524,18 +545,22 @@
       cur = ctx.openScreen({
         id: 'tl-home', title: ctx.title,
         render(body, screen) {
+          const t = ctx.trip || {};
+          const members = ctx.members?.length || 0;
+          const memberWord = members % 10 === 1 && members % 100 !== 11 ? 'участник' : members % 10 >= 2 && members % 10 <= 4 && (members % 100 < 12 || members % 100 > 14) ? 'участника' : 'участников';
           body.innerHTML = `
-            <div class="tl-hero">
-              <button class="tl-back" type="button" data-a="back" aria-label="Назад"><i data-lucide="chevron-left"></i></button>
-              <h1>${esc(ctx.title)}</h1>
-              <div class="tl-logo">${LOGO}</div>
-              <p>Общайтесь, переводите<br>и понимайте мир без барьеров</p>
-            </div>
+            ${ctx.trip ? `<button class="hub-trip2" type="button" id="tl-trip" aria-label="Открыть текущую поездку">
+              <span class="hub-trip2-ph on tl-trip-ph"><img id="tl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
+              <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
+                <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
+                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(members + ' ' + memberWord) : ''}</span>
+              </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
+            </button>` : `<button class="tl-create-trip" type="button" id="tl-trip"><i data-lucide="plus-circle"></i><span><b>Создать поездку</b><small>Добавьте направление и участников</small></span><i data-lucide="chevron-right"></i></button>`}
             <div class="tl-main">
               <div class="tl-pair">
                 <button class="tl-lang" type="button" data-a="la">${flag(S.a)}${S.a.toUpperCase()}</button>
-                <button class="tl-swap" type="button" data-a="swap" aria-label="Поменять языки"><i data-lucide="arrow-left-right"></i></button>
-                <button class="tl-lang" type="button" data-a="lb">${flag(S.b)}${S.b.toUpperCase()}</button>
+                <button class="tl-swap" type="button" data-a="swap" aria-label="Поменять языки" ${S.b ? '' : 'disabled'}><i data-lucide="arrow-left-right"></i></button>
+                <button class="tl-lang" type="button" data-a="lb">${S.b ? `${flag(S.b)}${S.b.toUpperCase()}` : '<span class="tl-select-lang">Выбрать язык</span>'}</button>
               </div>
               <div class="tl-input"><textarea id="tl-in" rows="1" placeholder="Введите текст или говорите…" maxlength="2000">${esc(S.text)}</textarea>
                 <button class="tl-mic" type="button" data-a="mic" aria-label="Сказать на «${esc(nm(S.a))}»"><i data-lucide="mic"></i></button></div>
@@ -549,6 +574,8 @@
             </div>
             <button class="tl-dl" type="button" data-go="packs"><span class="tl-ic"><i data-lucide="download"></i></span><b>Скачать языки для офлайн</b><i data-lucide="chevron-right"></i></button>`;
           icons(body);
+          if (ctx.trip && window.STPlacePhoto?.tripImg) STPlacePhoto.tripImg(body.querySelector('#tl-trip-photo'), ctx.trip, { width: 900 });
+          body.querySelector('#tl-trip').addEventListener('click', () => ctx.trip ? STHub.openExpenses('pg-dash') : STHub.openCreate());
           const ta = body.querySelector('#tl-in'), out = body.querySelector('#tl-out');
           const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(180, ta.scrollHeight) + 'px'; };
           const show = () => {
@@ -562,6 +589,7 @@
             clearTimeout(timer);
             const text = S.text.trim();
             if (!text) { S.res = null; S.err = ''; S.note = ''; show(); return; }
+            if (!S.b) { S.res = null; S.err = ''; out.innerHTML = '<div class="tl-note">Выберите второй язык для перевода.</div>'; return; }
             const go = async () => {
               const my_ = ++seq;
               const det = await detect(text);
@@ -582,10 +610,9 @@
           ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); run(true); } });
           grow(); show();
           const $ = s => body.querySelector('[data-a="' + s + '"]');
-          $('back').addEventListener('click', () => ctx.close());
           $('swap').addEventListener('click', () => { [S.a, S.b] = [S.b, S.a]; savePair(); if (S.res) { S.text = S.res.tr; S.res = null; } screen.refresh(); run(true); });
-          $('la').addEventListener('click', () => pickLang('Язык слева', S.a, c => { if (c === S.b) S.b = S.a; S.a = c; savePair(); screen.refresh(); run(true); }));
-          $('lb').addEventListener('click', () => pickLang('Язык справа', S.b, c => { if (c === S.a) S.a = S.b; S.b = c; savePair(); screen.refresh(); run(true); }));
+          $('la').addEventListener('click', () => pickLang('Первый язык', S.a, c => { S.a = c; screen.refresh(); run(true); }));
+          $('lb').addEventListener('click', () => pickLang('Второй язык', S.b, c => { S.b = c; savePair(); screen.refresh(); run(true); }));
           const mic = $('mic');
           mic.addEventListener('click', async () => {
             if (mic.classList.contains('on')) { listen.stop && listen.stop(); return; }
@@ -594,7 +621,11 @@
             catch (e) { ctx.toast(micErr(e)); }
             finally { mic.classList.remove('on'); }
           });
-          body.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => ({ talk, cam, phr, fav, packs })[b.dataset.go]()));
+          body.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+            const go = ({ talk, cam, phr, fav, packs })[b.dataset.go];
+            if (!foreign() && ['talk', 'phr', 'packs'].includes(b.dataset.go)) chooseTarget(go);
+            else go();
+          }));
         }
       });
       cur.id = 'tl-home';
@@ -715,7 +746,7 @@
 
     // ===== Фразы =====
     function phr() {
-      if (!S.phLang) S.phLang = foreign();
+      if (!S.phLang) S.phLang = foreign() || my;
       screenOf('tl-phr', 'Фразы', (body, screen) => {
         const c = S.phLang, list = phrases(c);
         body.innerHTML = `
@@ -775,7 +806,7 @@
 
     // ===== Языки для офлайна =====
     function packs() {
-      const order = [foreign(), ...CODES.filter(c => c !== foreign() && c !== my)];
+      const order = [foreign() || my, ...CODES.filter(c => c !== foreign() && c !== my)];
       const st = { busy: null, msg: '', stat: {} };
       screenOf('tl-packs', 'Языки офлайн', (body, screen) => {
         const chip = (cls, ic, t) => `<span class="${cls}"><i data-lucide="${ic}"></i>${esc(t)}</span>`;

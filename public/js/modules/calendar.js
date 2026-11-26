@@ -195,6 +195,11 @@
     .cal-del{color:#E5484D;border:0;background:none;font:inherit;font-weight:700;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
     .cal-del svg{width:18px;height:18px}
     .cal-form{display:flex;flex-direction:column;gap:10px;text-align:left}
+    .cal-filters{display:flex;gap:7px}
+    .cal-filter{flex:1;min-width:0;padding:9px 5px;border:1px solid var(--hub-card-b);border-radius:12px;background:var(--hub-card);color:var(--text);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+    .cal-filter.on{background:var(--accent);border-color:var(--accent);color:#fff}
+    .cal-source{display:flex;align-items:center;gap:10px;font-size:.86rem;font-weight:700;color:var(--text)}
+    .cal-source select{flex:1;min-width:0;padding:10px;border:1px solid var(--hub-card-b);border-radius:12px;background:var(--hub-card);color:var(--text);font:inherit}
     .cal-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
     .cal-2>div{min-width:0;display:flex;flex-direction:column;gap:6px}
     .cal-2 .cal-field{padding:0 10px;gap:8px}
@@ -325,10 +330,15 @@
 
   STHub.registerService('calendar', ctx => {
     const store = ctx.store;
-    let dates = store.get('dates', null);                 // { start, end }
-    let events = store.get('events', []).map(e => Object.assign({}, e, { type: typeOf(e.type).id }));
+    let dates = ctx.trip ? store.get('dates', null) : null; // даты относятся только к поездке
+    let events = ctx.trip ? store.get('events', []).map(e => Object.assign({}, e, { type: typeOf(e.type).id })) : [];
+    let personalEvents = (window.STKey?.calendarEvents?.() || []).map(e => Object.assign({}, e, { type: typeOf(e.type).id }));
+    let scope = ctx.trip ? store.get('scope', 'all') : 'personal';
     const saveDates = () => store.set('dates', dates);
     const saveEvents = () => store.set('events', events);
+    const savePersonalEvents = () => window.STKey?.setCalendarEvents?.(personalEvents);
+    const filtersHtml = () => ctx.trip ? `<div class="cal-filters">${[['trip','Поездка'],['personal','Мои'],['all','Все']].map(([id,name]) => `<button class="cal-filter${scope === id ? ' on' : ''}" type="button" data-scope="${id}">${name}</button>`).join('')}</div>` : '';
+    const bindFilters = (body, screen) => body.querySelectorAll('[data-scope]').forEach(b => b.addEventListener('click', () => { scope = b.dataset.scope; store.set('scope', scope); screen.refresh(); }));
 
     // выбранный день и показанный месяц
     let selected = dates && (today() < dates.start || today() > dates.end) ? dates.start : today();
@@ -363,14 +373,15 @@
       });
       return out;
     }
-    const allEvents = () => events.concat(bookingEvents());
+    const allEvents = () => (scope === 'personal' ? [] : events.map(e => Object.assign({ source: 'trip' }, e)).concat(bookingEvents()))
+      .concat(scope === 'trip' ? [] : personalEvents.map(e => Object.assign({ source: 'personal' }, e)));
     const byDay = d => allEvents().filter(e => e.date <= d && d <= endOf(e))
       .sort((a, b) => ((timeOn(a, d) || '00:00') + a.date).localeCompare((timeOn(b, d) || '00:00') + b.date));
     const nowKey = () => { const d = new Date(); return iso(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
     const isPast = e => (endOf(e) + ' ' + ((e.endDate ? e.endTime : (e.endTime || e.time)) || '23:59')) < nowKey();
     // подписи начала и конца по типу события
     const SE = t => t.id === 'stay' ? ['Заезд', 'Выезд'] : t.id === 'flight' ? ['Вылет', 'Прилёт'] : ['Начало', 'Окончание'];
-    const inTrip = d => !!dates && d >= dates.start && d <= dates.end;
+    const inTrip = d => scope !== 'personal' && !!dates && d >= dates.start && d <= dates.end;
     const dots = d => {
       const kinds = [...new Set(byDay(d).map(e => typeOf(e.type).kind))].slice(0, 3);
       return `<span class="cal-dots">${kinds.map(k => `<i style="background:${KINDS[k].color}"></i>`).join('')}</span>`;
@@ -409,7 +420,8 @@
             cells.push(`<button class="${cls.join(' ')}" type="button" data-day="${d}"><span class="cal-num">${parse(d).getDate()}</span>${dots(d)}</button>`);
           }
           body.innerHTML = `
-            ${tripCard()}
+            ${ctx.trip ? tripCard() : ''}
+            ${filtersHtml()}
             <div class="cal-card cal-mbar">
               <button class="cal-nav" type="button" data-m="-1" aria-label="Предыдущий месяц"><i data-lucide="chevron-left"></i></button>
               <b>${MONTHS_N[first.getMonth()]} ${first.getFullYear()}</b>
@@ -424,31 +436,36 @@
             </div>
             <button class="cal-add" type="button" data-a="add"><i data-lucide="plus"></i>Добавить событие</button>
           `;
-          body.querySelector('[data-a="dates"]').addEventListener('click', datesForm);
+          body.querySelector('[data-a="dates"]')?.addEventListener('click', datesForm);
+          bindFilters(body, screen);
           body.querySelector('[data-a="add"]').addEventListener('click', () => openForm(null, selected, openMonth));
           body.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => { shiftMonth(+b.dataset.m); screen.refresh(); }));
           body.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => {
             selected = b.dataset.day; month = selected.slice(0, 7); openDay();
           }));
           onSwipe(body.querySelector('#cal-month'), () => { shiftMonth(1); screen.refresh(); }, () => { shiftMonth(-1); screen.refresh(); });
-          if (window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.cal-trip-art img'), ctx.trip, { width: 300 }); // фото места поездки
+          if (ctx.trip && window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.cal-trip-art img'), ctx.trip, { width: 300 }); // фото места поездки
         }
       });
     }
 
     function menu() {
       sheet('Календарь', `<div class="cal-form" style="margin-top:10px">
-          <button class="st-btn st-btn-g st-btn-fw" data-a="dates"><i data-lucide="calendar-range"></i>Даты поездки</button>
+          ${ctx.trip ? '<button class="st-btn st-btn-g st-btn-fw" data-a="dates"><i data-lucide="calendar-range"></i>Даты поездки</button>' : ''}
           <button class="st-btn st-btn-g st-btn-fw" data-a="today"><i data-lucide="calendar-check"></i>Перейти к сегодня</button>
           <button class="st-btn st-btn-g st-btn-fw" data-a="past" style="color:#E5484D"><i data-lucide="trash-2"></i>Удалить прошедшие события</button>
         </div>`, (root, close) => {
-        root.querySelector('[data-a="dates"]').addEventListener('click', () => { close(); datesForm(); });
+        root.querySelector('[data-a="dates"]')?.addEventListener('click', () => { close(); datesForm(); });
         root.querySelector('[data-a="today"]').addEventListener('click', () => { selected = today(); month = selected.slice(0, 7); close(); openMonth(); });
         root.querySelector('[data-a="past"]').addEventListener('click', () => {
-          const left = events.filter(e => !isPast(e));
-          if (left.length === events.length) { ctx.toast('Прошедших событий нет'); return; }
+          const tripLeft = events.filter(e => !isPast(e));
+          const personalLeft = personalEvents.filter(e => !isPast(e));
+          const changed = (scope !== 'personal' && tripLeft.length !== events.length) || (scope !== 'trip' && personalLeft.length !== personalEvents.length);
+          if (!changed) { ctx.toast('Прошедших событий нет'); return; }
           if (!confirm('Удалить все прошедшие события?')) return;
-          events = left; saveEvents(); close(); openMonth();
+          if (scope !== 'personal') { events = tripLeft; saveEvents(); }
+          if (scope !== 'trip') { personalEvents = personalLeft; savePersonalEvents(); }
+          close(); openMonth();
         });
       });
     }
@@ -512,6 +529,7 @@
           const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
           const list = byDay(selected);
           body.innerHTML = `
+            ${filtersHtml()}
             <div class="cal-week2" id="cal-week">${days.map((d, i) => `
               <button class="cal-wday${d === selected ? ' sel' : ''}${d === today() ? ' today' : ''}" type="button" data-day="${d}">
                 <small>${WD[i]}</small><b>${parse(d).getDate()}</b>${dots(d)}
@@ -525,6 +543,7 @@
             <button class="cal-fab" type="button" aria-label="Добавить событие"><i data-lucide="plus"></i></button>
           `;
           screen.setTitle(fullDate(selected));
+          bindFilters(body, screen);
           const go = n => { selected = addDays(selected, n); month = selected.slice(0, 7); screen.refresh(); };
           body.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { selected = b.dataset.day; month = selected.slice(0, 7); screen.refresh(); }));
           onSwipe(body.querySelector('#cal-week'), () => go(7), () => go(-7));
@@ -578,7 +597,7 @@
     const REMIND = [[0.5, 'За 30 минут'], [1, 'За 1 час'], [2, 'За 2 часа'], [24, 'За 1 день']];
     function openForm(ev, day, back) {
       const draft = ev ? Object.assign({}, ev, { type: typeOf(ev.type).id, docs: ev.docs ? ev.docs.slice() : ev.doc ? [ev.doc] : [] })
-        : { id: uid(), title: '', date: day || selected, time: '', type: 'transport', endDate: '', endTime: '', place: '', note: '', remind: false, docs: [] };
+        : { id: uid(), title: '', date: day || selected, time: '', type: 'transport', endDate: '', endTime: '', place: '', note: '', remind: false, docs: [], source: ctx.trip && scope !== 'personal' ? 'trip' : 'personal' };
       delete draft.doc;
       const MAX_DOCS = 4; // фото хранятся на телефоне — больше 4 на событие не даём, чтобы не переполнить память
       const screen = ctx.openScreen({
@@ -603,6 +622,7 @@
                 <button class="cal-type plus" type="button" data-a="new-type" aria-label="Свой тип события"><i data-lucide="plus"></i><span style="color:var(--text)">Своё</span></button>
               </div>
               <div class="cal-row in" style="margin-top:4px">${tIcon(t)}<input id="f-title" maxlength="80" placeholder="Название" value="${esc(draft.title)}"></div>
+              ${ctx.trip ? `<label class="cal-source">Календарь <select id="f-source"><option value="trip"${draft.source !== 'personal' ? ' selected' : ''}>Поездка</option><option value="personal"${draft.source === 'personal' ? ' selected' : ''}>Мои события</option></select></label>` : ''}
               ${dateRow('f-date', draft.date, 'calendar', 'Дата')}
               ${timeRow('f-time', draft.time, 'Время (необязательно)')}
               ${showEnd ? `<div class="cal-endlbl">${l2}</div>
@@ -633,6 +653,7 @@
 
           const read = () => {
             draft.title = body.querySelector('#f-title').value.trim();
+            draft.source = body.querySelector('#f-source')?.value || 'personal';
             draft.date = body.querySelector('#f-date').value;
             draft.time = body.querySelector('#f-time').value;
             draft.endDate = body.querySelector('#f-edate')?.value || '';
@@ -684,7 +705,9 @@
           body.querySelectorAll('.cal-row.in').forEach(row => row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') row.querySelector('input')?.focus(); }));
           body.querySelector('#f-del')?.addEventListener('click', () => {
             if (!confirm('Удалить событие «' + draft.title + '»?')) return;
-            events = events.filter(x => x.id !== draft.id); saveEvents(); ctx.toast('Событие удалено'); back();
+            if (draft.source === 'personal') { personalEvents = personalEvents.filter(x => x.id !== draft.id); savePersonalEvents(); }
+            else { events = events.filter(x => x.id !== draft.id); saveEvents(); }
+            ctx.toast('Событие удалено'); back();
           });
           body._read = read;
         }
@@ -733,7 +756,7 @@
             draft.type = t.id; close(); screen.refresh();
           });
           root.querySelector('[data-a="del"]')?.addEventListener('click', () => {
-            const n = events.filter(e => e.type === t.id).length;
+            const n = events.concat(personalEvents).filter(e => e.type === t.id).length;
             if (!confirm('Удалить тип «' + t.name + '»?' + (n ? ' У ' + n + ' ' + plural(n, 'события', 'событий', 'событий') + ' он сменится на «Другое».' : ''))) return;
             CUSTOM = CUSTOM.filter(x => x.id !== t.id); saveCustom();
             if (draft.type === t.id) draft.type = 'transport';
@@ -753,9 +776,13 @@
         if (draft.endDate && diffDays(draft.date, draft.endDate) > 90) { ctx.toast('Событие длиннее 90 дней — проверьте даты'); return; }
         if (draft.endDate === draft.date && !draft.endTime) draft.endDate = '';
         delete draft._end;
-        const i = events.findIndex(x => x.id === draft.id);
-        if (i >= 0) events[i] = draft; else events.push(draft);
-        try { saveEvents(); }
+        draft.updatedAt = Date.now();
+        const wasTrip = events.some(x => x.id === draft.id);
+        const wasPersonal = personalEvents.some(x => x.id === draft.id);
+        events = events.filter(x => x.id !== draft.id);
+        personalEvents = personalEvents.filter(x => x.id !== draft.id);
+        if (draft.source === 'personal') personalEvents.push(draft); else events.push(draft);
+        try { if (ctx.trip && (wasTrip || draft.source === 'trip')) saveEvents(); if (wasPersonal || draft.source === 'personal') savePersonalEvents(); }
         catch (_) { ctx.toast('Не хватает памяти: попробуйте фото меньше'); return; }
         selected = draft.date; month = selected.slice(0, 7);
         ctx.toast(ev ? 'Сохранено' : 'Событие добавлено');

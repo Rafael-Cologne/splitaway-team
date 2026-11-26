@@ -45,15 +45,6 @@
   const iconHtml = key => (ICONS[key] || ICONS.suitcase).svg;
   const iconBg = key => (ICONS[key] || ICONS.suitcase).bg;
 
-  // Иллюстрация поездки (вместо фото)
-  const TRIP_ART = `<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><defs>
-    <linearGradient id="ck-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EC8FF"/><stop offset="1" stop-color="#CDEBFF"/></linearGradient>
-    <linearGradient id="ck-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FB6D9"/><stop offset="1" stop-color="#1A8FC0"/></linearGradient></defs>
-    <rect width="64" height="64" fill="url(#ck-sky)"/><circle cx="47" cy="17" r="7" fill="#FFE27A"/>
-    <path d="M0 36c10-3 22-3 32 0s22 3 32 0v28H0z" fill="url(#ck-sea)"/><path d="M0 50c14-5 30-6 44-3 8 2 14 2 20 1v16H0z" fill="#F6D9A1"/>
-    <path d="M18 50c1-9 3-17 7-24" stroke="#8A5A2B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M25 26c-5-4-12-3-15 1 5-1 9 0 15-1zM25 26c2-6 9-8 14-6-5 1-9 3-14 6zM25 26c5-3 12-2 15 3-5-2-9-2-15-3zM25 26c-2-5-1-11 4-13-2 4-3 8-4 13z" fill="#2E9E58"/></svg>`;
-
   // ---------- Данные ----------
   // sections: [{ id, name, icon, items: [{ id, text, done }] }]
   const OLD_CAT_ICON = { 'Документы': 'passport', 'Одежда': 'shirt', 'Техника': 'plug', 'Аптечка': 'aid', 'Гигиена': 'bottle', 'Другое': 'suitcase' };
@@ -104,17 +95,20 @@
     [data-module="checklist"] .hub-title-row .hub-icbtn{background:none;border:0;box-shadow:none}
     [data-module="checklist"] .hub-title-row h2{font-size:1.12rem}
     .ckl-card{border-radius:18px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:var(--hub-shadow)}
-    .ckl-trip{display:flex;align-items:center;gap:14px;padding:12px}
-    .ckl-trip-art{width:64px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0}
-    .ckl-trip-name{font-weight:800;font-size:1.05rem}
-    .ckl-trip-sub{color:var(--t2);font-size:.8rem;margin-top:3px}
+    .ckl-trip-ph img{display:block;width:100%;height:100%;object-fit:cover}
     .ckl-prog{display:flex;align-items:center;gap:16px;padding:14px 16px}
     .ckl-ring{flex-shrink:0}
     .ckl-ring-txt{font-weight:800;fill:var(--text)}
     .ckl-prog-ttl{font-weight:700;font-size:.95rem}
     .ckl-prog-sub{color:var(--t2);font-size:.8rem;margin-top:3px}
     .ckl-secs{display:flex;flex-direction:column;gap:10px}
-    .ckl-sec{display:flex;align-items:center;gap:14px;padding:12px 14px;width:100%;text-align:left;cursor:pointer;color:var(--text);font:inherit}
+    .ckl-sec{display:flex;align-items:center;gap:14px;padding:12px 14px;width:100%;color:var(--text)}
+    .ckl-sec-open{display:flex;align-items:center;gap:14px;flex:1;min-width:0;text-align:left;cursor:pointer;color:inherit;font:inherit;background:none;border:0;padding:0}
+    .ckl-sec-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}
+    .ckl-sec-action{display:flex;align-items:center;justify-content:center;width:36px;height:40px;border:0;background:none;color:var(--t2);cursor:pointer;border-radius:10px;padding:0}
+    .ckl-sec-action:hover,.ckl-sec-action:focus-visible{background:var(--ckl-track);color:var(--text)}
+    .ckl-sec-action svg{width:17px;height:17px}
+    .ckl-sec-action[data-del]:hover,.ckl-sec-action[data-del]:focus-visible{color:#E5484D}
     .ckl-sec-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:7px}
     [data-theme=dark] .ckl-sec-ic,[data-theme=dark] .ckl-pick-ic{filter:saturate(1.1);background:rgba(255,255,255,.08)!important}
     .ckl-sec-name{flex:1;min-width:0;font-weight:700;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -136,12 +130,16 @@
     .ckl-sprog button svg{width:20px;height:20px;transition:transform .2s}
     .ckl-sprog button.up svg{transform:rotate(180deg)}
     .ckl-items{display:flex;flex-direction:column;gap:8px}
-    .ckl-item{display:flex;align-items:center;gap:12px;padding:12px 10px 12px 14px;touch-action:pan-y}
+    .ckl-item{display:flex;align-items:center;gap:8px;padding:10px 8px 10px 12px;touch-action:pan-y}
     .ckl-item.dragging{opacity:.85;box-shadow:0 10px 24px rgba(30,30,80,.18);transform:scale(1.02)}
     .ckl-box{width:24px;height:24px;flex-shrink:0;border-radius:6px;border:2px solid var(--b2);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff}
     .ckl-box svg{width:15px;height:15px;stroke-width:3.2}
     .ckl-item.done .ckl-box{background:var(--ckl-green);border-color:var(--ckl-green)}
     .ckl-txt{flex:1;min-width:0;font-size:.93rem;overflow-wrap:anywhere;cursor:pointer;background:none;border:0;color:var(--text);font:inherit;text-align:left;padding:0}
+    .ckl-item-action{width:32px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:none;color:var(--t2);cursor:pointer;padding:0}
+    .ckl-item-action:hover,.ckl-item-action:focus-visible{background:var(--ckl-track);color:var(--text)}
+    .ckl-item-action[data-delete]:hover,.ckl-item-action[data-delete]:focus-visible{color:#E5484D}
+    .ckl-item-action svg{width:17px;height:17px}
     .ckl-handle{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--t3);cursor:grab;touch-action:none}
     .ckl-handle svg{width:18px;height:18px}
     .ckl-add-item{display:flex;align-items:center;gap:10px;padding:14px;border:0;background:var(--hub-card);border-radius:16px;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;width:100%;border:1px solid var(--hub-card-b)}
@@ -199,27 +197,38 @@
           const t = ctx.trip || {};
           const members = ctx.members.length;
           body.innerHTML = `
-            <div class="ckl-card ckl-trip">
-              <div class="ckl-trip-art">${TRIP_ART}</div>
-              <div><div class="ckl-trip-name">${esc(t.name || 'Поездка')}</div>
-              <div class="ckl-trip-sub">${esc([t.dest, members ? members + ' ' + plural(members, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</div></div>
-            </div>
+            <button class="hub-trip2" type="button" id="ckl-trip" aria-label="Открыть текущую поездку">
+              <span class="hub-trip2-ph on ckl-trip-ph"><img id="ckl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
+              <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
+                <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
+                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(members + ' ' + plural(members, 'участник', 'участника', 'участников')) : ''}</span>
+              </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
+            </button>
             <div class="ckl-card ckl-prog">${ring(pctOf(c), 64, 7)}
               <div><div class="ckl-prog-ttl">Подготовка к поездке</div>
               <div class="ckl-prog-sub">${c.total ? `${c.done} из ${c.total} выполнено` : 'Добавьте разделы и пункты'}</div></div>
             </div>
             ${sections.length ? `<div class="ckl-secs">${sections.map(s => {
               const sc = countOf(s.items);
-              return `<button class="ckl-card ckl-sec" type="button" data-sec="${s.id}">
+              return `<div class="ckl-card ckl-sec" data-sec="${s.id}"><button class="ckl-sec-open" type="button" data-open aria-label="Открыть раздел «${esc(s.name)}»">
                 <span class="ckl-sec-ic" style="background:${iconBg(s.icon)}">${iconHtml(s.icon)}</span>
                 <span class="ckl-sec-name">${esc(s.name)}</span>
                 <span class="ckl-sec-cnt${sc.total && sc.done === sc.total ? ' full' : ''}">${sc.done} / ${sc.total}</span>
-                <i data-lucide="chevron-right" class="ckl-chev"></i></button>`;
+                <i data-lucide="chevron-right" class="ckl-chev"></i></button>
+                <span class="ckl-sec-actions"><button class="ckl-sec-action" type="button" data-rename aria-label="Изменить название раздела «${esc(s.name)}»" title="Изменить название"><i data-lucide="pencil"></i></button>
+                <button class="ckl-sec-action" type="button" data-del aria-label="Удалить раздел «${esc(s.name)}»" title="Удалить раздел"><i data-lucide="trash-2"></i></button></span></div>`;
             }).join('')}</div>`
             : '<div class="ckl-card ckl-empty">Список пуст.<br>Добавьте свой раздел, например «Документы» или «Одежда».</div>'}
             <button class="ckl-add-sec" type="button" id="ckl-add-sec"><i data-lucide="plus"></i>Добавить раздел</button>
           `;
-          body.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click', () => openSection(b.dataset.sec)));
+          if (ctx.trip && window.STPlacePhoto?.tripImg) STPlacePhoto.tripImg(body.querySelector('#ckl-trip-photo'), ctx.trip, { width: 900 });
+          body.querySelector('#ckl-trip').addEventListener('click', () => STHub.openExpenses('pg-dash'));
+          body.querySelectorAll('[data-sec]').forEach(row => {
+            const sec = sections.find(s => s.id === row.dataset.sec);
+            row.querySelector('[data-open]').addEventListener('click', () => openSection(sec.id));
+            row.querySelector('[data-rename]').addEventListener('click', () => sectionForm(sec, true));
+            row.querySelector('[data-del]').addEventListener('click', () => deleteSection(sec, openOverview));
+          });
           body.querySelector('#ckl-add-sec').addEventListener('click', () => sectionForm(null));
         }
       });
@@ -239,7 +248,12 @@
     }
 
     // Создать или изменить раздел
-    function sectionForm(sec) {
+    function deleteSection(sec, refresh) {
+      if (!confirm(`Удалить раздел «${sec.name}» вместе с пунктами?`)) return;
+      sections = sections.filter(s => s.id !== sec.id); save(); refresh();
+    }
+
+    function sectionForm(sec, returnToOverview = false) {
       let icon = sec ? sec.icon : 'suitcase';
       sheet(sec ? 'Изменить раздел' : 'Новый раздел', `
         <input class="st-input" id="ckl-sec-name" maxlength="40" placeholder="Название, например «Документы»" value="${esc(sec ? sec.name : '')}">
@@ -254,7 +268,7 @@
           const ok = () => {
             const name = input.value.trim();
             if (!name) { input.focus(); return; }
-            if (sec) { sec.name = name; sec.icon = icon; save(); close(); openSection(sec.id); }
+            if (sec) { sec.name = name; sec.icon = icon; save(); close(); returnToOverview ? openOverview() : openSection(sec.id); }
             else { const s = { id: uid(), name, icon, items: [] }; sections.push(s); save(); close(); openSection(s.id); }
           };
           root.querySelector('[data-a="ok"]').addEventListener('click', ok);
@@ -288,6 +302,8 @@
               <div class="ckl-card ckl-item${i.done ? ' done' : ''}" data-id="${i.id}">
                 <button class="ckl-box" type="button" data-toggle aria-label="${i.done ? 'Снять отметку' : 'Отметить'}">${i.done ? '<i data-lucide="check"></i>' : ''}</button>
                 <button class="ckl-txt" type="button" data-edit>${esc(i.text)}</button>
+                <button class="ckl-item-action" type="button" data-edit aria-label="Изменить пункт «${esc(i.text)}»" title="Изменить пункт"><i data-lucide="pencil"></i></button>
+                <button class="ckl-item-action" type="button" data-delete aria-label="Удалить пункт «${esc(i.text)}»" title="Удалить пункт"><i data-lucide="trash-2"></i></button>
                 <span class="ckl-handle" data-drag aria-label="Перетащить"><i data-lucide="grip-vertical"></i></span>
               </div>`).join('')}
             </div>
@@ -303,6 +319,7 @@
             if (it) { it.done = !it.done; save(); screen.refresh(); }
           }));
           body.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => itemForm(sec, b.closest('[data-id]').dataset.id, screen)));
+          body.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => deleteItem(sec, b.closest('[data-id]').dataset.id, screen)));
           body.querySelector('#ckl-add')?.addEventListener('click', () => { adding = true; screen.refresh(); });
           const input = body.querySelector('#ckl-new');
           if (input) {
@@ -324,6 +341,12 @@
       });
     }
 
+    function deleteItem(sec, itemId, screen, close) {
+      const it = sec.items.find(i => i.id === itemId);
+      if (!it || !confirm(`Удалить пункт «${it.text}»?`)) return;
+      sec.items = sec.items.filter(i => i.id !== itemId); save(); close?.(); screen.refresh();
+    }
+
     // Изменить или удалить пункт
     function itemForm(sec, itemId, screen) {
       const it = sec.items.find(i => i.id === itemId);
@@ -337,7 +360,7 @@
           const ok = () => { const v = input.value.trim(); if (!v) return; it.text = v; save(); close(); screen.refresh(); };
           root.querySelector('[data-a="ok"]').addEventListener('click', ok);
           input.addEventListener('keydown', e => { if (e.key === 'Enter') ok(); });
-          root.querySelector('[data-a="del"]').addEventListener('click', () => { sec.items = sec.items.filter(i => i.id !== itemId); save(); close(); screen.refresh(); });
+          root.querySelector('[data-a="del"]').addEventListener('click', () => deleteItem(sec, itemId, screen, close));
         });
     }
 

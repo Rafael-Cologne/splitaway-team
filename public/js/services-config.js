@@ -18,7 +18,7 @@
 window.ST_SERVICES = [
   { id: 'expenses',   title: { ru: 'Расходы',      en: 'Expenses',    de: 'Ausgaben' },      icon: 'expenses',   route: 'expenses', status: 'active',      requiresTrip: true  },
   { id: 'route',      title: { ru: 'Маршрут',      en: 'Route',       de: 'Route' },         icon: 'route',      route: null,       status: 'coming_soon', requiresTrip: true  },
-  { id: 'calendar',   title: { ru: 'Календарь',    en: 'Calendar',    de: 'Kalender' },      icon: 'calendar',   route: null,       status: 'coming_soon', requiresTrip: true  },
+  { id: 'calendar',   title: { ru: 'Календарь',    en: 'Calendar',    de: 'Kalender' },      icon: 'calendar',   route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'bookings',   title: { ru: 'Бронирования', en: 'Bookings',    de: 'Buchungen' },     icon: 'bookings',   route: null,       status: 'coming_soon', requiresTrip: true  },
   { id: 'guide',      title: { ru: 'Гид',  en: 'Guide',       de: 'Reiseführer' },   icon: 'guide',      route: null,       status: 'coming_soon', requiresTrip: false },
   { id: 'translator', title: { ru: 'Переводчик',   en: 'Translator',  de: 'Übersetzer' },    icon: 'translator', route: null,       status: 'coming_soon', requiresTrip: false },

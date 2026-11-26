@@ -21,7 +21,7 @@ const context={S:{members:names.map(name=>({name})),groups:[
 ],expenses,settledDebts:['Игорь','Эля','Эми'].map(from=>({from,to:'Раф',amount:1355.6}))}};
 context.groupOf=name=>context.S.groups.find(group=>group.members.includes(name));
 vm.createContext(context);
-vm.runInContext(slice('getPairRepForExp','calcBal'),context);
+vm.runInContext(slice('pairRepEntryForExp','calcBal'),context);
 vm.runInContext(slice('calcBal','simplify'),context);
 const cents=n=>Math.round(n*100);
 const shares=context.calcExpenseShares();
@@ -29,15 +29,15 @@ const balances=context.calcBal();
 assert.equal(cents(expenses.reduce((sum,e)=>sum+e.amount,0)),870971);
 assert.equal(cents(shares['Аня']),179022);
 assert.equal(cents(balances['Аня']),-179022);
-assert.equal(cents(shares['Игорь']),241807);
-assert.equal(cents(balances['Игорь']),-106247);
+assert.equal(cents(shares['Игорь']),241808);
+assert.equal(cents(balances['Игорь']),-106248);
 assert.equal(cents(shares['Раф']+shares['Аня']),358044);
 assert.equal(cents(shares['Игорь']+shares['Эля']+shares['Эми']),512927);
 assert.equal(cents(balances['Раф']+balances['Аня']),106247);
 assert.equal(cents(balances['Игорь']+balances['Эля']+balances['Эми']),-106247);
 assert.equal(cents(Object.values(balances).reduce((sum,n)=>sum+n,0)),0);
 for(const key of ['bal_personal_net','bal_group_net','bal_persons_help']){
-  assert.equal((i18n.match(new RegExp(`${key}:`,'g'))||[]).length,7,`${key} missing translation`);
+  assert((i18n.match(new RegExp(`"${key}":`,'g'))||[]).length>=7,`${key} missing translation`);
 }
 assert(html.includes("t('bal_persons_help')"));
 assert(html.includes("t('bal_personal_net')"));

@@ -37,7 +37,9 @@
     cafe: 'Кафе',
     restaurant: 'Ресторан',
     bakery: 'Пекарня',
+    fast_food: 'Быстрое питание',
     bar: 'Бар',
+    fast_food: 'Быстрое питание',
     theatre: 'Театр'
   };
 
@@ -141,17 +143,27 @@
     const a = tags.amenity || '';
     if (t === 'museum' || t === 'gallery' || a === 'theatre') return 'museum';
     if (l === 'park' || l === 'garden' || t === 'zoo') return 'park';
-    if (a === 'cafe' || a === 'restaurant' || a === 'bakery' || a === 'bar') return 'food';
+    if (['cafe', 'restaurant', 'bakery', 'bar', 'fast_food', 'ice_cream', 'pub'].includes(a) || tags.shop === 'bakery') return 'food';
     return 'sights';
   }
 
   function placeTypeLabel(tags) {
-    const key = tags.tourism || tags.leisure || tags.historic || tags.amenity || '';
+    const key = tags.tourism || tags.leisure || tags.historic || tags.amenity || tags.shop || '';
     return TAG_LABELS[key] || 'Интересное место';
   }
 
   function formatAddress(tags) {
     return [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(' ');
+  }
+
+  function placeInCity(data, lat, lon) {
+    const bounds = data.searchBounds;
+    const distance = haversineKm(data.lat, data.lon, lat, lon);
+    if (distance > 35) return false;
+    if (!Array.isArray(bounds) || bounds.length !== 4 || bounds.some(v => !Number.isFinite(v))) return distance <= 20;
+    // Небольшой запас для объектов у административной границы города.
+    return lat >= bounds[0] - 0.02 && lat <= bounds[1] + 0.02 &&
+      lon >= bounds[2] - 0.02 && lon <= bounds[3] + 0.02;
   }
 
   function googleMapsUrl(p, city) {
@@ -186,7 +198,7 @@
   //  4) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
   const CITY_TTL = 7 * 86400000;
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const lsKey = key => 'st_guide_city6_' + key;
+  const lsKey = key => 'st_guide_city7_' + key;
   const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
   const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
 
@@ -276,9 +288,53 @@
     `.trim();
     const body = 'data=' + encodeURIComponent(query);
     const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body };
-    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, ms))).then(ov => {
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, ms))).then(ov => osmElementsToPlaces(ov.elements, lat, lon, cityShort));
+  }
+
+  // Ищем по части названия, включая кафе и рестораны вне стартовой подборки.
+  function osmSearchPlaces(query, data) {
+    const words = query.trim().split(/[^a-zа-яё0-9]+/i).filter(w => w.length >= 3);
+    const term = words.slice(0, 2).sort((a, b) => b.length - a.length)[0];
+    if (!term) return Promise.resolve([]);
+    const pattern = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const q = `[out:json][timeout:20];(nwr["name"~"${pattern}",i](around:12000,${data.lat},${data.lon});nwr["name:ru"~"${pattern}",i](around:12000,${data.lat},${data.lon}););out center 80;`;
+    const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
+    return Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 8000))).then(ov =>
+      osmElementsToPlaces(ov.elements, data.lat, data.lon, data.displayName.split(',')[0].trim())
+        .filter(p => matchesPlaceQuery(p, query) && placeInCity(data, p.lat, p.lon)));
+  }
+
+  // Photon индексирует названия заведений OSM и поддерживает поиск по части слова.
+  async function photonSearchPlaces(query, data) {
+    const city = data.displayName.split(',')[0].trim();
+    const fetchMatches = async text => {
+      const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(text) +
+        `&lat=${data.lat}&lon=${data.lon}&limit=50&lang=en`;
+      const j = await fetchJSON(url, null, 10000);
+      return (j.features || []).map(f => {
+      const p = f.properties || {};
+      const [lon, lat] = f.geometry?.coordinates || [];
+      if (!p.name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      const tags = { [p.osm_key || 'amenity']: p.osm_value || '' };
+      if (p.osm_key === 'shop' && p.osm_value === 'bakery') tags.amenity = 'bakery';
+      const cat = classifyPlace(tags);
+      return {
+        id: `photon-${p.osm_type || 'place'}-${p.osm_id || p.name}`,
+        name: p.name, city: p.city || data.displayName.split(',')[0].trim(), cat,
+        typeLabel: placeTypeLabel(tags), addr: [p.street, p.housenumber].filter(Boolean).join(' '),
+        hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
+        distKm: haversineKm(data.lat, data.lon, lat, lon), score: 5, lat, lon
+      };
+      }).filter(p => p && placeInCity(data, p.lat, p.lon) && matchesPlaceQuery(p, query));
+    };
+    // Короткое слово без города Photon ранжирует по всему миру.
+    const local = await fetchMatches(query + ' ' + city);
+    return local.length ? local : fetchMatches(query);
+  }
+
+  function osmElementsToPlaces(elements, lat, lon, cityShort) {
       const out = [];
-      for (const el of ov.elements || []) {
+      for (const el of elements || []) {
         const tags = el.tags || {};
         const name = (tags['name:ru'] || tags.name || '').trim();
         const pLat = el.lat ?? el.center?.lat, pLon = el.lon ?? el.center?.lon;
@@ -304,7 +360,34 @@
         });
       }
       return out;
-    });
+  }
+
+  // Дополнительная подборка заведений: бесплатный поиск Photon по OSM.
+  async function photonFoodPlaces(data) {
+    const city = data.displayName.split(',')[0].trim();
+    const terms = ['restaurant', 'cafe', 'bakery', 'ресторан'];
+    const results = await Promise.allSettled(terms.map(async term => {
+      const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(term + ' ' + city) +
+        `&lat=${data.lat}&lon=${data.lon}&limit=50&lang=en`;
+      const json = await fetchJSON(url, null, 10000);
+      return (json.features || []).map(f => {
+        const props = f.properties || {};
+        const [lon, lat] = f.geometry?.coordinates || [];
+        if (!props.name || !Number.isFinite(lat) || !Number.isFinite(lon) ||
+          haversineKm(data.lat, data.lon, lat, lon) > 20) return null;
+        const tags = { [props.osm_key || 'amenity']: props.osm_value || '' };
+        if (classifyPlace(tags) !== 'food') return null;
+        return {
+          id: `photon-${props.osm_type || 'place'}-${props.osm_id || props.name}`,
+          name: props.name, city: props.city || city, cat: 'food', typeLabel: placeTypeLabel(tags),
+          addr: [props.street, props.housenumber].filter(Boolean).join(' '),
+          hours: '', website: '', cuisine: '', free: false, wikiTag: '', thumb: '',
+          distKm: haversineKm(data.lat, data.lon, lat, lon), score: 4, lat, lon
+        };
+      }).filter(Boolean);
+    }));
+    if (results.every(r => r.status === 'rejected')) throw new Error('food search unavailable');
+    return results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   }
 
   // Места из Википедии рядом с центром города (запасной источник для малых городов)
@@ -498,13 +581,76 @@
   const RELIGIOUS_RE = /собор|церков|храм|базилик|костёл|кирх|часовн|аббатств|монастыр|мечет|синагог|church|cathedral|basilica|mosque|synagogue|chapel|abbey|monastery/i;
   const isReligiousPlace = p => RELIGIOUS_RE.test(`${p.name || ''} ${p.typeLabel || ''}`);
 
-  // Объединить: одно и то же место из Викигида, Wikidata и OSM — один раз, и разнообразить топ
+  function isOpen247(p) {
+    if (!p || p.cat === 'food' || p.cat === 'museum') return false;
+    const d = `${p.name || ''} ${p.typeLabel || ''}`.toLowerCase();
+    if (/зоопарк|аквапарк|аттракцион|музей|галере|театр|опер|собор|церков|храм|мечет|синагог|замок|дворец|башня|zoo|museum|church|cathedral|castle|palace|tower/.test(d)) return false;
+    return /площадь|мост\b|памятник|монумент|мемориал|бульвар|набережн|фонтан|ворота|арка|смотров|парк\b|сад\b|сады|square|plaza|bridge|monument|memorial|park|garden|viewpoint|fountain/.test(d);
+  }
+
+  function formatOpeningHours(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return '';
+    if (/^24\s*\/\s*7$/i.test(s)) return 'Круглосуточно (24/7)';
+    return s
+      .replace(/\bMo\b/g, 'Пн').replace(/\bTu\b/g, 'Вт').replace(/\bWe\b/g, 'Ср')
+      .replace(/\bTh\b/g, 'Чт').replace(/\bFr\b/g, 'Пт').replace(/\bSa\b/g, 'Сб')
+      .replace(/\bSu\b/g, 'Вс').replace(/\bPH\b/g, 'праздн.').replace(/\boff\b/gi, 'выходной');
+  }
+
+  // Поиск по названию за пределами начальной подборки мест.
+  async function wikiSearchPlaces(query, data) {
+    const cityShort = data.displayName.split(',')[0].trim();
+    const url = 'https://ru.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search' +
+      `&gsrsearch=${encodeURIComponent(query + ' ' + cityShort)}&gsrlimit=12` +
+      '&prop=coordinates|pageimages|description&colimit=max&pilimit=max&pithumbsize=240';
+    const j = await fetchJSON(url, null, 10000);
+    return Object.values(j?.query?.pages || {}).filter(p => {
+      const c = p.coordinates?.[0];
+      return c && p.title && Number.isFinite(c.lat) && Number.isFinite(c.lon) &&
+        placeInCity(data, c.lat, c.lon) &&
+        matchesPlaceQuery({ name: p.title, typeLabel: p.description || '', addr: '' }, query);
+    }).map(p => {
+      const c = p.coordinates[0];
+      const cat = guessPlaceCat((p.description || '') + ' ' + p.title);
+      return {
+        id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
+        cat, typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
+        addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault((p.description || '') + ' ' + p.title, cat),
+        wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
+        distKm: haversineKm(data.lat, data.lon, c.lat, c.lon), score: 15,
+        lat: c.lat, lon: c.lon
+      };
+    });
+  }
+
+  function matchesPlaceQuery(place, query) {
+    const cyrillic = {
+      а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m',
+      н:'n', о:'o', п:'p', р:'r', с:'s', т:'t', у:'u', ф:'f', х:'h', ц:'ts', ч:'ch', ш:'sh', щ:'sh',
+      ы:'y', э:'e', ю:'yu', я:'ya', ј:'j', ћ:'c', ђ:'dj', љ:'lj', њ:'nj', џ:'dz'
+    };
+    const words = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[а-яёјћђљњџ]/g, c => cyrillic[c] || c)
+      .split(/[^a-z0-9]+/).filter(Boolean)
+      .map(w => /^(muze|muse)/.test(w) ? 'muse' : w.length >= 5 ? w.slice(0, 4) : w);
+    const wanted = words(query);
+    const available = words(place.name);
+    if (wanted.length > 0 && wanted.every(word => available.some(item => item.startsWith(word)))) return true;
+    // В запросе может быть дописан город: «Princess Puff Belgrade».
+    const name = words(place.name);
+    return name.length >= 2 && name.every(word => wanted.some(item => word.startsWith(item) || item.startsWith(word)));
+  }
+
+  // Объединить: одно и то же место из Викигида, Wikidata, Википедии и OSM — один раз, и разнообразить топ
   function mergePlaces(a, b) {
     const out = a.slice();
     const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/g, '');
     for (const p of b) {
       const n = norm(p.name);
-      const dup = out.find(x => norm(x.name) === n || (haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 && (norm(x.name).includes(n) || n.includes(norm(x.name)))));
+      const dup = out.find(x => haversineKm(x.lat, x.lon, p.lat, p.lon) < 0.08 &&
+        (norm(x.name) === n || norm(x.name).includes(n) || n.includes(norm(x.name)) ||
+          (x.cat === p.cat && matchesPlaceQuery(x, p.name) && matchesPlaceQuery(p, x.name))));
       if (dup) { // берём лучшее из обоих: описание и фото из Викигида/Википедии, часы и сайт из OSM
         ['hours', 'website', 'cuisine', 'addr', 'wikiExtract'].forEach(k => { if (!dup[k] && p[k]) dup[k] = p[k]; });
         if (p.free) dup.free = true;
@@ -604,20 +750,37 @@
     };
   }
 
-  async function fetchCityData(city) {
+  async function fetchCityData(city, expectedDestination = '') {
     const key = city.trim().toLowerCase();
-    if (cityCache.has(key)) return cityCache.get(key);
+    const matchesTrip = data => !expectedDestination ||
+      (/^(city|town|village|municipality|hamlet|suburb|quarter|borough|neighbourhood|locality)$/.test(data.geoType || '') &&
+        (data.geoFullName || '').toLocaleLowerCase().includes(expectedDestination.toLocaleLowerCase()));
+    const notFound = () => new Error(`Место «${city}» не найдено`);
+    if (cityCache.has(key)) {
+      const cached = cityCache.get(key);
+      if (!expectedDestination || cached.geoType) {
+        if (!matchesTrip(cached)) throw notFound();
+        return cached;
+      }
+    }
     const saved = lsRead(key);
-    if (saved) { cityCache.set(key, saved); return saved; }
+    if (saved && (!expectedDestination || saved.geoType)) {
+      if (!matchesTrip(saved)) throw notFound();
+      cityCache.set(key, saved); return saved;
+    }
 
     let nomJson;
     try {
       nomJson = await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&extratags=1&accept-language=ru&q=${encodeURIComponent(city)}`, null, 10000);
     } catch (_) { throw new Error('Нет связи с сервисом поиска. Проверьте интернет и попробуйте ещё раз'); }
-    if (!nomJson.length) throw new Error(`Место «${city}» не найдено`);
+    if (!nomJson.length) throw notFound();
 
     const geo = nomJson[0];
+    const geoType = geo.addresstype || geo.type || '';
+    const geoFullName = geo.display_name || '';
+    if (!matchesTrip({ geoType, geoFullName })) throw notFound();
     const lat = Number(geo.lat), lon = Number(geo.lon);
+    const searchBounds = (geo.boundingbox || []).map(Number);
     const cityShort = geo.display_name.split(',')[0].trim();
     const wikiP = fetchJSON(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cityShort)}`, null, 8000).catch(() => null);
 
@@ -629,7 +792,8 @@
         isCountry: true,
         city,
         displayName: cityShort,
-        lat, lon,
+        geoType, geoFullName,
+        lat, lon, searchBounds,
         wiki: wiki && wiki.extract ? {
           title: wiki.title,
           extract: wiki.extract,
@@ -664,7 +828,8 @@
       isCountry: false,
       city,
       displayName: (geo.display_name || city).split(',').slice(0, 2).join(', '),
-      lat, lon,
+      geoType, geoFullName,
+      lat, lon, searchBounds,
       wiki: wiki && wiki.extract ? {
         title: wiki.title,
         extract: wiki.extract,
@@ -731,9 +896,11 @@
 
       // Если по точному названию статьи нет или это страница значений — ищем реальную статью рядом по координатам
       if (!info) {
-        const gUrl = `https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${place.lat}|${place.lon}&gsradius=250&gslimit=1&format=json&origin=*`;
+        const gUrl = `https://ru.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${place.lat}|${place.lon}&gsradius=250&gslimit=3&format=json&origin=*`;
         const gRes = await fetch(gUrl).then(r => (r.ok ? r.json() : null));
-        const geoTitle = gRes?.query?.geosearch?.[0]?.title || '';
+        const candidates = gRes?.query?.geosearch || [];
+        const matched = candidates.find(g => g.title && matchesPlaceQuery({ name: g.title }, place.name)) || candidates[0];
+        const geoTitle = matched?.title || '';
         if (geoTitle && geoTitle !== ruTitle) {
           const sUrl2 = `https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(geoTitle)}`;
           const sRes2 = await fetch(sUrl2).then(r => (r.ok ? r.json() : null));
@@ -765,17 +932,25 @@
 
   STHub.registerService(ID, ctx => {
     const savedCity = ctx.store.get('lastCity', '').trim();
-    const tripCity = (ctx.trip?.dest || '').trim();
-    const initialCity = savedCity || tripCity;
+    const tripName = (ctx.trip?.name || '').trim();
+    const tripDest = (ctx.trip?.dest || '').trim();
+    // В текущей поездке название может быть городом, а место — страной.
+    // Уточняем город страной и не даём прошлому поиску заслонить место поездки.
+    const tripPlace = tripName && tripDest && tripName.toLocaleLowerCase() !== tripDest.toLocaleLowerCase()
+      ? `${tripName}, ${tripDest}` : tripName || tripDest;
+    const initialCity = tripPlace || savedCity;
+    const fallbackCity = tripPlace && tripDest && tripPlace !== tripDest ? tripDest : savedCity;
 
     const state = {
       tab: 'explore', // 'explore' | 'plan'
       city: initialCity,
       filter: 'all',
       query: '',
+      searchPending: false,
       limit: 20,
       loading: false,
       osmLoading: false,
+      foodLoading: false,
       error: '',
       data: null,
       selectedId: null,
@@ -787,6 +962,8 @@
 
     const getSaved = () => ctx.store.get('saved', []);
     const setSaved = list => ctx.store.set('saved', list);
+    const searchAttempts = new Set();
+    let searchTimer = null;
 
     function destroyMap() {
       if (state.map) {
@@ -799,7 +976,7 @@
 
     function filteredPlaces() {
       const all = state.data?.places || [];
-      const q = state.query.trim().toLowerCase();
+      const q = state.query.trim();
       const topIds = new Set(all.filter(p => p.isTop).map(p => p.id));
       if (topIds.size < 15) {
         for (const p of all) {
@@ -812,9 +989,62 @@
           : state.filter === 'free' ? p.free
           : state.filter === 'sights' ? topIds.has(p.id)
           : p.cat === state.filter;
-        const okQ = !q || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q) || p.addr.toLowerCase().includes(q);
+        const okQ = !q || matchesPlaceQuery(p, q);
         return okCat && okQ;
       });
+    }
+
+    async function searchBeyondLoaded(screen, body, query, data) {
+      const key = data.city + '|' + query.toLowerCase();
+      if (searchAttempts.has(key)) return;
+      searchAttempts.add(key);
+      state.searchPending = true;
+      const box = body.querySelector('#st-guide-list');
+      if (box && !filteredPlaces().length) box.innerHTML = '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>';
+      try {
+        let found = await photonSearchPlaces(query, data).catch(() => []);
+        if (!found.length) {
+          const results = await Promise.allSettled([wikiSearchPlaces(query, data), osmSearchPlaces(query, data)]);
+          found = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+          if (results.every(r => r.status === 'rejected')) throw new Error('place search failed');
+        }
+        if (state.alive && state.data === data && found.length) data.places = mergePlaces(data.places, found);
+      } catch (_) {
+        searchAttempts.delete(key); // после ошибки сети разрешаем повторный поиск
+      }
+      if (state.alive && state.data === data && state.query.trim() === query) {
+        state.searchPending = false;
+        const input = body.querySelector('#st-guide-q');
+        const focused = document.activeElement === input;
+        const cursor = focused ? input.selectionStart : null;
+        screen.refresh();
+        if (focused) {
+          const next = body.querySelector('#st-guide-q');
+          next?.focus();
+          if (cursor != null) next?.setSelectionRange(cursor, cursor);
+        }
+      }
+    }
+
+    async function loadFoodPlaces(screen) {
+      const data = state.data;
+      if (!data || data.isCountry || data.foodLoaded || state.foodLoading) return;
+      state.foodLoading = true;
+      screen.refresh();
+      try {
+        const found = await photonFoodPlaces(data);
+        if (!state.alive || state.data !== data) return;
+        data.places = mergePlaces(data.places, found);
+        data.foodLoaded = true;
+        lsWrite(data.city.trim().toLowerCase(), data);
+      } catch (_) {
+        // При сетевой ошибке можно повторить загрузку, вновь выбрав фильтр.
+      } finally {
+        if (state.alive && state.data === data) {
+          state.foodLoading = false;
+          screen.refresh();
+        }
+      }
     }
 
     function toggleSave(place) {
@@ -883,8 +1113,8 @@
             ? `<div class="st-muted" data-wiki-txt>${esc(snip.short)}${snip.truncated ? `<button class="st-guide-more-txt" type="button" data-wiki-expand="${esc(p.id)}">Читать полностью</button>` : ''}</div>`
             : '<div class="st-muted" data-wiki-txt style="display:none"></div>'}
           <div class="st-guide-meta">
+            <div class="st-guide-meta-row"><i data-lucide="clock"></i><span data-hours-txt>${esc(p.hours ? formatOpeningHours(p.hours) : (isOpen247(p) ? 'Круглосуточно (открытое пространство)' : 'Часы работы: уточняйте в Картах'))}</span></div>
             ${p.addr ? `<div class="st-guide-meta-row"><i data-lucide="map-pin"></i><span>${esc(p.addr)}</span></div>` : ''}
-            ${p.hours ? `<div class="st-guide-meta-row"><i data-lucide="clock"></i><span>${esc(p.hours)}</span></div>` : ''}
             ${p.cuisine ? `<div class="st-guide-meta-row"><i data-lucide="utensils"></i><span>${esc(p.cuisine)}</span></div>` : ''}
           </div>
           <div class="st-guide-actions">
@@ -910,7 +1140,7 @@
       `;
     }
 
-    async function loadCity(cityName, screen) {
+    async function loadCity(cityName, screen, fallback = '', expectedDestination = '') {
       const clean = cityName.trim();
       if (!clean) return;
       state.city = clean;
@@ -918,11 +1148,13 @@
       state.error = '';
       state.limit = 20;
       state.selectedId = null;
+      state.searchPending = false;
+      clearTimeout(searchTimer);
       destroyMap();
       screen.refresh();
 
       try {
-        const data = await fetchCityData(clean);
+        const data = await fetchCityData(clean, expectedDestination);
         if (!state.alive) return;
         state.data = data;
         state.loading = false;
@@ -938,6 +1170,9 @@
         }
       } catch (err) {
         if (!state.alive) return;
+        if (fallback && fallback !== clean && /^Место «/.test(err?.message || '')) {
+          return loadCity(fallback, screen);
+        }
         state.loading = false;
         state.osmLoading = false;
         state.error = err?.message || 'Ошибка загрузки города';
@@ -982,7 +1217,43 @@
       }, { timeout: 8000 });
     }
 
+    function enrichVisibleHours(places, body) {
+      const need = places.filter(p => !p.hours && !p.hoursChecked && !isOpen247(p) && Number.isFinite(p.lat) && Number.isFinite(p.lon)).slice(0, 12);
+      if (!need.length) return;
+      need.forEach(p => { p.hoursChecked = true; });
+      const parts = need.map(p => `nwr["opening_hours"](around:120,${p.lat.toFixed(5)},${p.lon.toFixed(5)});`).join('');
+      const q = `[out:json][timeout:12];(${parts});out center tags 60;`;
+      const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
+      Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 10000))).then(ov => {
+        if (!state.alive) return;
+        const els = ov?.elements || [];
+        for (const p of need) {
+          let best = null;
+          let bestD = Infinity;
+          for (const el of els) {
+            const tags = el.tags || {};
+            if (!tags.opening_hours) continue;
+            const eLat = el.lat ?? el.center?.lat, eLon = el.lon ?? el.center?.lon;
+            if (eLat == null || eLon == null) continue;
+            const d = haversineKm(p.lat, p.lon, Number(eLat), Number(eLon));
+            if (d > 0.12) continue;
+            const eName = (tags['name:ru'] || tags.name || '').trim();
+            const nameHit = eName && matchesPlaceQuery({ name: eName }, p.name);
+            const rank = nameHit ? d * 0.1 : d;
+            if (rank < bestD) { bestD = rank; best = tags; }
+          }
+          if (best?.opening_hours) {
+            p.hours = best.opening_hours;
+            const card = body.querySelector(`[data-place-id="${CSS.escape(p.id)}"]`);
+            const elTxt = card?.querySelector('[data-hours-txt]');
+            if (elTxt) elTxt.textContent = formatOpeningHours(p.hours);
+          }
+        }
+      }).catch(() => {});
+    }
+
     function enrichVisibleCards(places, body) {
+      enrichVisibleHours(places, body);
       const toLoad = places.filter(p => !p.wikiChecked).slice(0, 12);
       if (!toLoad.length) return;
       toLoad.forEach(p => {
@@ -1336,7 +1607,11 @@
           } else {
             const list = filteredPlaces();
             const visible = list.slice(0, state.limit);
-            const emptyMsg = state.filter === 'free' && state.osmLoading
+            const emptyMsg = state.searchPending
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>'
+              : state.filter === 'food' && state.foodLoading
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу рестораны и кафе…</div></div>'
+              : state.filter === 'free' && state.osmLoading
               ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
               : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено по этому фильтру</div></div>';
 
@@ -1370,7 +1645,10 @@
                   return `<button class="st-guide-chip${cls}" type="button" data-cat-filter="${f.id}"><i data-lucide="${f.icon}"></i><span>${esc(f.label)}</span></button>`;
                 }).join('')}
               </div>
-              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Фильтр по названию, улице или типу…">
+              ${state.filter === 'food' && state.foodLoading && visible.length
+                ? '<div class="st-muted" style="text-align:center;font-size:.78rem">Ищу ещё рестораны и кафе…</div>' : ''}
+              <input class="st-input" id="st-guide-q" value="${esc(state.query)}" placeholder="Поиск места по названию…">
+              <a id="st-guide-google-search" class="st-btn st-btn-g" style="display:${state.query.trim() ? 'inline-flex' : 'none'};align-self:flex-start;text-decoration:none" href="${esc(googleMapsUrl({ name: state.query.trim() }, state.data.displayName))}" target="_blank" rel="noopener noreferrer"><i data-lucide="external-link"></i>Все результаты в Google Maps</a>
               <div id="st-guide-list" style="display:flex;flex-direction:column;gap:12px">
                 ${visible.length
                   ? visible.map(p => placeCardHtml(p, saved, false)).join('')
@@ -1418,26 +1696,46 @@
             state.filter = btn.dataset.catFilter;
             state.limit = 20;
             screen.refresh();
+            if (state.filter === 'food') loadFoodPlaces(screen);
           });
         });
 
         body.querySelector('#st-guide-q')?.addEventListener('input', e => {
+          clearTimeout(searchTimer);
           state.query = e.target.value;
+          state.searchPending = false;
           state.limit = 20;
           const box = body.querySelector('#st-guide-list');
           if (!box || !state.data) return;
           const list = filteredPlaces();
           const visible = list.slice(0, state.limit);
           const savedNow = getSaved();
+          const query = state.query.trim();
+          const data = state.data;
+          const googleLink = body.querySelector('#st-guide-google-search');
+          if (googleLink) {
+            googleLink.style.display = query ? 'inline-flex' : 'none';
+            googleLink.href = googleMapsUrl({ name: query }, data.displayName);
+          }
+          const willSearch = query.length >= 3 && !data.isCountry &&
+            !searchAttempts.has(data.city + '|' + query.toLowerCase());
+          state.searchPending = willSearch;
           box.innerHTML = visible.length
             ? visible.map(p => placeCardHtml(p, savedNow, false)).join('')
-            : (state.filter === 'free' && state.osmLoading
+            : (willSearch
+              ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Ищу место в городе…</div></div>'
+              : state.filter === 'free' && state.osmLoading
               ? '<div class="st-empty"><i data-lucide="loader-circle"></i><div>Данные о входе загружаются…</div></div>'
               : '<div class="st-empty"><i data-lucide="search-x"></i><div>Ничего не найдено</div></div>');
           if (typeof initializeIcons === 'function') initializeIcons(box);
           bindListEvents(box, body, screen);
           enrichVisibleCards(visible, body);
           updateMapMarkers(body, screen);
+          if (willSearch) {
+            searchTimer = setTimeout(() => {
+              if (state.data === data && state.query.trim() === query) searchBeyondLoaded(screen, body, query, data);
+            }, 450);
+          }
         });
 
         body.querySelector('#st-guide-more')?.addEventListener('click', () => {
@@ -1457,9 +1755,9 @@
       }
     });
 
-    // Автоматически загружаем последний выбранный город, город поездки или геолокацию
+    // Сначала место текущей поездки, затем сохранённый поиск или геолокация.
     if (initialCity && !state.data) {
-      loadCity(initialCity, screenApi);
+      loadCity(initialCity, screenApi, fallbackCity, tripPlace !== tripDest ? tripDest : '');
     } else if (!initialCity && !state.data) {
       detectByGeolocation(screenApi, true);
     }

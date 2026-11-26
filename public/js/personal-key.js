@@ -19,7 +19,7 @@
 // Аккаунт создаётся сам: как только на устройстве появилась первая поездка (создал или вошёл по приглашению),
 // приложение выдаёт личный номер и сохраняет кабинет в personal_keys. PIN необязателен — его можно добавить,
 // выпустив новый ключ («Новый ключ с PIN-кодом»). Без PIN секрет — сам номер (60 бит), его хранят как пароль.
-// Данные модулей (календарь, брони …) восстановятся этим же ключом, когда они будут в Supabase.
+// Личные события календаря входят в зашифрованный блок ключа. Данные поездки хранятся отдельно.
 // ============================================================
 (function () {
   'use strict';
@@ -117,6 +117,46 @@
   // x — удалённые поездки (чтобы другое устройство не вернуло их обратно).
   const uniq = a => [...new Set((a || []).filter(Boolean))];
   const FIELDS = ['i', 'n', 'd', 'c', 'm', 'g', 'iv', 'k', 'a', 'ds', 'de'];
+  const PERSONAL_GUEST = 'st_mod_calendar_none_events';
+  const personalEventsKey = num => 'st_mod_calendar_personal_' + num + '_events';
+  const personalDeletedKey = num => 'st_mod_calendar_personal_' + num + '_deleted';
+  const personalState = num => ({ events: lsGet(num ? personalEventsKey(num) : PERSONAL_GUEST, []), deleted: num ? lsGet(personalDeletedKey(num), {}) : {} });
+  function mergePersonal(a, b) {
+    const events = new Map(), deleted = Object.assign({}, a?.deleted || {});
+    Object.entries(b?.deleted || {}).forEach(([id, at]) => { deleted[id] = Math.max(deleted[id] || 0, at || 0); });
+    [...(a?.events || []), ...(b?.events || [])].forEach(e => {
+      if (!e?.id) return;
+      const old = events.get(e.id);
+      if (!old || (e.updatedAt || 0) >= (old.updatedAt || 0)) events.set(e.id, e);
+    });
+    return { events: [...events.values()].filter(e => !deleted[e.id] || deleted[e.id] < (e.updatedAt || 0)).sort((x, y) => x.id.localeCompare(y.id)), deleted };
+  }
+  function savePersonalState(num, state) {
+    if (!lsSet(personalEventsKey(num), state.events) || !lsSet(personalDeletedKey(num), state.deleted)) throw new Error('calendar-storage-full');
+  }
+  function setCalendarEvents(list) {
+    const num = lsGet(META, null)?.num || '';
+    if (!num) { if (!lsSet(PERSONAL_GUEST, list)) throw new Error('calendar-storage-full'); ensureAccount().then(autoUpdate); return; }
+    const old = personalState(num), next = new Set(list.map(e => e.id)), deleted = Object.assign({}, old.deleted);
+    old.events.filter(e => !next.has(e.id)).forEach(e => { deleted[e.id] = Date.now(); });
+    list.forEach(e => { if (deleted[e.id] && (e.updatedAt || 0) > deleted[e.id]) delete deleted[e.id]; });
+    savePersonalState(num, { events: list, deleted });
+    autoUpdate();
+  }
+  function calendarEvents() {
+    const num = lsGet(META, null)?.num || '';
+    if (!num) return personalState('').events;
+    const guest = personalState('').events;
+    if (guest.length) {
+      const current = personalState(num);
+      const merged = mergePersonal(current, { events: guest });
+      savePersonalState(num, merged);
+      lsSet(PERSONAL_GUEST, []);
+      autoUpdate();
+      return merged.events;
+    }
+    return personalState(num).events;
+  }
   function merge(base, local, gone) {
     const map = new Map();
     const put = t => { const cur = map.get(t.i) || {}; FIELDS.forEach(f => { if (t[f]) cur[f] = t[f]; }); map.set(t.i, cur); };
@@ -127,7 +167,7 @@
   }
   // поездки этого устройства, которые пользователь разрешил добавить в кабинет
   const ownLocal = m => myTrips().filter(t => !((m && m.skip) || []).includes(t.i));
-  const fpOf = (t, x) => JSON.stringify([merge(t, [], []), uniq(x).sort()]);
+  const fpOf = (t, x, p) => JSON.stringify([merge(t, [], []), uniq(x).sort(), mergePersonal(p, null)]);
 
   // ---------- Сервер (Supabase): только зашифрованный блок ----------
   /* global getSupabase */
@@ -239,12 +279,12 @@
   const SRV = { ok: ['circle-check', '#1b9a50', 'Вход по номеру включён'], missing: ['clock', '#c27a00', 'Вход по номеру заработает после обновления базы — пока входите по QR'],
     off: ['wifi-off', '#c27a00', 'Нет связи с сервером — номер сохранится позже, QR работает'], error: ['circle-alert', '#d93a3a', 'Сервер не принял ключ — входите по QR'],
     replaced: ['circle-alert', '#d93a3a', 'Ключ заменён на другом устройстве — войдите по новому ключу'] };
-  function openMyKey() {
+  function openMyKey(startWithPin = false) {
     const trips = myTrips();
     const meta = lsGet(META, null);
-    const st = { step: meta && meta.num && meta.blob ? 'show' : 'pin', pin: '', pin2: '', err: '', num: meta && meta.num || '', blob: meta && meta.blob || '', srv: meta && meta.srv || '', shown: false, busy: false };
+    const st = { step: startWithPin ? 'pin' : meta && meta.num && meta.blob ? 'show' : 'pin', pin: '', pin2: '', err: '', num: meta && meta.num || '', blob: meta && meta.blob || '', srv: meta && meta.srv || '', shown: false, busy: false };
     sheet('Мой ключ входа', (b, api) => {
-      if (!trips.length && st.step === 'pin') {
+      if (!trips.length && !calendarEvents().length && st.step === 'pin') {
         b.innerHTML = `<p class="pk-p">На этом устройстве пока нет поездок, в которые вы вошли под своим именем. Создайте поездку или войдите в неё — и ключ появится.</p>
           <p class="pk-p">Уже есть ключ с другого устройства? Войдите в свой кабинет:</p>
           <button class="pk-btn" type="button" data-a="login"><i data-lucide="log-in"></i>Войти по личному ключу</button>`;
@@ -275,13 +315,15 @@
             st.num = newNumber();
             // новый ключ забирает все поездки кабинета, а не только поездки этого устройства
             const m0 = lsGet(META, null) || {}, s0 = old ? await savedKey() : null;
-            let all = merge([], ownLocal(m0), []), gone = [];
-            if (s0 && m0.blob) { try { const b0 = await unpackWith(m0.blob, s0.key); gone = uniq([...(b0.x || []), ...(m0.gone || [])]); all = merge(b0.t, ownLocal(m0), gone); } catch (_) {} }
-            st.blob = await pack({ v: 2, me: trips[0].m, at: Date.now(), t: all, x: gone }, st.num, st.pin);
+            let all = merge([], ownLocal(m0), []), gone = [], prior = null;
+            if (s0 && m0.blob) { try { prior = await unpackWith(m0.blob, s0.key); gone = uniq([...(prior.x || []), ...(m0.gone || [])]); all = merge(prior.t, ownLocal(m0), gone); } catch (_) {} }
+            const personal = mergePersonal(prior?.p, personalState(m0.num || ''));
+            st.blob = await pack({ v: 2, me: trips[0]?.m || m0.me || 'Личный календарь', at: Date.now(), t: all, x: gone, p: personal }, st.num, st.pin);
+            savePersonalState(st.num, personal);
             st.ids = all.map(x => x.i); st.gone = gone; st.skip = m0.skip || [];
             st.srv = await serverSave(st.num, st.blob).catch(() => 'error');
             if (old && st.srv === 'ok') { try { const c = await sb(); const k = await ids(old); await c.rpc('delete_personal_key', { p_id: k.id, p_write: k.write }); } catch (_) {} }
-            lsSet(META, { t: Date.now(), ids: st.ids, num: st.num, blob: st.blob, srv: st.srv, me: trips[0].m, skip: st.skip, gone: st.gone, nopin: false });
+            lsSet(META, { t: Date.now(), ids: st.ids, num: st.num, blob: st.blob, srv: st.srv, me: trips[0]?.m || m0.me || 'Личный календарь', skip: st.skip, gone: st.gone, nopin: false });
             st.step = 'show';
           } catch (_) { st.err = 'Не удалось создать ключ'; }
           st.busy = false; st.pin = st.pin2 = ''; api.draw();
@@ -359,7 +401,7 @@
         b.innerHTML = `
           <p class="pk-p">Откройте свои поездки на этом устройстве. Нужен ваш <b>личный номер</b> (или тёмный QR с замком). PIN — только если вы его задавали.</p>
           ${st.blob ? `<div class="pk-card"><div class="pk-row"><i data-lucide="key-round"></i><span>QR-ключ получен</span><small>${esc(prettyNum(st.num).slice(0, 4))}-…</small></div></div>`
-            : `<span class="pk-lbl">Личный номер</span><input class="pk-in" id="pk-num" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase" value="${esc(st.num ? prettyNum(st.num) : '')}">
+            : `<span class="pk-lbl">Личный номер</span><input class="pk-in" id="pk-num" type="text" inputmode="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="font-family:var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase" value="${esc(st.num ? prettyNum(st.num) : '')}">
                <button class="pk-btn lite" type="button" data-a="scan"><i data-lucide="scan-line"></i>Или отсканировать QR-ключ</button>`}
           <span class="pk-lbl">PIN — если задавали (иначе оставьте пустым)</span>
           <input class="pk-in pin" id="pk-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" value="${esc(st.pin)}">
@@ -391,7 +433,7 @@
           }
           st.busy = false; api.draw();
         });
-        setTimeout(() => (numIn && !st.num ? numIn : pin).focus(), 60);
+        setTimeout(() => (numIn || pin).focus(), 60);
         return;
       }
       const n = st.data.t.filter(t => st.pick[t.i]).length;
@@ -415,6 +457,8 @@
           await adopt(st.num, st.pin, st.used);
           // автоматически созданный кабинет этого устройства больше не нужен: его поездки переходят в этот кабинет
           if (cur.num && cur.num !== st.num && cur.auto) { const old = cur.num; sb().then(async c => { if (!c) return; const k = await ids(old); await c.rpc('delete_personal_key', { p_id: k.id, p_write: k.write }); }).catch(() => {}); }
+          const personal = mergePersonal(st.data.p, cur.num ? personalState(st.num) : personalState(''));
+          savePersonalState(st.num, personal);
           lsSet(META, { t: st.data.at || Date.now(), num: st.num, blob: st.used, ids: st.data.t.map(t => t.i), srv: '', me: st.data.me || '',
             skip: st.extra.filter(t => !st.add[t.i]).map(t => t.i), gone: [], nopin: !st.pin });
         } catch (_) { st.busy = false; st.err = 'Не удалось сохранить ключ на этом устройстве'; api.draw(); return; }
@@ -465,8 +509,12 @@
     m.gone = uniq([...(m.gone || []), id]); lsSet(META, m);
   }
   // Синхронизация кабинета: сервер + поездки этого устройства → общий список (тем же ключом шифрования, без PIN)
-  let upd = null;
-  function autoUpdate() { if (!upd) upd = doUpdate().catch(() => {}).finally(() => { upd = null; }); return upd; }
+  let upd = null, updateAgain = false;
+  function autoUpdate() {
+    if (upd) { updateAgain = true; return upd; }
+    upd = doUpdate().catch(() => {}).finally(() => { upd = null; if (updateAgain) { updateAgain = false; autoUpdate(); } });
+    return upd;
+  }
   async function doUpdate() {
     const m = lsGet(META, null);
     if (!m || !m.num || !(window.crypto && crypto.subtle)) return;
@@ -486,13 +534,15 @@
     if (!base) { try { base = await unpackWith(m.blob, saved.key); } catch (_) { base = { t: [], x: [] }; } }
     const gone = uniq([...(base.x || []), ...(m.gone || [])]);
     const t = merge(base.t, ownLocal(m), gone);
+    const personal = mergePersonal(base.p, personalState(m.num));
+    savePersonalState(m.num, personal);
     const me = m.me || base.me || (t[0] && t[0].m) || '';
-    if (fpOf(t, gone) === fpOf(base.t, base.x)) { // ничего нового
+    if (fpOf(t, gone, personal) === fpOf(base.t, base.x, base.p)) { // ничего нового
       if (srvBlob) lsSet(META, Object.assign(m, { blob: srvBlob, ids: t.map(x => x.i), srv: 'ok', me, t: base.at || m.t }));
       else if (m.srv !== 'ok') { const srv = await serverSave(m.num, m.blob).catch(() => 'error'); lsSet(META, Object.assign(m, { ids: t.map(x => x.i), srv, me })); }
       return;
     }
-    const blob = await pack({ v: 2, me, at: Date.now(), t, x: gone }, m.num, '', saved);
+    const blob = await pack({ v: 2, me, at: Date.now(), t, x: gone, p: personal }, m.num, '', saved);
     const srv = await serverSave(m.num, blob).catch(() => 'error');
     lsSet(META, Object.assign(m, { t: Date.now(), ids: t.map(x => x.i), blob, srv, me }));
   }
@@ -503,11 +553,14 @@
     if (making || (m && m.num) || !(window.crypto && crypto.subtle)) return;
     if (extract(location.hash) || document.querySelector('.pk-ov')) return; // идёт вход по ключу
     const own = ownLocal(m);
-    if (!own.length) return;
+    const guest = personalState('');
+    if (!own.length && !guest.events.length) return;
     making = true;
     try {
-      const num = newNumber(), t = merge([], own, []), me = own[0].m;
-      const blob = await pack({ v: 2, me, at: Date.now(), t, x: [] }, num, '');
+      const num = newNumber(), t = merge([], own, []), me = own[0]?.m || 'Личный календарь';
+      const personal = mergePersonal(guest, null);
+      const blob = await pack({ v: 2, me, at: Date.now(), t, x: [], p: personal }, num, '');
+      savePersonalState(num, personal);
       const srv = await serverSave(num, blob).catch(() => 'error');
       lsSet(META, { t: Date.now(), ids: t.map(x => x.i), num, blob, srv, me, skip: [], gone: [], auto: true, nopin: true });
       welcome(num, me, srv);
@@ -516,7 +569,7 @@
   function welcome(num, me, srv) {
     sheet('Ваш личный кабинет создан', (b, api) => {
       b.innerHTML = `
-        <p class="pk-p">Ваши поездки теперь сохраняются в личном кабинете. Чтобы открыть их на другом телефоне или компьютере, достаточно этого номера:</p>
+        <p class="pk-p">Ваши поездки и личные события календаря сохраняются в личном кабинете. Чтобы открыть их на другом телефоне или компьютере, достаточно этого номера:</p>
         <div class="pk-key">
           <span class="pk-badge"><i data-lucide="lock"></i>МОЙ ЛИЧНЫЙ НОМЕР</span>
           <h3>${esc(me)}</h3>
@@ -529,11 +582,13 @@
           <button class="pk-btn gold" type="button" data-a="copy"><i data-lucide="copy"></i>Скопировать</button>
           <button class="pk-btn lite" type="button" data-a="more"><i data-lucide="qr-code"></i>QR и картинка</button>
         </div>
+        <button class="pk-btn lite" type="button" data-a="pin"><i data-lucide="shield-check"></i>Добавить PIN-код</button>
         <button class="pk-btn lite" type="button" data-a="login"><i data-lucide="log-in"></i>У меня уже есть номер — войти</button>
         <button class="pk-btn" type="button" data-a="ok"><i data-lucide="check"></i>Готово</button>
         <p class="pk-p" style="margin-top:12px">Номер всегда можно посмотреть: «Ещё» → «Мой ключ входа». Там же можно выпустить ключ с PIN-кодом.</p>`;
       b.querySelector('[data-a="copy"]').addEventListener('click', async () => { try { await navigator.clipboard.writeText(prettyNum(num)); say('Номер скопирован — храните как пароль'); } catch (_) { say('Не удалось скопировать'); } });
       b.querySelector('[data-a="more"]').addEventListener('click', () => { api.close(); openMyKey(); });
+      b.querySelector('[data-a="pin"]').addEventListener('click', () => { api.close(); openMyKey(true); });
       b.querySelector('[data-a="login"]').addEventListener('click', () => { api.close(); openRestore(); });
       b.querySelector('[data-a="ok"]').addEventListener('click', () => api.close());
     });
@@ -542,5 +597,5 @@
   setInterval(() => { const m = lsGet(META, null); if (!m || !m.num) ensureAccount(); }, 3000); // создал поездку или вошёл по приглашению
   window.addEventListener('online', () => setTimeout(autoUpdate, 3000));
 
-  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate, forget, ensureAccount };
+  window.STKey = { openMyKey, openRestore, bootHash, isKey: v => !!extract(v), status, extract, autoUpdate, forget, ensureAccount, calendarEvents, setCalendarEvents };
 })();
