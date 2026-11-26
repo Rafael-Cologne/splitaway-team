@@ -119,6 +119,7 @@
     const expDate = e => { const v = String(e.date || ''); if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10); const t = new Date(v); return isNaN(t) ? '' : iso(t); };
     // доля участника — как в «Балансах»: свои позиции из «Заказа», иначе доли по участникам
     const shareOf = (e, p) => {
+      if (typeof expenseShareCents === 'function') return expenseShareCents(e, p) / 100;
       if (e.splits && Object.keys(e.splits).length) return Number(e.splits[p]) || 0;
       if (!(e.participants || []).includes(p)) return 0;
       try { if (typeof perShare === 'function' && typeof unitsForExp === 'function') return perShare(e) * unitsForExp(e, p); } catch (_) {}
@@ -252,7 +253,13 @@
         const parts = CATS.map((c, i) => ({ id: c.id, name: c.name, sum: catSum[c.id] || 0, color: c.id === 'other' ? 'var(--sx-other)' : colors[i] })).filter(p => p.sum > 0);
 
         // участники
-        const rows = ppl.map(p => ({ p, paid: list.filter(e => !e.fromTreasury && e.paidBy === p).reduce((s, e) => s + Number(e.amount), 0), own: list.reduce((s, e) => s + shareOf(e, p), 0) }));
+        const personal = list.filter(e => !e.fromTreasury && e.paidBy !== '_treasury');
+        const rows = ppl.map(p => {
+          const paid = personal.filter(e => e.paidBy === p).reduce((s, e) => s + Number(e.amount), 0);
+          const own = list.reduce((s, e) => s + shareOf(e, p), 0);
+          const personalOwn = personal.reduce((s, e) => s + shareOf(e, p), 0);
+          return { p, paid, own, personalNet: Math.round((paid - personalOwn) * 100) / 100 };
+        });
         const mMax = Math.max(1, ...rows.map(r => Math.max(r.paid, r.own)));
         const treasury = list.filter(e => e.fromTreasury || e.paidBy === '_treasury').reduce((s, e) => s + Number(e.amount), 0);
 
@@ -278,12 +285,12 @@
 
           <div class="sx-h"><i data-lucide="users"></i>По участникам</div>
           <div class="sx-card">
-            <div class="sx-mleg"><span><i style="background:var(--s1)"></i>Заплатил</span><span><i style="background:var(--s2)"></i>Потратил на себя</span></div>
-            ${rows.map(r => `<div class="sx-mrow"><div class="sx-mname">${esc(r.p)}<small>${r.paid - r.own >= 0.005 ? 'ему должны ' + esc(money(r.paid - r.own)) : r.own - r.paid >= 0.005 ? 'должен ' + esc(money(r.own - r.paid)) : 'в расчёте'}</small></div>
+            <div class="sx-mleg"><span><i style="background:var(--s1)"></i>Заплатил лично</span><span><i style="background:var(--s2)"></i>Потратил на себя</span></div>
+            ${rows.map(r => `<div class="sx-mrow"><div class="sx-mname">${esc(r.p)}<small>${r.personalNet > 0 ? 'ему должны ' + esc(money(r.personalNet)) : r.personalNet < 0 ? 'должен ' + esc(money(-r.personalNet)) : 'в расчёте'}</small></div>
               <div class="sx-mbar"><div style="width:${r.paid / mMax * 70}%;background:var(--s1)"></div>${esc(money(r.paid, 0))}</div>
               <div class="sx-mbar"><div style="width:${r.own / mMax * 70}%;background:var(--s2)"></div>${esc(money(r.own, 0))}</div></div>`).join('')}
             ${treasury ? `<div class="st-muted" style="margin-top:10px">Из кассы оплачено ${esc(money(treasury))}.</div>` : ''}
-            <div class="st-muted" style="margin-top:8px;font-size:.76rem">Без учёта уже возвращённых долгов — точные расчёты в «Балансах».</div>
+            <div class="st-muted" style="margin-top:8px;font-size:.76rem">«Потратил на себя» включает траты из кассы. Долг — только по личным платежам, без учёта возвратов. Точные расчёты в «Балансах».</div>
           </div>
 
           <div class="sx-h"><i data-lucide="trophy"></i>Самые крупные расходы</div>

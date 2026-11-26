@@ -98,6 +98,23 @@
 .hub-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:999px;border:1px solid var(--b2);background:transparent;color:var(--text);font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
 .hub-chip svg{width:15px;height:15px}
 .hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.hub-nav-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:10px 2px;border:1px solid var(--b2);border-radius:16px;background:var(--hub-card)}
+.hub-nav-preview-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;color:var(--t2);font-size:.65rem;white-space:nowrap}
+.hub-nav-preview-item:nth-child(3){color:var(--accent);font-weight:700}
+.hub-nav-preview-item svg{width:21px;height:21px}
+.hub-nav-choice{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;padding:10px 12px;border:1px solid var(--b2);border-radius:14px;background:var(--hub-card);color:var(--text)}
+.hub-nav-choice-current{display:flex;align-items:center;gap:11px;min-width:0;font-size:.92rem}
+.hub-nav-choice-current svg{width:22px;height:22px;color:var(--accent);flex-shrink:0}
+.hub-nav-replace{display:flex;align-items:center;gap:3px;padding:8px 9px;border:0;border-radius:10px;background:var(--hub-soft);color:var(--accent);font:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
+.hub-nav-replace svg{width:15px;height:15px}
+.hub-nav-picker-back{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:0;background:none;color:var(--text);cursor:pointer}
+.hub-nav-picker-back svg{width:20px;height:20px}
+.hub-nav-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:55vh;overflow-y:auto}
+.hub-nav-option{display:flex;align-items:center;gap:9px;min-width:0;min-height:48px;padding:9px 10px;border:1px solid var(--b2);border-radius:12px;background:var(--hub-card);color:var(--text);font:inherit;font-size:.82rem;font-weight:600;text-align:left;cursor:pointer}
+.hub-nav-option.on{border-color:var(--accent);background:var(--hub-soft)}
+.hub-nav-option svg{width:20px;height:20px;flex-shrink:0;color:var(--accent)}
+.hub-nav-option span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hub-nav-option span+svg{width:16px;height:16px;margin-left:auto}
 
 /* Кнопка «На главную» в разделе расходов и на экранах онбординга */
 /* Единая кнопка «назад» для всех плиток: круглая, со стрелкой, всегда слева вверху */

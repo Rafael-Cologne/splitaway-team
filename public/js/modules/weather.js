@@ -250,6 +250,7 @@
     .wx-day-n small{font-size:.7rem;color:var(--wx-ac);font-weight:700}
     .wx-day-n{min-width:0}
     .wx-day-n small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wx-day-n small.wx-day-details{white-space:normal;overflow:visible;line-height:1.3;color:var(--t2);font-weight:500}
     .wx-day-ic{display:flex;flex-direction:column;align-items:center}
     .wx-day-ic{gap:2px;padding:5px 0}
     .wx-day-ic small{font-size:.68rem;line-height:1;color:#2F86E8;font-weight:800;margin-top:0;letter-spacing:.01em}
@@ -330,11 +331,11 @@
   // Прогноз: из кэша, если свежий (30 мин); без сети — последний сохранённый
   async function forecast(loc, force) {
     const k = 'st_wx_cache_' + keyOf(loc), c = ls.get(k, null);
-    if (c && !force && Date.now() - c.t < 15 * 60000) return Object.assign({ cachedAt: c.t }, c.data);
+    if (c && !force && Date.now() - c.t < 15 * 60000 && c.data?.daily?.wind_direction_10m_dominant && c.data?.daily?.pressure_msl_mean) return Object.assign({ cachedAt: c.t }, c.data);
     const url = API + '?latitude=' + loc.lat + '&longitude=' + loc.lon + '&timezone=auto&forecast_days=16&models=best_match' +
       '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,is_day,precipitation,pressure_msl' +
       '&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,is_day,visibility,pressure_msl,uv_index,relative_humidity_2m' +
-      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset,uv_index_max';
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,pressure_msl_mean,sunrise,sunset,uv_index_max';
     try {
       const data = await getJSON(url);
       ls.set(k, { t: Date.now(), data });
@@ -645,10 +646,19 @@
     }
     function dayRow(i, extra) {
       const D = f.daily, d = D.time[i], pp = (D.precipitation_probability_max || [])[i];
+      const isCurrentDay = i === 0 && f.current && f.current.time?.slice(0, 10) === d;
+      const iconCode = isCurrentDay ? f.current.weather_code : D.weather_code[i];
+      const iconDay = isCurrentDay ? !!f.current.is_day : true;
+      const direction = (D.wind_direction_10m_dominant || [])[i];
+      const compass = direction == null ? '' : ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'][Math.round(((direction % 360) + 360) % 360 / 45) % 8];
+      const wind = (D.wind_speed_10m_max || [])[i];
+      const pressure = (D.pressure_msl_mean || [])[i];
+      const details = [wind == null ? '' : `Ветер ${compass ? compass + ' ' : ''}до ${Math.round(wind)} км/ч`, pressure == null ? '' : `Давление ${Math.round(pressure)} гПа`].filter(Boolean);
       return `<button class="wx-day${inTrip(d) ? ' trip' : ''}" type="button" data-day="${i}"${extra && i >= 7 ? ' style="opacity:.8"' : ''}>
         <span class="wx-day-n">${esc(i === 0 ? 'Сегодня' : dayLong(d).replace(/^(\S)/, c => c.toUpperCase()))}${inTrip(d) ? '<small>поездка</small>' : ''}
-          ${extra ? `<small style="color:var(--t2);font-weight:500">💧 ${(D.precipitation_sum[i] || 0).toFixed(1).replace('.', ',')} мм · ветер ${Math.round(D.wind_speed_10m_max[i])} км/ч</small>` : ''}</span>
-        <span class="wx-day-ic">${wxIcon(D.weather_code[i], true, 42)}${pp >= 20 ? `<small>${pp}%</small>` : ''}</span>
+          ${details.length ? `<small class="wx-day-details">${details.map(esc).join('<br>')}</small>` : ''}
+          ${extra && D.precipitation_sum[i] > 0 ? `<small style="color:var(--t2);font-weight:500">Осадки ${D.precipitation_sum[i].toFixed(1).replace('.', ',')} мм</small>` : ''}</span>
+        <span class="wx-day-ic">${wxIcon(iconCode, iconDay, 42)}${pp >= 20 ? `<small>${pp}%</small>` : ''}</span>
         <span class="wx-day-t"><span>${deg(D.temperature_2m_min[i])}</span> / ${deg(D.temperature_2m_max[i])}</span>
         <i data-lucide="chevron-right"></i></button>`;
     }
@@ -695,7 +705,7 @@
               <div class="wx-stat"><i data-lucide="thermometer"></i><small>Ощущается</small><b>${deg(c.apparent_temperature)}${UNIT}</b></div>
               <div class="wx-stat"><i data-lucide="wind"></i><small>Ветер</small><b>${Math.round(c.wind_speed_10m)} км/ч</b></div>
               <div class="wx-stat"><i data-lucide="droplet"></i><small>Влажность</small><b>${Math.round(c.relative_humidity_2m)} %</b></div>
-              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${Math.round(uvNow || 0)} ${uvT}</b>${Math.round(D.uv_index_max[0] || 0) > Math.round(uvNow || 0) ? `<em>днём до ${Math.round(D.uv_index_max[0])}</em>` : ''}</div>
+              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${uvNow == null ? '—' : Math.round(uvNow) + ' ' + uvT}</b>${uvNow != null && D.uv_index_max[0] != null && Math.round(D.uv_index_max[0]) > Math.round(uvNow) ? `<em>днём до ${Math.round(D.uv_index_max[0])}</em>` : ''}</div>
             </div>
             <div id="wx-aq"></div>
             <div class="wx-hours">${hours.map((k, n) => {
