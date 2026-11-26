@@ -198,7 +198,7 @@
   //  4) результат хранится на устройстве 7 дней — повторный поиск мгновенный.
   const CITY_TTL = 7 * 86400000;
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const lsKey = key => 'st_guide_city7_' + key;
+  const lsKey = key => 'st_guide_city8_' + key;
   const lsRead = key => { try { const v = JSON.parse(localStorage.getItem(lsKey(key)) || 'null'); return v && Date.now() - v.t < CITY_TTL ? v.data : null; } catch (_) { return null; } };
   const lsWrite = (key, data) => { try { localStorage.setItem(lsKey(key), JSON.stringify({ t: Date.now(), data })); } catch (_) {} };
 
@@ -555,27 +555,37 @@
     return out;
   }
 
+  const TOURIST_WHITELIST_RE = /музе|галере|собор|церков|храм|базилик|костёл|мечет|синагог|замок|крепост|дворец|парк|сад\b|сады|зоопарк|мост\b|башн|курант|площадь|памятник|монумент|театр|опер|филармон|ратуш|фонтан|ворота|арка|смотров|набережн|руины|монастыр|аббатств|достопримечательн|museum|gallery|cathedral|church|basilica|mosque|synagogue|castle|fortress|palace|park|garden|zoo|bridge|tower|square|plaza|monument|theatre|opera|town hall|fountain|gate|arch|abbey|monastery/i;
+
   async function wikiPlaces(lat, lon, cityName, cityShort) {
     const url = 'https://ru.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch' +
-      `&ggscoord=${lat}|${lon}&ggsradius=10000&ggslimit=100&prop=coordinates|pageimages|description&colimit=max&pilimit=max&pithumbsize=240`;
+      `&ggscoord=${lat}|${lon}&ggsradius=8000&ggslimit=100&prop=coordinates|pageimages|description&colimit=max&pilimit=max&pithumbsize=240`;
     const j = await fetchJSON(url, null, 9000);
     const pages = Object.values(j?.query?.pages || {});
     const cityN = String(cityName || '').toLowerCase();
-    return pages.filter(p => p.coordinates && p.coordinates[0] && p.title && p.title.toLowerCase() !== cityN && !WIKI_SKIP.test((p.description || '') + ' ' + p.title))
-      .map(p => {
-        const c = p.coordinates[0];
-        const cat = guessPlaceCat((p.description || '') + ' ' + p.title);
-        return {
-          id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
-          cat,
-          typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
-          addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault((p.description || '') + ' ' + p.title, cat),
-          wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
-          distKm: haversineKm(lat, lon, c.lat, c.lon),
-          score: 3 + (p.thumbnail ? 2 : 0) + (p.description ? 1 : 0),
-          lat: c.lat, lon: c.lon
-        };
-      });
+    return pages.filter(p => {
+      if (!p.coordinates || !p.coordinates[0] || !p.title) return false;
+      if (p.title.toLowerCase() === cityN) return false;
+      const text = (p.description || '') + ' ' + p.title;
+      if (WIKI_SKIP.test(text)) return false;
+      return TOURIST_WHITELIST_RE.test(text);
+    }).map(p => {
+      const c = p.coordinates[0];
+      const text = (p.description || '') + ' ' + p.title;
+      const cat = guessPlaceCat(text);
+      const hasThumb = Boolean(p.thumbnail?.source);
+      return {
+        id: 'wiki-' + p.pageid, name: p.title.replace(/\s*\([^)]*\)\s*$/, ''), city: cityShort,
+        cat,
+        typeLabel: p.description ? p.description.charAt(0).toUpperCase() + p.description.slice(1) : 'Достопримечательность',
+        addr: '', hours: '', website: '', cuisine: '', free: isFreeByDefault(text, cat),
+        isTop: hasThumb && cat !== 'food',
+        wikiTag: 'ru:' + p.title, thumb: p.thumbnail?.source || '',
+        distKm: haversineKm(lat, lon, c.lat, c.lon),
+        score: 30 + (hasThumb ? 22 : 0) + (p.description ? 8 : 0) + (cat === 'museum' ? 6 : 0),
+        lat: c.lat, lon: c.lon
+      };
+    });
   }
 
   const RELIGIOUS_RE = /собор|церков|храм|базилик|костёл|кирх|часовн|аббатств|монастыр|мечет|синагог|church|cathedral|basilica|mosque|synagogue|chapel|abbey|monastery/i;
@@ -808,16 +818,10 @@
     }
 
     const wvP = wikivoyagePlaces(city, cityShort, lat, lon).catch(() => []);
-    const wdP = wikidataTopPlaces(lat, lon, city, cityShort).catch(() => []);
+    const wpP = wikiPlaces(lat, lon, city, cityShort).catch(() => []);
     const ovFull = overpassPlaces(lat, lon, cityShort, 30000);
-    // Сначала берём чистые туристические места (Викигид + белый список Wikidata)
-    const curatedP = Promise.all([wvP, wdP]).then(async ([wv, wd]) => {
-      const merged = mergePlaces(wv, wd);
-      if (merged.length >= 12) return merged;
-      // Для малых городов без статьи в Викигиде — добираем из геопоиска Википедии
-      const fallback = await wikiPlaces(lat, lon, city, cityShort).catch(() => []);
-      return mergePlaces(merged, fallback);
-    });
+    // Викигид (~0.6с) + отфильтрованный белый список Википедии (~1.5с): быстро и без 502 от Wikidata SPARQL
+    const curatedP = Promise.all([wvP, wpP]).then(([wv, wp]) => mergePlaces(wv, wp));
     const ovQuick = curatedP.then(cur => Promise.race([ovFull, new Promise(res => setTimeout(() => res(null), cur.length >= 12 ? 2500 : 7000))])).catch(() => null);
 
     const [wiki, curated, ov] = await Promise.all([wikiP, curatedP, ovQuick]);
