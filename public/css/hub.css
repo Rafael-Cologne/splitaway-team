@@ -98,6 +98,14 @@
 .hub-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:999px;border:1px solid var(--b2);background:transparent;color:var(--text);font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
 .hub-chip svg{width:15px;height:15px}
 .hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.hub-icon-style-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hub-icon-style-option{display:flex;align-items:center;gap:10px;min-height:70px;padding:9px 12px;border:1px solid var(--b2);border-radius:15px;background:var(--hub-card,var(--bg3));color:var(--text);font:inherit;font-size:.83rem;font-weight:700;text-align:left}
+.hub-icon-style-option.on{border:2px solid var(--accent);background:var(--hub-soft,rgba(91,75,234,.12));padding:8px 11px}
+.hub-icon-style-option:focus-visible,.hub-tile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hub-icon-style-sample{position:relative;display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px}
+.hub-icon-style-sample img{width:37px;height:37px;object-fit:contain}
+.hub-icon-style-sample.standard{border:1px solid var(--b2);border-radius:11px;background:var(--hub-card,var(--bg3))}
+.hub-icon-style-sample.dimensional::after{content:"";position:absolute;top:39px;left:4px;width:38px;height:38px;background:url('/img/hub/guide.webp?v=2') center/contain no-repeat;transform:scaleY(-.25);transform-origin:top;opacity:.25;-webkit-mask-image:linear-gradient(to bottom,transparent,#000);mask-image:linear-gradient(to bottom,transparent,#000);pointer-events:none}
 .hub-nav-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:10px 2px;border:1px solid var(--b2);border-radius:16px;background:var(--hub-card)}
 .hub-nav-preview-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;color:var(--t2);font-size:.65rem;white-space:nowrap}
 .hub-nav-preview-item:nth-child(3){color:var(--accent);font-weight:700}
@@ -170,6 +178,15 @@
 .hub-ico{width:46px;height:46px}
 @media (min-width:700px){.hub-ico{width:52px;height:52px}}
 .hub-tile.soon .hub-ico img{filter:saturate(.85)}
+/* Выбираемый режим: отдельные объёмные пиктограммы с коротким отражением. */
+.hub-style-dimensional .hub-grid{gap:8px 6px}
+.hub-style-dimensional .hub-tile{min-width:0;min-height:120px;gap:3px;padding:10px 2px 12px;border-color:transparent;background:transparent;box-shadow:none}
+.hub-style-dimensional .hub-tile:hover{background:var(--hub-soft)}
+.hub-style-dimensional .hub-ico{position:relative;flex:0 0 56px;width:56px;height:56px;margin-bottom:14px}
+.hub-style-dimensional .hub-ico::after{content:"";position:absolute;top:100%;left:0;width:100%;height:100%;background-image:var(--hub-reflect);background-position:center top;background-repeat:no-repeat;background-size:contain;transform:scaleY(-.28);transform-origin:top;opacity:.26;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 85%);mask-image:linear-gradient(to bottom,transparent 0%,#000 85%);pointer-events:none}
+.hub-style-dimensional .hub-lbl{color:var(--text);font-size:.72rem;font-weight:700;line-height:1.2;text-shadow:0 1px 1px rgba(255,255,255,.18)}
+[data-theme=dark] .hub-style-dimensional .hub-lbl{text-shadow:0 1px 2px rgba(0,0,0,.55)}
+@media (max-width:390px){.hub-style-dimensional .hub-ico{flex-basis:50px;width:50px;height:50px}.hub-style-dimensional .hub-lbl{font-size:.67rem}}
 /* Карточка текущей поездки (по макету): текст слева, фото места справа */
 .hub-trip2{position:relative;overflow:hidden;width:100%;min-height:124px;display:flex;align-items:center;gap:10px;padding:18px 16px 18px 20px;border-radius:24px;border:1px solid var(--hub-card-b);background:linear-gradient(105deg,#EEF1FF 0%,#ECE8FF 48%,#F3EEFF 100%);color:#14194A;text-align:left;box-shadow:var(--hub-shadow);cursor:pointer}
 .hub-trip2-ph{position:absolute;top:0;right:0;bottom:0;width:74%;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%)}

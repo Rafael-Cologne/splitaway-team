@@ -24,7 +24,7 @@
       join: 'Присоединиться по коду', join_sub: 'Введите код или отсканируйте QR',
       on_device: 'Поездки на этом устройстве', no_trips: 'Здесь появятся ваши поездки',
       current: 'Открыта', current_trip: 'Текущая поездка', home: 'Главная', saved: 'Сохранённое', profile: 'Профиль',
-      language: 'Язык', theme: 'Тема', light: 'Светлая', dark: 'Тёмная', back: 'Назад', close: 'Закрыть',
+      language: 'Язык', theme: 'Тема', light: 'Светлая', dark: 'Тёмная', icon_style: 'Стиль иконок', standard_icons: 'Стандартные', dimensional_icons: 'Объёмные 3D', back: 'Назад', close: 'Закрыть',
       notifications: 'Уведомления',
       members: n => n + ' ' + plRu(n, 'участник', 'участника', 'участников')
     },
@@ -39,7 +39,7 @@
       join: 'Join with a code', join_sub: 'Enter the code or scan a QR',
       on_device: 'Trips on this device', no_trips: 'Your trips will appear here',
       current: 'Open', current_trip: 'Current trip', home: 'Home', saved: 'Saved', profile: 'Profile',
-      language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', back: 'Back', close: 'Close',
+      language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', icon_style: 'Icon style', standard_icons: 'Standard', dimensional_icons: 'Dimensional 3D', back: 'Back', close: 'Close',
       notifications: 'Notifications',
       members: n => n + (n === 1 ? ' member' : ' members')
     },
@@ -54,7 +54,7 @@
       join: 'Mit Code beitreten', join_sub: 'Code eingeben oder QR scannen',
       on_device: 'Reisen auf diesem Gerät', no_trips: 'Hier erscheinen deine Reisen',
       current: 'Geöffnet', current_trip: 'Aktuelle Reise', home: 'Start', saved: 'Gespeichert', profile: 'Profil',
-      language: 'Sprache', theme: 'Design', light: 'Hell', dark: 'Dunkel', back: 'Zurück', close: 'Schließen',
+      language: 'Sprache', theme: 'Design', light: 'Hell', dark: 'Dunkel', icon_style: 'Symbolstil', standard_icons: 'Standard', dimensional_icons: 'Plastisch 3D', back: 'Zurück', close: 'Schließen',
       notifications: 'Benachrichtigungen',
       members: n => n + (n === 1 ? ' Mitglied' : ' Mitglieder')
     }
@@ -71,6 +71,11 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const say = msg => { if (typeof toast === 'function') toast(msg); };
   const icons = root => { if (typeof initializeIcons === 'function') initializeIcons(root); };
+  const ICON_STYLE_KEY = 'st_hub_icon_style';
+  function iconStyle() {
+    try { return localStorage.getItem(ICON_STYLE_KEY) === 'dimensional' ? 'dimensional' : 'standard'; }
+    catch (_) { return 'standard'; }
+  }
 
   const LANGS = [
     ['ru', 'Русский'], ['en', 'English'], ['de', 'Deutsch'], ['fr', 'Français'], ['it', 'Italiano'],
@@ -285,12 +290,17 @@
     }
     const cur = lang();
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    const selectedIconStyle = iconStyle();
     ov.firstChild.innerHTML =
       '<div class="mdl-handle"></div>' +
       `<div class="hub-sheet-hd"><div class="mdl-title">${esc(tx('profile'))}</div>` +
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x" style="width:15px;height:15px"></i></button></div>` +
       `<div class="hub-sheet-lbl">${esc(tx('theme'))}</div><div class="hub-chips">` +
       ['light', 'dark'].map(m => `<button class="hub-chip${theme === m ? ' on' : ''}" type="button" data-hub="theme" data-v="${m}"><i data-lucide="${m === 'light' ? 'sun' : 'moon'}"></i>${esc(tx(m))}</button>`).join('') +
+      `</div><div class="hub-sheet-lbl">${esc(tx('icon_style'))}</div><div class="hub-icon-style-options">` +
+      ['standard', 'dimensional'].map(m => `<button class="hub-icon-style-option${selectedIconStyle === m ? ' on' : ''}" type="button" data-hub="icon-style" data-v="${m}" aria-pressed="${selectedIconStyle === m}">` +
+        `<span class="hub-icon-style-sample ${m === 'dimensional' ? 'dimensional' : 'standard'}" aria-hidden="true"><img src="/img/hub/guide.webp?v=2" alt=""></span>` +
+        `<span>${esc(tx(m === 'standard' ? 'standard_icons' : 'dimensional_icons'))}</span></button>`).join('') +
       `</div><div class="hub-sheet-lbl">${esc(tx('language'))}</div><div class="hub-chips">` +
       LANGS.map(([code, name]) => `<button class="hub-chip${cur === code ? ' on' : ''}" type="button" data-hub="lang" data-v="${code}">${esc(name)}</button>`).join('') +
       '</div>' + keyRow();
@@ -376,7 +386,7 @@
       document.body.appendChild(ov);
     }
     const rows = [
-      ['profile', 'user', 'Профиль и настройки', 'Язык и тема'],
+      ['profile', 'user', 'Профиль и настройки', 'Язык, тема и стиль иконок'],
       ['nav-settings', 'panel-bottom', 'Нижняя панель', 'Выбрать быстрые разделы'],
       ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
       ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
@@ -397,10 +407,11 @@
   function tileHtml(s) {
     // Иконки плиток — картинки из макета (public/img/hub/<icon>.webp); старый SVG — если картинки нет
     const svg = (window.ST_ICONS || {})[s.icon] || '';
-    const icon = `<img src="/img/hub/${esc(s.icon)}.webp?v=2" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
+    const iconKey = /^[a-z0-9_-]+$/.test(s.icon) ? s.icon : 'expenses';
+    const icon = `<img src="/img/hub/${iconKey}.webp?v=2" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
     const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
-      `<span class="hub-ico">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
+      `<span class="hub-ico" style="--hub-reflect:url('/img/hub/${iconKey}.webp?v=2')">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
   }
 
   function servicesBody() {
@@ -527,6 +538,7 @@
   function render() {
     const root = $('pg-hub');
     if (!root) return;
+    root.classList.toggle('hub-style-dimensional', iconStyle() === 'dimensional');
     const bell = hasTrip() && typeof openNotifPanel === 'function'
       ? `<button class="hub-icbtn" type="button" data-hub="bell" aria-label="${esc(tx('notifications'))}"><i data-lucide="bell"></i></button>` : '';
     root.innerHTML =
@@ -566,6 +578,12 @@
       case 'close-profile': if (typeof closeModal === 'function') closeModal('m-hub-profile'); break;
       case 'my-key': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (window.STKey) STKey.openMyKey(); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
+      case 'icon-style':
+        if (v === 'standard' || v === 'dimensional') {
+          try { localStorage.setItem(ICON_STYLE_KEY, v); } catch (_) {}
+          render(); openProfile();
+        }
+        break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
       case 'nav-reset': try { localStorage.removeItem('st_hub_nav_slots'); } catch (_) {} render(); openNavSettings(); break;
       case 'nav-settings': openNavSettings(); break;
