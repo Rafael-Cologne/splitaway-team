@@ -84,6 +84,8 @@
     .st-guide-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
     .st-guide-actions .st-btn{min-height:34px;padding:0 11px;font-size:.78rem;border-radius:11px;text-decoration:none}
     .st-guide-more-txt{background:none;border:0;padding:0;margin-left:4px;color:var(--accent);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+    .st-guide-hours-link{color:var(--accent);text-decoration:none;font-weight:600}
+    .st-guide-hours-link:hover{text-decoration:underline}
     .st-guide-done{opacity:.68}
     .st-guide-done .st-card-title{text-decoration:line-through}
     .st-guide-progress{height:6px;border-radius:99px;background:var(--hub-soft);overflow:hidden;margin-top:8px}
@@ -1117,7 +1119,11 @@
             ? `<div class="st-muted" data-wiki-txt>${esc(snip.short)}${snip.truncated ? `<button class="st-guide-more-txt" type="button" data-wiki-expand="${esc(p.id)}">Читать полностью</button>` : ''}</div>`
             : '<div class="st-muted" data-wiki-txt style="display:none"></div>'}
           <div class="st-guide-meta">
-            <div class="st-guide-meta-row"><i data-lucide="clock"></i><span data-hours-txt>${esc(p.hours ? formatOpeningHours(p.hours) : (isOpen247(p) ? 'Круглосуточно (открытое пространство)' : 'Часы работы: уточняйте в Картах'))}</span></div>
+            <div class="st-guide-meta-row"><i data-lucide="clock"></i><span data-hours-txt>${p.hours
+              ? esc(formatOpeningHours(p.hours))
+              : (isOpen247(p)
+                ? 'Круглосуточно (открытое пространство)'
+                : `<a class="st-guide-hours-link" href="${gMap}" target="_blank" rel="noopener noreferrer">Часы работы → в Google Картах</a>`)}</span></div>
             ${p.addr ? `<div class="st-guide-meta-row"><i data-lucide="map-pin"></i><span>${esc(p.addr)}</span></div>` : ''}
             ${p.cuisine ? `<div class="st-guide-meta-row"><i data-lucide="utensils"></i><span>${esc(p.cuisine)}</span></div>` : ''}
           </div>
@@ -1225,8 +1231,8 @@
       const need = places.filter(p => !p.hours && !p.hoursChecked && !isOpen247(p) && Number.isFinite(p.lat) && Number.isFinite(p.lon)).slice(0, 12);
       if (!need.length) return;
       need.forEach(p => { p.hoursChecked = true; });
-      const parts = need.map(p => `nwr["opening_hours"](around:120,${p.lat.toFixed(5)},${p.lon.toFixed(5)});`).join('');
-      const q = `[out:json][timeout:12];(${parts});out center tags 60;`;
+      const parts = need.map(p => `nwr["opening_hours"](around:250,${p.lat.toFixed(5)},${p.lon.toFixed(5)});`).join('');
+      const q = `[out:json][timeout:12];(${parts});out center tags 80;`;
       const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(q) };
       Promise.any(OVERPASS.map(u => fetchJSON(u, opts, 10000))).then(ov => {
         if (!state.alive) return;
@@ -1240,7 +1246,7 @@
             const eLat = el.lat ?? el.center?.lat, eLon = el.lon ?? el.center?.lon;
             if (eLat == null || eLon == null) continue;
             const d = haversineKm(p.lat, p.lon, Number(eLat), Number(eLon));
-            if (d > 0.12) continue;
+            if (d > 0.25) continue;
             const eName = (tags['name:ru'] || tags.name || '').trim();
             const nameHit = eName && matchesPlaceQuery({ name: eName }, p.name);
             const rank = nameHit ? d * 0.1 : d;
