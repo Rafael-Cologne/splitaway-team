@@ -32,6 +32,8 @@ const PRECACHE_URLS = [
   '/js/hub.js',
   '/css/hub.css',
   '/img/hub/icon-3d-sprite-v1.png',
+  '/img/hub/icon-poster-light-v1.png',
+  '/img/hub/icon-poster-both-v1.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];

@@ -431,6 +431,14 @@
       : `<div class="hub-empty">${esc(tx('nothing'))}</div>`;
   }
 
+  function syncPosterMode(root) {
+    const services = (window.ST_SERVICES || []).filter(s => s.status !== 'disabled');
+    const completeGrid = services.length === DIMENSIONAL_SPRITE_IDS.length &&
+      services.every((s, i) => s.id === DIMENSIONAL_SPRITE_IDS[i]);
+    root.classList.toggle('hub-style-poster', iconStyle() === 'dimensional' &&
+      lang() === 'ru' && view === 'home' && !query.trim() && completeGrid);
+  }
+
   // Даты поездки — из модуля «Календарь», если указаны
   function tripDates(id) {
     try { const d = JSON.parse(localStorage.getItem('st_mod_calendar_' + id + '_dates')); return d && d.start ? d : null; } catch (_) { return null; }
@@ -548,6 +556,7 @@
     const root = $('pg-hub');
     if (!root) return;
     root.classList.toggle('hub-style-dimensional', iconStyle() === 'dimensional');
+    syncPosterMode(root);
     const bell = hasTrip() && typeof openNotifPanel === 'function'
       ? `<button class="hub-icbtn" type="button" data-hub="bell" aria-label="${esc(tx('notifications'))}"><i data-lucide="bell"></i></button>` : '';
     root.innerHTML =
@@ -559,7 +568,7 @@
     fillTripPhoto();
     const q = $('hub-q');
     if (q) {
-      q.addEventListener('input', () => { query = q.value; $('hub-svc-body').innerHTML = servicesBody(); });
+      q.addEventListener('input', () => { query = q.value; syncPosterMode(root); $('hub-svc-body').innerHTML = servicesBody(); });
       q.focus();
     }
   }

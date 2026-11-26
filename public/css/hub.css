@@ -195,6 +195,13 @@
 .hub-style-dimensional .hub-nav{background:rgba(246,244,255,.97);border-top-color:rgba(121,113,170,.18)}
 [data-theme=dark] .hub-style-dimensional .hub-nav{background:rgba(24,34,55,.97);border-top-color:rgba(185,194,229,.14)}
 @media (max-width:390px){.hub-style-dimensional .hub-tile{min-height:114px;padding-top:6px}.hub-style-dimensional .hub-ico{flex-basis:76px;width:76px;height:76px}.hub-style-dimensional .hub-ico::after{top:64px}.hub-style-dimensional .hub-lbl{font-size:.68rem}}
+/* В русской полной сетке показываем утверждённый макет без пересборки иконок и отражений. */
+.hub-style-poster .hub-grid{width:100%;aspect-ratio:667/587;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:0;background:url('/img/hub/icon-poster-light-v1.png') center/100% 100% no-repeat}
+[data-theme=dark] .hub-style-poster .hub-grid{aspect-ratio:887/767;background-image:url('/img/hub/icon-poster-both-v1.png');background-size:200% auto;background-position:right top}
+.hub-style-poster .hub-tile{position:relative;min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.hub-style-poster .hub-tile:hover{background:transparent}
+.hub-style-poster .hub-ico,.hub-style-poster .hub-lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.hub-style-poster .hub-ico::before,.hub-style-poster .hub-ico::after{display:none}
 /* Карточка текущей поездки (по макету): текст слева, фото места справа */
 .hub-trip2{position:relative;overflow:hidden;width:100%;min-height:124px;display:flex;align-items:center;gap:10px;padding:18px 16px 18px 20px;border-radius:24px;border:1px solid var(--hub-card-b);background:linear-gradient(105deg,#EEF1FF 0%,#ECE8FF 48%,#F3EEFF 100%);color:#14194A;text-align:left;box-shadow:var(--hub-shadow);cursor:pointer}
 .hub-trip2-ph{position:absolute;top:0;right:0;bottom:0;width:74%;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;-webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%);mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.7) 43%,rgba(0,0,0,.86) 52%,rgba(0,0,0,.96) 61%,#000 70%)}
