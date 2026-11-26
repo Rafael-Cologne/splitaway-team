@@ -72,6 +72,12 @@
   const say = msg => { if (typeof toast === 'function') toast(msg); };
   const icons = root => { if (typeof initializeIcons === 'function') initializeIcons(root); };
   const ICON_STYLE_KEY = 'st_hub_icon_style';
+  const DIMENSIONAL_SPRITE_IDS = [
+    'expenses', 'route', 'calendar', 'bookings',
+    'guide', 'translator', 'currency', 'weather',
+    'checklist', 'transport', 'nearby', 'stats',
+    'emergency', 'offline', 'diary', 'assistant'
+  ];
   function iconStyle() {
     try { return localStorage.getItem(ICON_STYLE_KEY) === 'dimensional' ? 'dimensional' : 'standard'; }
     catch (_) { return 'standard'; }
@@ -409,9 +415,12 @@
     const svg = (window.ST_ICONS || {})[s.icon] || '';
     const iconKey = /^[a-z0-9_-]+$/.test(s.icon) ? s.icon : 'expenses';
     const icon = `<img src="/img/hub/${iconKey}.webp?v=2" alt="" draggable="false" onerror="this.replaceWith(document.createRange().createContextualFragment(this.dataset.svg||''))" data-svg="${esc(svg)}">`;
+    const spriteIndex = Math.max(0, DIMENSIONAL_SPRITE_IDS.indexOf(s.id));
+    const spriteX = ((spriteIndex % 4) * 100 / 3).toFixed(3);
+    const spriteY = (Math.floor(spriteIndex / 4) * 100 / 3).toFixed(3);
     const soon = isActive(s) ? '' : ' soon';
     return `<button class="hub-tile${soon}" type="button" data-hub="svc" data-v="${esc(s.id)}">` +
-      `<span class="hub-ico" style="--hub-reflect:url('/img/hub/${iconKey}.webp?v=2')">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
+      `<span class="hub-ico" style="--hub-3d-x:${spriteX}%;--hub-3d-y:${spriteY}%">${icon}</span><span class="hub-lbl">${esc(svcTitle(s))}</span></button>`;
   }
 
   function servicesBody() {

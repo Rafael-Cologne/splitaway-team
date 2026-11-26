@@ -8,7 +8,7 @@
 // v3.0: локальный lucide.js, qrcode.min.js; убран CDN-кэш; нет Google Fonts
 // ============================================================
 
-const SW_VERSION = '1.0.25-124-team';
+const SW_VERSION = '1.0.25-126-team';
 const CACHE_STATIC = `splitaway-static-${SW_VERSION}`;
 
 // Ресурсы, которые кэшируем при установке (все локальные — нет CDN)
@@ -31,6 +31,7 @@ const PRECACHE_URLS = [
   '/js/place-photo.js',
   '/js/hub.js',
   '/css/hub.css',
+  '/img/hub/icon-3d-sprite-v1.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];
