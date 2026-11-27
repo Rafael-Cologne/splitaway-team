@@ -13,8 +13,10 @@ const keys = Object.keys(dictionaries.ru).sort();
 for (const language of languages) {
   assert.deepEqual(Object.keys(dictionaries[language]).sort(), keys, `Missing translations: ${language}`);
   assert.ok(dictionaries[language].btn_next && dictionaries[language].btn_next !== 'Далее' || language === 'ru');
+  assert.ok(dictionaries[language].personal_key_login && (language === 'ru' || dictionaries[language].personal_key_login !== dictionaries.ru.personal_key_login));
 }
 assert.match(html, /onclick="finishFirstRunPreferences\(\)"/);
+assert.match(html, /data-i18n="personal_key_login"/);
 assert.doesNotMatch(html.match(/<div id="ob-setup"[\s\S]*?<!-- Step 1 -->/)[0], /btn_create_trip|ob-setup-code/);
 assert.match(html, /if\(localStorage\.getItem\('sw_onboarding_prefs_done'\)\)window\.STHub\?\.show\('home'\)/);
 assert.match(html, /height:100dvh;min-height:0;overflow:hidden/);
