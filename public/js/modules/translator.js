@@ -547,13 +547,13 @@
         render(body, screen) {
           const t = ctx.trip || {};
           const members = ctx.members?.length || 0;
-          const memberWord = members % 10 === 1 && members % 100 !== 11 ? 'участник' : members % 10 >= 2 && members % 10 <= 4 && (members % 100 < 12 || members % 100 > 14) ? 'участника' : 'участников';
+          const memberLabel = window.STModuleUI.count(members, 'participant');
           body.innerHTML = `
             ${ctx.trip ? `<button class="hub-trip2" type="button" id="tl-trip" aria-label="Открыть текущую поездку">
               <span class="hub-trip2-ph on tl-trip-ph"><img id="tl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
               <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
                 <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
-                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(members + ' ' + memberWord) : ''}</span>
+                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(memberLabel) : ''}</span>
               </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
             </button>` : `<button class="tl-create-trip" type="button" id="tl-trip"><i data-lucide="plus-circle"></i><span><b>Создать поездку</b><small>Добавьте направление и участников</small></span><i data-lucide="chevron-right"></i></button>`}
             <div class="tl-main">

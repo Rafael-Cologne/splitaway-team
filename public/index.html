@@ -40,34 +40,36 @@ window.setCurrency=function(){};
 window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
-<script src="/js/i18n.js?v=1.0.25-112-team"></script>
+<script src="/js/i18n.js?v=1.0.25-136-team"></script>
+<script src="/js/module-ui-locales.js?v=1.0.25-145-team"></script>
+<script src="/js/module-ui-i18n.js?v=1.0.25-140-team"></script>
 <script src="/js/trip-currency.js?v=1.0.25-112-team"></script>
 <script src="/js/currency-names.js?v=1.0.25-124-team"></script>
 <script src="/js/fx-calculator.js?v=1.0.25-112-team"></script>
 <script src="/js/archive-i18n.js?v=1.0.25-112-team"></script>
 <!-- Splitaway Team: новая главная страница (Travel Hub) -->
-<link rel="stylesheet" href="/css/hub.css?v=1.0.25-117-team">
-<script src="/js/services-config.js?v=1.0.25-118-team"></script>
+<link rel="stylesheet" href="/css/hub.css?v=1.0.25-135-team">
+<script src="/js/services-config.js?v=1.0.25-130-team"></script>
 <script src="/js/hub-icons.js?v=1.0.25-112-team"></script>
 <script src="/js/place-photo.js?v=1.0.25-112-team"></script>
-<script src="/js/hub.js?v=1.0.25-118-team"></script>
-<script src="/js/personal-key.js?v=1.0.25-121-team" defer></script>
+<script src="/js/hub.js?v=1.0.25-135-team"></script>
+<script src="/js/personal-key.js?v=1.0.25-135-team" defer></script>
 <!-- Модули сервисов: у каждого свой файл и свой ответственный (см. js/modules/_template.js) -->
-<script src="/js/modules/route.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/calendar.js?v=1.0.25-121-team" defer></script>
-<script src="/js/modules/bookings.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/currency.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/guide.js?v=1.0.25-123-team" defer></script>
-<script src="/js/modules/translator.js?v=1.0.25-118-team" defer></script>
-<script src="/js/modules/weather.js?v=1.0.25-121-team" defer></script>
-<script src="/js/modules/checklist.js?v=1.0.25-112-team" defer></script>
+<script src="/js/modules/route.js?v=1.0.25-135-team" defer></script>
+<script src="/js/modules/calendar.js?v=1.0.25-135-team" defer></script>
+<script src="/js/modules/bookings.js?v=1.0.25-140-team" defer></script>
+<script src="/js/modules/currency.js?v=1.0.25-141-team" defer></script>
+<script src="/js/modules/guide.js?v=1.0.25-145-team" defer></script>
+<script src="/js/modules/translator.js?v=1.0.25-140-team" defer></script>
+<script src="/js/modules/weather.js?v=1.0.25-135-team" defer></script>
+<script src="/js/modules/checklist.js?v=1.0.25-140-team" defer></script>
 <script src="/js/modules/transport.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/nearby.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/stats.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/emergency.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/offline.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/diary.js?v=1.0.25-112-team" defer></script>
-<script src="/js/modules/assistant.js?v=1.0.25-112-team" defer></script>
+<script src="/js/modules/nearby.js?v=1.0.25-135-team" defer></script>
+<script src="/js/modules/stats.js?v=1.0.25-140-team" defer></script>
+<script src="/js/modules/emergency.js?v=1.0.25-138-team" defer></script>
+<script src="/js/modules/offline.js?v=1.0.25-140-team" defer></script>
+<script src="/js/modules/diary.js?v=1.0.25-140-team" defer></script>
+<script src="/js/modules/assistant.js?v=1.0.25-136-team" defer></script>
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#111118;--bg3:#1c1c28;
@@ -405,15 +407,24 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
 .ob.ob-create-screen #ob-create .btn{padding:7px 12px;min-height:36px}
 .ob.ob-create-screen #ct-members:empty{display:none!important}
 .ob.ob-create-screen #ct-members{min-height:0!important;margin-bottom:0!important}
-.ob.ob-setup-screen{height:100dvh;min-height:0;overflow:hidden;justify-content:flex-start;gap:8px;padding:10px 18px 12px}
+.ob.ob-setup-screen{height:100dvh;min-height:0;overflow:hidden;justify-content:flex-start;gap:clamp(4px,1.2dvh,12px);padding:max(8px,env(safe-area-inset-top)) 18px max(10px,env(safe-area-inset-bottom));background:#f7f7fe;color:#1e2433}
 .ob.ob-setup-screen .ob-brand{gap:4px!important}
 .ob.ob-setup-screen .logo{width:46px;height:46px;border-radius:13px}
 .ob.ob-setup-screen .logo img{width:48px!important;height:48px!important;border-radius:13px!important}
 .ob.ob-setup-screen .logo-txt{font-size:1.55rem}
-.ob.ob-setup-screen .ob-panel{flex:1;min-height:0;gap:0!important}
-.ob.ob-setup-screen #ob-setup{height:100%;min-height:0;gap:7px!important;justify-content:space-evenly}
-.ob.ob-setup-screen #first-run-lang-picker{gap:4px!important}
-.ob.ob-setup-screen .first-run-lang-btn{padding:5px 12px;min-height:31px}
+.ob.ob-setup-screen .ob-panel{flex:1;min-height:0;gap:0!important;max-width:480px}
+.ob.ob-setup-screen #ob-setup{height:100%;min-height:0;gap:clamp(8px,2dvh,20px)!important;justify-content:center}
+.ob.ob-setup-screen #ob-setup .iw{min-height:0;gap:clamp(5px,1dvh,10px)}
+.ob.ob-setup-screen #ob-setup .il{color:#646c7c;font-size:.8rem}
+.ob.ob-setup-screen #first-run-lang-picker{gap:clamp(2px,.6dvh,6px)!important}
+.ob.ob-setup-screen .first-run-lang-btn{padding:clamp(4px,.7dvh,8px) 12px;min-height:clamp(30px,4.4dvh,42px);background:#fff;color:#242b3a;border-color:#dfe2ed;border-radius:10px}
+.ob.ob-setup-screen .first-run-lang-btn.active{background:#6254f3;color:#fff;border-color:#6254f3}
+.ob.ob-setup-screen .first-run-lang-meta{color:#626a7c}
+.ob.ob-setup-screen .first-run-lang-btn.active .first-run-lang-meta{color:#fff}
+.ob.ob-setup-screen .first-run-next{margin-top:auto;min-height:44px;flex-shrink:0;justify-content:center;gap:8px}
+.ob.ob-setup-screen .first-run-next svg{width:16px;height:16px}
+.ob.ob-setup-screen .logo-txt{color:#1e2433}
+@media(max-height:560px){.ob.ob-setup-screen #first-run-lang-picker{display:grid!important;grid-template-columns:1fr 1fr}.ob.ob-setup-screen .first-run-lang-btn{min-height:32px}}
 .ob.ob-setup-screen .inp{padding:8px 12px;font-size:0.84rem}
 .ob.ob-setup-screen .btn:not(.first-run-lang-btn){padding:9px 13px;font-size:0.8rem}
 .ob.ob-setup-screen .setup-divider{margin:0}
@@ -515,20 +526,9 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
           <button type="button" class="btn btn-g btn-sm first-run-lang-btn" data-lang="tr" onclick="chooseFirstRunLang('tr')"><span class="first-run-lang-name">Türkçe</span><span class="first-run-lang-meta">TR 🇹🇷</span></button>
         </div>
       </div>
-      <button type="button" class="btn btn-p btn-fw" onclick="startCreateFromSetup()">
-        <i data-lucide="plus-circle" style="width:15px;height:15px"></i>
-        <span data-i18n="btn_create_trip">Создать поездку</span>
+      <button type="button" class="btn btn-p btn-fw first-run-next" onclick="finishFirstRunPreferences()">
+        <span data-i18n="btn_next">Далее</span><i data-lucide="arrow-right" aria-hidden="true"></i>
       </button>
-      <div class="setup-divider" style="display:flex;align-items:center;gap:10px"><div class="div" style="flex:1"></div><span style="color:var(--t3);font-size:0.72rem" data-i18n="divider_or">или</span><div class="div" style="flex:1"></div></div>
-      <div class="setup-join-row">
-        <div class="iw">
-          <label class="il" data-i18n="label_trip_code">Код поездки</label>
-          <input class="inp" id="ob-setup-code" style="text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono)" oninput="this.value=this.value.toUpperCase()">
-        </div>
-        <button type="button" class="btn btn-s btn-join" onclick="joinTripFromSetup()" data-i18n="btn_join_trip">Войти</button>
-        <button type="button" class="btn btn-p btn-camera" onclick="openQrScanner()" data-i18n-attr="title" data-i18n="btn_scan_qr"><i data-lucide="camera" style="width:17px;height:17px"></i></button>
-      </div>
-      <button type="button" class="btn btn-g btn-fw" onclick="window.STKey&&STKey.openRestore()" style="gap:8px"><i data-lucide="key-round" style="width:16px;height:16px"></i> Войти по личному ключу</button>
     </div>
     <!-- Step 1 -->
     <div id="ob-s1">
@@ -536,7 +536,7 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
       <div style="display:flex;flex-direction:column;gap:11px">
         <div class="iw"><label class="il" data-i18n="label_trip_code">Код поездки</label><input class="inp" id="ob-code" style="text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono)" oninput="this.value=this.value.toUpperCase()"></div>
         <button class="btn btn-s btn-fw" onclick="joinTrip()" data-i18n="btn_join_trip">Войти в поездку</button>
-        <button type="button" class="btn btn-g btn-fw" onclick="window.STKey&&STKey.openRestore()" style="gap:8px"><i data-lucide="key-round" style="width:16px;height:16px"></i> Войти по личному ключу</button>
+        <button type="button" class="btn btn-g btn-fw" onclick="window.STKey&&STKey.openRestore()" style="gap:8px"><i data-lucide="key-round" style="width:16px;height:16px"></i> <span data-i18n="personal_key_login">Войти по личному ключу</span></button>
         <div style="display:flex;align-items:center;gap:10px"><div class="div" style="flex:1"></div><span style="color:var(--t3);font-size:0.78rem" data-i18n="divider_or">или</span><div class="div" style="flex:1"></div></div>
         <button class="btn btn-p btn-fw" onclick="showOb('ob-create')"><i data-lucide="plus-circle" style="width:15px;height:15px"></i> <span data-i18n="btn_create_trip">Создать поездку</span></button>
       </div>
@@ -603,7 +603,7 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
         <div class="pulse" id="rt-indicator" title="Онлайн" data-i18n="dash_indicator_online" data-i18n-attr="title"></div>
         <button class="dh-btn" id="push-btn" onclick="openNotifPanel()" title="Уведомления" data-i18n="title_notifications_default" data-i18n-attr="title"><i data-lucide="bell"></i><span id="notif-dot" style="display:none"></span></button>
         <button class="dh-btn" id="qr-btn" onclick="openQR()" title="QR" aria-label="QR"><i data-lucide="qr-code"></i></button>
-        <button class="dh-btn" onclick="toggleTheme()" title="Оформление" aria-label="Оформление"><i data-lucide="sliders-horizontal"></i></button>
+        <button class="dh-btn" onclick="toggleTheme()" aria-label="Внешний вид" data-i18n="section_appearance" data-i18n-attr="aria-label"><i data-lucide="sliders-horizontal"></i></button>
       </div>
     </div>
     <div class="scr stagger" style="gap:20px;padding:0 0 14px">
@@ -909,7 +909,7 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
 
   <!-- QR visual (real scannable QR) -->
   <div style="background:#fff;border-radius:14px;padding:12px;display:inline-block;margin-bottom:14px">
-    <div style="display:inline-flex;align-items:center;gap:6px;margin:0 0 8px;padding:5px 12px;border-radius:999px;background:rgba(108,99,255,.12);color:var(--ac2);font-size:.74rem;font-weight:800;letter-spacing:.05em"><i data-lucide="users" style="width:14px;height:14px"></i>QR-ПРИГЛАШЕНИЕ · ДЛЯ ДРУЗЕЙ</div>
+    <div style="display:inline-flex;align-items:center;gap:6px;margin:0 0 8px;padding:5px 12px;border-radius:999px;background:rgba(108,99,255,.12);color:var(--ac2);font-size:.74rem;font-weight:800;letter-spacing:.05em"><i data-lucide="users" style="width:14px;height:14px"></i><span data-i18n="invite_qr_friends">QR-приглашение · для друзей</span></div>
     <div id="qr-canvas" style="width:200px;height:200px"></div>
   </div>
 
@@ -1520,9 +1520,12 @@ function icNum(icon,n){return `<span class="ic-num"><i data-lucide="${icon}" sty
 // шапка «Расходов»: «1 расход», «4 участника» — с правильным окончанием для языка
 const DASH_WORDS={ru:{exp:{one:'расход',few:'расхода',many:'расходов'},mbr:{one:'участник',few:'участника',many:'участников'}},
   en:{exp:{one:'expense',other:'expenses'},mbr:{one:'member',other:'members'}},de:{exp:{one:'Ausgabe',other:'Ausgaben'},mbr:{one:'Teilnehmer',other:'Teilnehmer'}},
-  es:{exp:{one:'gasto',other:'gastos'},mbr:{one:'participante',other:'participantes'}},fr:{exp:{one:'dépense',other:'dépenses'},mbr:{one:'participant',other:'participants'}}};
+  es:{exp:{one:'gasto',other:'gastos'},mbr:{one:'participante',other:'participantes'}},fr:{exp:{one:'dépense',other:'dépenses'},mbr:{one:'participant',other:'participants'}},
+  it:{exp:{one:'spesa',other:'spese'},mbr:{one:'partecipante',other:'partecipanti'}},pt:{exp:{one:'despesa',other:'despesas'},mbr:{one:'participante',other:'participantes'}},
+  pl:{exp:{one:'wydatek',few:'wydatki',many:'wydatków',other:'wydatku'},mbr:{one:'uczestnik',few:'uczestników',many:'uczestników',other:'uczestnika'}},
+  el:{exp:{one:'δαπάνη',other:'δαπάνες'},mbr:{one:'συμμετέχων',other:'συμμετέχοντες'}},tr:{exp:{one:'harcama',other:'harcama'},mbr:{one:'katılımcı',other:'katılımcı'}}};
 function dashWord(kind,n){
-  const lang=(typeof getLang==='function'?getLang():'ru')||'ru';const d=(DASH_WORDS[lang]||DASH_WORDS.ru)[kind];
+  const lang=(typeof getLang==='function'?getLang():'ru')||'ru';const d=(DASH_WORDS[lang]||DASH_WORDS.en)[kind];
   let k='other';try{k=new Intl.PluralRules(lang).select(n)}catch{}
   return d[k]||d.other||d.many||d.one;
 }
@@ -1605,8 +1608,7 @@ function units(name){const g=groupOf(name);return g?g.members.length:1}
 // ONBOARDING
 // =======================================================
 function showOb(id){
-  // Splitaway Team: стартовый экран теперь — новая главная страница
-  if(id==='ob-setup'&&window.STHub){STHub.show();return;}
+  // Новый пользователь выбирает язык до открытия главной страницы.
   const hubBack=document.getElementById('ob-hub-back');
   if(hubBack)hubBack.style.display=(window.STHub&&(id==='ob-s1'||id==='ob-pick'))?'':'none';
   ['ob-setup','ob-s1','ob-create','ob-pick','ob-loading'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===id?'flex':'none'});
@@ -1685,6 +1687,18 @@ function chooseFirstRunLang(lang){
 }
 function saveFirstRunPreferences(){
   localStorage.setItem('sw_onboarding_prefs_done','1');
+}
+function isFirstRunPreview(){
+  return location.hostname.startsWith('deploy-preview-')&&new URLSearchParams(location.search).get('preview')==='first-run';
+}
+function finishFirstRunPreferences(){
+  saveFirstRunPreferences();
+  if(isFirstRunPreview()){
+    const url=new URL(location.href);
+    url.searchParams.delete('preview');
+    history.replaceState(null,'',url.pathname+url.search+url.hash);
+  }
+  if(window.STHub)STHub.show('home');
 }
 function startCreateFromSetup(){
   saveFirstRunPreferences();
@@ -1976,22 +1990,54 @@ async function handleWebJoin(tripId, token){
 // ссылка-приглашение (handleWebJoin), никакой новой логики входа.
 const DEMO_TRIPS={local:{id:'DEMO-USEAWAY'}};
 function isDemoTrip(id){return!!id&&Object.values(DEMO_TRIPS).some(d=>d.id===id);}
+const DEMO_CONTENT={
+  ru:{trip:'Демо — выходные в Лиссабоне',dest:'Лиссабон, Португалия',people:['Александр','Ирина','Михаил','Светлана'],expenses:['Аренда квартиры','Ужин в ресторане','Супермаркет','Билеты в музей','Такси']},
+  en:{trip:'Demo — weekend in Lisbon',dest:'Lisbon, Portugal',people:['Alex','Irene','Michael','Sophie'],expenses:['Apartment rental','Dinner at a restaurant','Groceries','Museum tickets','Taxi']},
+  de:{trip:'Demo — Wochenende in Lissabon',dest:'Lissabon, Portugal',people:['Alexander','Irene','Michael','Sofia'],expenses:['Ferienwohnung','Abendessen im Restaurant','Supermarkt','Museumstickets','Taxi']},
+  fr:{trip:'Démo — week-end à Lisbonne',dest:'Lisbonne, Portugal',people:['Alexandre','Irène','Michel','Sophie'],expenses:['Location d’appartement','Dîner au restaurant','Courses','Billets de musée','Taxi']},
+  it:{trip:'Demo — weekend a Lisbona',dest:'Lisbona, Portogallo',people:['Alessandro','Irene','Michele','Sofia'],expenses:['Affitto appartamento','Cena al ristorante','Spesa alimentare','Biglietti del museo','Taxi']},
+  es:{trip:'Demo — fin de semana en Lisboa',dest:'Lisboa, Portugal',people:['Alejandro','Irene','Miguel','Sofía'],expenses:['Alquiler de apartamento','Cena en un restaurante','Supermercado','Entradas al museo','Taxi']},
+  pt:{trip:'Demonstração — fim de semana em Lisboa',dest:'Lisboa, Portugal',people:['Alexandre','Irene','Miguel','Sofia'],expenses:['Aluguer de apartamento','Jantar no restaurante','Supermercado','Bilhetes para o museu','Táxi']},
+  pl:{trip:'Demo — weekend w Lizbonie',dest:'Lizbona, Portugalia',people:['Aleksander','Irena','Michał','Zofia'],expenses:['Wynajem apartamentu','Kolacja w restauracji','Zakupy spożywcze','Bilety do muzeum','Taksówka']},
+  el:{trip:'Επίδειξη — σαββατοκύριακο στη Λισαβόνα',dest:'Λισαβόνα, Πορτογαλία',people:['Αλέξανδρος','Ειρήνη','Μιχάλης','Σοφία'],expenses:['Ενοικίαση διαμερίσματος','Δείπνο σε εστιατόριο','Σούπερ μάρκετ','Εισιτήρια μουσείου','Ταξί']},
+  tr:{trip:'Demo — Lizbon’da hafta sonu',dest:'Lizbon, Portekiz',people:['Ali','İrem','Mert','Sofia'],expenses:['Daire kirası','Restoranda akşam yemeği','Market alışverişi','Müze biletleri','Taksi']}
+};
 function openDemoTrip(){
   resetTripScopedState();
-  const names=['Александр','Ирина','Михаил','Светлана'];
-  S.trip={id:DEMO_TRIPS.local.id,name:'Демо — выходные в Лиссабоне',dest:'Лиссабон, Португалия',currency:'EUR',demo:true};
+  const demo=DEMO_CONTENT[getLang()]||DEMO_CONTENT.en;
+  const names=demo.people;
+  S.trip={id:DEMO_TRIPS.local.id,name:demo.trip,dest:demo.dest,currency:'EUR',demo:true,demoLang:getLang()};
   S.members=names.map((name,index)=>({name,gender:index===1||index===3?'f':'m'}));
-  S.groups=[{id:'demo-pair',type:'couple',members:['Михаил','Светлана']}];
+  S.groups=[{id:'demo-pair',type:'couple',members:[names[2],names[3]]}];
   S.expenses=[
-    {id:'demo-1',name:'Аренда квартиры',amount:480,date:today(),paidBy:'Александр',participants:names,fromTreasury:false},
-    {id:'demo-2',name:'Ужин в ресторане',amount:156.40,date:today(),paidBy:'Ирина',participants:names,fromTreasury:false},
-    {id:'demo-3',name:'Супермаркет',amount:63.80,date:today(),paidBy:'_treasury',participants:names,fromTreasury:true},
-    {id:'demo-4',name:'Билеты в музей',amount:48,date:today(),paidBy:'Михаил',participants:['Михаил','Светлана'],fromTreasury:false},
-    {id:'demo-5',name:'Такси',amount:22.50,date:today(),paidBy:'Светлана',participants:['Александр','Светлана'],fromTreasury:false}
+    {id:'demo-1',name:demo.expenses[0],amount:480,date:today(),paidBy:names[0],participants:names,fromTreasury:false},
+    {id:'demo-2',name:demo.expenses[1],amount:156.40,date:today(),paidBy:names[1],participants:names,fromTreasury:false},
+    {id:'demo-3',name:demo.expenses[2],amount:63.80,date:today(),paidBy:'_treasury',participants:names,fromTreasury:true},
+    {id:'demo-4',name:demo.expenses[3],amount:48,date:today(),paidBy:names[2],participants:[names[2],names[3]],fromTreasury:false},
+    {id:'demo-5',name:demo.expenses[4],amount:22.50,date:today(),paidBy:names[3],participants:[names[0],names[3]],fromTreasury:false}
   ];
   S.treasury={total:200,spent:63.80,contributions:names.map(name=>({member:name,amount:50,date:today()})),holder:null};
-  S.me='Александр';S.adminName='Александр';S.isAdmin=true;
+  S.me=names[0];S.adminName=names[0];S.isAdmin=true;
   saveLocal();launch();window.STHub?.show('home');
+}
+function translateDemoTripContent(locale){
+  if(!isDemoTrip(S.trip?.id))return;
+  const from=DEMO_CONTENT[S.trip.demoLang]||DEMO_CONTENT.ru;
+  const to=DEMO_CONTENT[locale]||DEMO_CONTENT.en;
+  if(from===to)return;
+  const nameMap=new Map(from.people.map((name,index)=>[name,to.people[index]]));
+  const translateName=name=>nameMap.get(name)||name;
+  S.trip.name=to.trip;S.trip.dest=to.dest;S.trip.demoLang=locale;
+  S.members.forEach(member=>{member.name=translateName(member.name)});
+  S.groups.forEach(group=>{group.members=group.members.map(translateName)});
+  S.expenses.forEach((expense,index)=>{
+    if(from.expenses[index]===expense.name)expense.name=to.expenses[index];
+    expense.paidBy=translateName(expense.paidBy);
+    expense.participants=expense.participants.map(translateName);
+  });
+  S.treasury.contributions.forEach(entry=>{entry.member=translateName(entry.member)});
+  S.me=translateName(S.me);S.adminName=translateName(S.adminName);
+  saveLocal();
 }
 // Сбрасывает ВСЕ демо-поездки на сервере обратно к исходному состоянию
 // (см. RPC reset_demo_trip — трогает только 7 фиксированных demo id,
@@ -7146,6 +7192,8 @@ function _bindAndroidBack(){
   }catch(e){console.warn('[back]',e);}
 }
 async function init(){
+  // Существующим пользователям не показываем выбор языка повторно после обновления.
+  if(localStorage.getItem('sw_last')&&!localStorage.getItem('sw_onboarding_prefs_done'))saveFirstRunPreferences();
   _bindAndroidBack();
   // Bind before URL/local-session branches can return. Rebinding stays idempotent.
   document.removeEventListener('click', handleDebtAction);
@@ -7177,6 +7225,10 @@ async function init(){
   if(window.STKey&&STKey.bootHash())return;
   const p=new URLSearchParams(location.search),tc=p.get('trip');
   const urlToken=p.get('token'); // invite_token из ссылки-приглашения
+  if(isFirstRunPreview()){
+    showOb('ob-setup');renderFirstRunPreferences();
+    return;
+  }
 
   // Quick-action из URL (?action=add-expense)
   const action=p.get('action');
@@ -7212,6 +7264,7 @@ async function init(){
         S.inviteToken=localStorage.getItem('sw_invite_'+last)||null;
         S.adminToken=localStorage.getItem('sw_admin_'+last)||null;
         if(isDemoTrip(S.trip?.id)){
+          translateDemoTripContent(getLang());
           S.isAdmin=true;
           launch();
           if(!action&&window.STHub)STHub.show('home');
@@ -7222,7 +7275,9 @@ async function init(){
           // Preserve its local copy but stop restoring it on every launch.
           localStorage.removeItem('sw_last');
           S.trip=null;S.members=[];S.groups=[];S.expenses=[];
-          showOb('ob-setup');renderFirstRunPreferences();return;
+          if(localStorage.getItem('sw_onboarding_prefs_done'))STHub?.show('home');
+          else {showOb('ob-setup');renderFirstRunPreferences();}
+          return;
         }
         // Verify the personal key before any cached trip data is displayed.
         if(USE_SUPABASE){
@@ -7236,8 +7291,8 @@ async function init(){
               localStorage.removeItem('sw_last');
             }
             S.trip=null;S.members=[];S.groups=[];S.expenses=[];
-            showOb('ob-setup');
-            renderFirstRunPreferences();
+            if(localStorage.getItem('sw_onboarding_prefs_done'))STHub?.show('home');
+            else {showOb('ob-setup');renderFirstRunPreferences();}
             if(lastMemberLoadReason==='connection')toast(t('toast_sync_failed'));
             return;
           }
@@ -7254,9 +7309,9 @@ async function init(){
     }
   }
 
-  // Пока поездка не создана и не сохранена, всегда показываем единый стартовый экран.
-  showOb('ob-setup');
-  renderFirstRunPreferences();
+  // Первый запуск — выбор языка; после него приложение открывается без поездки.
+  if(localStorage.getItem('sw_onboarding_prefs_done'))window.STHub?.show('home');
+  else {showOb('ob-setup');renderFirstRunPreferences();}
 
   // ── Capacitor: deep links (foreground) — срабатывает когда APK уже открыт ──
   // window.Capacitor инжектируется нативным мостом только в APK/AAB;

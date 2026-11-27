@@ -201,12 +201,12 @@
               <span class="hub-trip2-ph on ckl-trip-ph"><img id="ckl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
               <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
                 <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
-                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(members + ' ' + plural(members, 'участник', 'участника', 'участников')) : ''}</span>
+                <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(window.STModuleUI.count(members, 'participant')) : ''}</span>
               </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
             </button>
             <div class="ckl-card ckl-prog">${ring(pctOf(c), 64, 7)}
               <div><div class="ckl-prog-ttl">Подготовка к поездке</div>
-              <div class="ckl-prog-sub">${c.total ? `${c.done} из ${c.total} выполнено` : 'Добавьте разделы и пункты'}</div></div>
+              <div class="ckl-prog-sub">${c.total ? esc(window.STModuleUI.progress(c.done, c.total)) : 'Добавьте разделы и пункты'}</div></div>
             </div>
             ${sections.length ? `<div class="ckl-secs">${sections.map(s => {
               const sc = countOf(s.items);
