@@ -32,6 +32,7 @@ vm.runInContext(html.match(/function fm\(n,currCode\)\{[\s\S]*?\n\}/)[0] + displ
   shown = vm.runInContext('expenseViewAmounts(5893.50)', context);
   assert.match(shown.main, /5\.893,50\s*Ft/);
   assert.match(shown.secondary, /^≈ .*€/);
+  assert.doesNotMatch(vm.runInContext('expenseViewAmounts(0).secondary', context), /≈/);
 
   shown = vm.runInContext('expenseViewAmounts(18615.04,{originalCurrency:"EUR",originalAmount:50})', context);
   assert.match(shown.secondary, /50,00\s*€/);

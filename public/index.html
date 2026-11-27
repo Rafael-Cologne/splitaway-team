@@ -612,7 +612,7 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
           <span class="dh-cover" id="dh-cover" aria-hidden="true"></span>
           <div class="dh-lbl"><i data-lucide="wallet"></i><span data-i18n="dash_total_label">Общие расходы</span></div>
           <div class="hero-amt dh-amt" id="d-total">0,00</div>
-          <div id="d-total-secondary" style="font-size:.85rem;color:#fff;opacity:.86;margin:-4px 0 9px" hidden></div>
+          <div id="d-total-secondary" style="font-size:.85rem;color:#fff!important;opacity:.92;text-shadow:0 1px 4px rgba(0,0,0,.7);margin:-4px 0 9px" hidden></div>
           <button type="button" class="dh-cur" id="d-display-currency" onclick="toggleExpenseDisplayCurrency()"><span id="d-currency-label">EUR</span><i data-lucide="arrow-left-right"></i></button>
         </div>
       </div>
@@ -1329,8 +1329,8 @@ async function toggleExpenseDisplayCurrency(){
 function expenseViewAmounts(amount,expense){
   const base=S.trip?.currency||getCurrency(),extra=S.trip?.secondaryCurrency,rate=expenseViewRate();
   const original=expense?.originalCurrency===extra&&expense.originalAmount!=null&&Number.isFinite(Number(expense.originalAmount))?fm(expense.originalAmount,extra):null;
-  if(expenseViewCode()===extra&&rate)return {main:(original?'':'≈ ')+ (original||fm(amount*rate,extra)),secondary:fm(amount,base)};
-  return {main:fm(amount,base),secondary:original||rate&&extra?`≈ ${fm(amount*rate,extra)}`:''};
+  if(expenseViewCode()===extra&&rate)return {main:(original||amount===0?'':'≈ ')+ (original||fm(amount*rate,extra)),secondary:fm(amount,base)};
+  return {main:fm(amount,base),secondary:original||rate&&extra?`${amount===0?'':'≈ '}${fm(amount*rate,extra)}`:''};
 }
 function expenseViewMarkup(amount,expense,showPlus=false){
   const shown=expenseViewAmounts(amount,expense);
