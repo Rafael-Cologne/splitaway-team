@@ -45,5 +45,8 @@
   },
   "защищено от автоудаления": {
     "en": "protected from automatic deletion", "de": "vor automatischem Löschen geschützt", "fr": "protégé contre la suppression automatique", "it": "protetto dall’eliminazione automatica", "es": "protegido contra el borrado automático", "pt": "protegido contra eliminação automática", "pl": "chronione przed automatycznym usunięciem", "el": "προστατευμένα από αυτόματη διαγραφή", "tr": "otomatik silinmeye karşı korumalı"
+  },
+  "Карты": {
+    "en": "Maps", "de": "Karten", "fr": "Cartes", "it": "Mappe", "es": "Mapas", "pt": "Mapas", "pl": "Mapy", "el": "Χάρτες", "tr": "Haritalar"
   }
 }

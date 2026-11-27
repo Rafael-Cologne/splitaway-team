@@ -23,6 +23,7 @@ assert.equal(ui.translate('Поиск и карта'), 'Búsqueda y mapa');
 assert.equal(ui.translate('Мой план'), 'Mi plan');
 assert.equal(ui.translate('Паспорт, страховка, контакты'), 'Pasaporte, seguro, contactos');
 assert.equal(ui.translate('Офлайн-данные:'), 'Datos sin conexión:');
+assert.equal(ui.translate('Карты'), 'Mapas');
 const assistant = fs.readFileSync(path.join(root, 'modules', 'assistant.js'), 'utf8');
 assert.match(assistant, /data-ex="\$\{esc\(t\)\}"[^\n]*STModuleUI\?\.translate\(t\)/);
 const indexHtml = fs.readFileSync(path.join(root, '..', 'index.html'), 'utf8');
