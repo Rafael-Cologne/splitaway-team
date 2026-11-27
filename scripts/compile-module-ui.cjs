@@ -18,4 +18,7 @@ for (const [phrase, translations] of Object.entries(reviewed)) {
   if (index < 0) { index = out.ru.length; out.ru.push(phrase); for (const lang of ['en','de','fr','it','es','pt','pl','el','tr']) out[lang].push(''); }
   for (const lang of ['en','de','fr','it','es','pt','pl','el','tr']) out[lang][index] = translations[lang];
 }
+for (const lang of ['en','de','fr','it','es','pt','pl','el','tr']) {
+  out[lang] = out[lang].map(value => value.replace(/⟦[^⟧]*⟧\s*/g, ''));
+}
 fs.writeFileSync(outputPath, 'window.ST_MODULE_UI_LOCALES=' + JSON.stringify(out) + ';\n');

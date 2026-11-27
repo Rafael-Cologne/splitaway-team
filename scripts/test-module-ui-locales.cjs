@@ -14,6 +14,8 @@ for (const lang of ['en','de','fr','it','es','pt','pl','el','tr']) {
   assert.equal(data[lang].length, ru.length, `${lang}: catalogue length`);
   const missing = ru.map((phrase, i) => [phrase, data[lang][i]]).filter(([phrase, value]) => !value && phrase !== 'A-Za-zА-Яа-яЁё0-9_');
   assert.equal(missing.length, 0, `${lang}: untranslated UI phrases: ${missing.map(([phrase]) => phrase).join(', ')}`);
+  const markers = data[lang].map((value, i) => [ru[i], value]).filter(([, value]) => /⟦|⟧/.test(value));
+  assert.equal(markers.length, 0, `${lang}: leaked translation markers: ${markers.map(([phrase]) => phrase).join(', ')}`);
 }
 const ui = context.window.STModuleUI;
 assert.equal(ui.translate('Добавить расход'), 'Agregar gasto');
