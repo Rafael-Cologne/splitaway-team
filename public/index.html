@@ -1683,8 +1683,16 @@ function chooseFirstRunLang(lang){
 function saveFirstRunPreferences(){
   localStorage.setItem('sw_onboarding_prefs_done','1');
 }
+function isFirstRunPreview(){
+  return location.hostname.startsWith('deploy-preview-')&&new URLSearchParams(location.search).get('preview')==='first-run';
+}
 function finishFirstRunPreferences(){
   saveFirstRunPreferences();
+  if(isFirstRunPreview()){
+    const url=new URL(location.href);
+    url.searchParams.delete('preview');
+    history.replaceState(null,'',url.pathname+url.search+url.hash);
+  }
   if(window.STHub)STHub.show('home');
 }
 function startCreateFromSetup(){
@@ -7212,6 +7220,10 @@ async function init(){
   if(window.STKey&&STKey.bootHash())return;
   const p=new URLSearchParams(location.search),tc=p.get('trip');
   const urlToken=p.get('token'); // invite_token из ссылки-приглашения
+  if(isFirstRunPreview()){
+    showOb('ob-setup');renderFirstRunPreferences();
+    return;
+  }
 
   // Quick-action из URL (?action=add-expense)
   const action=p.get('action');

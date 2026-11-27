@@ -19,6 +19,11 @@ assert.match(html, /onclick="finishFirstRunPreferences\(\)"/);
 assert.match(html, /data-i18n="personal_key_login"/);
 assert.doesNotMatch(html.match(/<div id="ob-setup"[\s\S]*?<!-- Step 1 -->/)[0], /btn_create_trip|ob-setup-code/);
 assert.match(html, /if\(localStorage\.getItem\('sw_onboarding_prefs_done'\)\)window\.STHub\?\.show\('home'\)/);
+const previewHelper = html.match(/function isFirstRunPreview\(\)\{[\s\S]*?\n\}/)?.[0];
+assert.ok(previewHelper, 'Missing first-run preview helper');
+assert.equal(vm.runInNewContext(previewHelper + ';isFirstRunPreview()', {location:{hostname:'deploy-preview-76--splitaway-team.netlify.app',search:'?preview=first-run'},URLSearchParams}), true);
+assert.equal(vm.runInNewContext(previewHelper + ';isFirstRunPreview()', {location:{hostname:'splitaway-team.netlify.app',search:'?preview=first-run'},URLSearchParams}), false);
+assert.match(html, /if\(isFirstRunPreview\(\)\)\{\s*showOb\('ob-setup'\);renderFirstRunPreferences\(\);\s*return;/);
 assert.match(html, /height:100dvh;min-height:0;overflow:hidden/);
 
 const catalogue = vm.runInNewContext(services + '\nwindow.ST_SERVICES', { window: {} });
