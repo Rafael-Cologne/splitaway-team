@@ -80,7 +80,7 @@
     const t = new Date(); t.setHours(12, 0, 0, 0);
     const x = new Date(d + 'T12:00:00'), diff = Math.round((x - t) / 86400000);
     if (diff === 0) return 'Сегодня'; if (diff === 1) return 'Завтра'; if (diff === 2) return 'Послезавтра'; if (diff === -1) return 'Вчера';
-    return x.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+    return x.toLocaleDateString(window.STModuleUI?.locale() || 'ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
   };
 
   // Период: «с 23.11-27.11», «23–27 ноября», «с 23 ноября по 2 декабря», «с 23.11 по 27.11»
@@ -101,7 +101,7 @@
   const humanRange = (a, b) => {
     if (!b || a === b) return human(a);
     const x = new Date(a + 'T12:00:00'), y = new Date(b + 'T12:00:00');
-    const dm = d => d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const dm = d => d.toLocaleDateString(window.STModuleUI?.locale() || 'ru-RU', { day: 'numeric', month: 'long' });
     return x.getMonth() === y.getMonth() && x.getFullYear() === y.getFullYear() ? x.getDate() + '–' + dm(y) : dm(x) + ' – ' + dm(y);
   };
   const THESE = U(/\b(на\s+)?(эти|те\s+же|этих)\s+(даты|дни|числа)\b/i);
@@ -120,7 +120,7 @@
     const m = RE('(?:^|[^\\d:./])' + num + '(?![\\d:./]|\\s*(?:час|ч\\b|мин|утра|вечера|дня|человек|чел|км|м\\b|%|ноябр|декабр|январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр))', 'i').exec(s);
     return m ? { amount: val(m), cur: null, m: m[0].replace(/^[^\d]/, '') } : null;
   }
-  const fmtMoney = (a, cur) => { try { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: cur || 'EUR', maximumFractionDigits: 2 }).format(a); } catch (_) { return a + ' ' + (cur || ''); } };
+  const fmtMoney = (a, cur) => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur || 'EUR', maximumFractionDigits: 2 }).format(a); } catch (_) { return a + ' ' + (cur || ''); } };
   const EXP_CATS = [['Питание', 'utensils', U(/ресторан|кафе|бар\b|паб|пицц|бургер|суши|еда|ужин|обед|завтрак|кофе|перекус|пекарн|продукт|супермаркет|мороженое|food|restaurant|cafe|essen/i)],
     ['Жильё', 'bed-double', /отел|гостиниц|хостел|апартамент|жиль|airbnb|booking|hotel|hostel/i],
     ['Транспорт', 'car', /такси|uber|bolt|метро|автобус|трамва|поезд|электрич|самол|авиа|перел|бензин|топлив|парков|аренд|проезд|билет на (поезд|автобус)|taxi|train|bahn/i],
@@ -691,7 +691,7 @@
       if (!chat.length) chat.push({ who: 'bot', t: nowTime(), text: 'Привет! Напишите или скажите, что нужно сделать, — я пойму, куда это добавить: расходы, календарь, маршрут, карта, чек-лист или дневник. Перед добавлением покажу, что получилось.' });
       el.innerHTML = chat.map((m, i) => m.who === 'me'
         ? `<div class="ai-me">${esc(m.text)}<small>${esc(m.t)}<i data-lucide="check-check"></i></small></div>`
-        : `<div class="ai-bot"><span class="ai-ava"></span><div class="ai-card" data-i="${i}">${m.card ? cardHtml(m) : `<div class="ai-card-b">${m.html || esc(m.text)}<span class="ai-t">${esc(m.t)}</span></div>`}</div></div>`).join('')
+        : `<div class="ai-bot"><span class="ai-ava"></span><div class="ai-card" data-i="${i}">${m.card ? cardHtml(m) : `<div class="ai-card-b">${m.html || esc(window.STModuleUI?.translate(m.text) || m.text)}<span class="ai-t">${esc(m.t)}</span></div>`}</div></div>`).join('')
         + (typing ? `<div class="ai-bot"><span class="ai-ava"></span><div class="ai-card"><div class="ai-card-b">${esc(typeof typing === 'string' ? typing : 'Ищу на карте…')}</div></div></div>` : '');
       icons(el);
       el.querySelectorAll('.ai-card[data-i]').forEach(c => bindCard(c, chat[+c.dataset.i]));

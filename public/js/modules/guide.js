@@ -747,8 +747,8 @@
     const voltList = [...new Set((b.volts?.value || '').split(',').map(s => s.trim()).filter(Boolean))];
     return {
       capital: b.capitals?.value || '',
-      population: Number.isFinite(popNum) && popNum > 0 ? popNum.toLocaleString('ru-RU') : '',
-      area: Number.isFinite(areaNum) && areaNum > 0 ? `${Math.round(areaNum).toLocaleString('ru-RU')} км²` : '',
+      population: Number.isFinite(popNum) && popNum > 0 ? popNum.toLocaleString(window.STModuleUI?.locale() || 'ru-RU') : '',
+      area: Number.isFinite(areaNum) && areaNum > 0 ? `${Math.round(areaNum).toLocaleString(window.STModuleUI?.locale() || 'ru-RU')} ${typeof getLang === 'function' && getLang() === 'ru' ? 'км²' : 'km²'}` : '',
       langs: b.langs?.value || '',
       currencies: b.currencies?.value || '',
       timezones: tzList.length ? [...new Set(tzList)].slice(0, 3).join(', ') : (b.timezones?.value || '').split(',').slice(0, 2).join(', '),
@@ -757,7 +757,7 @@
       plugTypes,
       plugsRaw: b.plugs?.value || '',
       volts: voltList.length ? `${voltList.join(' / ')} В` : '',
-      highest: b.highestName?.value ? `${b.highestName.value}${Number.isFinite(elevNum) && elevNum > 0 ? ` (${Math.round(elevNum).toLocaleString('ru-RU')} м)` : ''}` : '',
+      highest: b.highestName?.value ? `${b.highestName.value}${Number.isFinite(elevNum) && elevNum > 0 ? ` (${Math.round(elevNum).toLocaleString(window.STModuleUI?.locale() || 'ru-RU')} ${typeof getLang === 'function' && getLang() === 'ru' ? 'м' : 'm'})` : ''}` : '',
       unesco: Number.isFinite(unescoNum) && unescoNum > 0 ? String(unescoNum) : ''
     };
   }

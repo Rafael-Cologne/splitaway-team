@@ -26,7 +26,7 @@
   const META = { get: () => lsJSON('st_offline_meta') || {}, set(m) { try { localStorage.setItem('st_offline_meta', JSON.stringify(m)); } catch (_) {} } };
   const VER = (() => { const s = document.querySelector('script[src*="/js/hub.js"]'); const m = s && /[?&]v=([^&]+)/.exec(s.getAttribute('src')); return m ? m[1] : ''; })();
   const fmtMB = b => b >= 1073741824 ? (b / 1073741824).toFixed(1).replace('.', ',') + ' ГБ' : b >= 10485760 ? Math.round(b / 1048576) + ' МБ' : b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' МБ' : Math.max(1, Math.round((b || 0) / 1024)) + ' КБ';
-  const fmtTime = t => new Date(t).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const fmtTime = t => new Date(t).toLocaleString(window.STModuleUI?.locale() || 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   const placeKey = trip => [trip.dest || '', trip.name || ''].join('|').toLowerCase();
   const T = () => window.STTranslator || null;
 
@@ -43,7 +43,7 @@
     ...n('/img/', 'participant-couple participant-family participant-man participant-men participant-woman participant-women participants-emoji', '.png'),
     '/img/translator/hero.webp', '/img/offline/banner.webp', '/img/assistant/hero.webp', '/img/assistant/bot.webp',
     '/data/airlines.json', '/data/airports.json', '/vendor/pdfjs/pdf.min.js', '/vendor/pdfjs/pdf.worker.min.js',
-    '/js/modules/bookings-tools.js?v=3', '/js/modules/nearby-api.js?v=2'
+    '/js/modules/bookings-tools.js?v=3', '/js/modules/nearby-api.js?v=135'
   ];
   const LEAFLET_FILES = ['leaflet.js', 'leaflet.css', 'images/marker-icon.png', 'images/marker-icon-2x.png', 'images/marker-shadow.png', 'images/layers.png'].map(f => LEAFLET + f);
   function assetList(trip) {

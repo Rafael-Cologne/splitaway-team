@@ -26,7 +26,7 @@
     return `<span class="fx-fl" data-cc="${cc ? cc.toUpperCase() : c.slice(0, 2)}">${cc ? `<img src="https://flagcdn.com/w80/${cc}.png" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>`; };
   const nameOf = c => { if (window.STCurrency) return STCurrency.name(c, 'ru'); try { const n = new Intl.DisplayNames(['ru'], { type: 'currency' }).of(c); return n ? n[0].toUpperCase() + n.slice(1) : c; } catch (_) { return c; } };
   const minor = c => { try { return new Intl.NumberFormat('en', { style: 'currency', currency: c }).resolvedOptions().maximumFractionDigits; } catch (_) { return 2; } };
-  const fmt = (v, d) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
+  const fmt = (v, d) => new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
   const fmtDate = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : '';
   const parseNum = s => { const t = String(s || '').replace(/[\s ']/g, '').replace(',', '.'); return /^\d*\.?\d*$/.test(t) && t !== '' && t !== '.' ? +t : NaN; };
   const SORTS = {

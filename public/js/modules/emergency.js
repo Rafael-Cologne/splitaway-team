@@ -201,7 +201,7 @@
   const TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
   const translit = t => String(t).replace(/[а-яё]/gi, ch => { const l = TR[ch.toLowerCase()] ?? ch; return ch === ch.toLowerCase() ? l : l.charAt(0).toUpperCase() + l.slice(1); });
   const flagImg = cc => cc ? `<img src="https://flagcdn.com/w40/${cc.toLowerCase()}.png" alt="" style="width:20px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:4px;object-fit:cover">` : '';
-  const dateRu = s => { try { return new Date(s + 'T12:00:00').toLocaleDateString('ru-RU'); } catch (_) { return s; } };
+  const dateRu = s => { try { return new Date(s + 'T12:00:00').toLocaleDateString(window.STModuleUI?.locale() || 'ru-RU'); } catch (_) { return s; } };
 
   // ---------- личные данные: только на устройстве ----------
   const ME_KEY = 'st_emergency_me';

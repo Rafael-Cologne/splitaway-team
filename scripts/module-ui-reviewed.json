@@ -1,0 +1,19 @@
+{
+  "Очистить переписку": {
+    "en": "Clear chat", "de": "Chatverlauf löschen", "fr": "Effacer la conversation", "it": "Cancella la chat", "es": "Borrar conversación", "pt": "Limpar conversa", "pl": "Wyczyść rozmowę", "el": "Διαγραφή συνομιλίας", "tr": "Sohbeti temizle"
+  },
+  "что потратили": {
+    "en": "what you spent", "de": "was Sie ausgegeben haben", "fr": "ce que vous avez dépensé", "it": "quanto hai speso", "es": "lo que gastaste", "pt": "o que gastou", "pl": "ile wydano", "el": "τι ξοδέψατε", "tr": "ne kadar harcadığınızı"
+  },
+  "Привет! Напишите или скажите, что нужно сделать, — я пойму, куда это добавить: расходы, календарь, маршрут, карта, чек-лист или дневник. Перед добавлением покажу, что получилось.": {
+    "en": "Hi! Type or say what you'd like to do. I can add it to expenses, calendar, route, map, checklist or diary. I'll show you a preview before adding anything.",
+    "de": "Hallo! Schreiben oder sagen Sie, was Sie tun möchten. Ich kann es zu Ausgaben, Kalender, Route, Karte, Checkliste oder Tagebuch hinzufügen. Vor dem Hinzufügen zeige ich Ihnen eine Vorschau.",
+    "fr": "Bonjour ! Écrivez ou dites ce que vous souhaitez faire. Je peux l'ajouter aux dépenses, au calendrier, à l'itinéraire, à la carte, à la liste ou au journal. Je vous montrerai un aperçu avant l'ajout.",
+    "it": "Ciao! Scrivi o di' cosa vuoi fare. Posso aggiungerlo a spese, calendario, itinerario, mappa, lista di controllo o diario. Ti mostrerò un'anteprima prima di aggiungere.",
+    "es": "¡Hola! Escribe o di qué quieres hacer. Puedo añadirlo a gastos, calendario, ruta, mapa, lista de verificación o diario. Te mostraré una vista previa antes de añadirlo.",
+    "pt": "Olá! Escreva ou diga o que pretende fazer. Posso adicioná-lo às despesas, calendário, percurso, mapa, lista de verificação ou diário. Mostrarei uma pré-visualização antes de adicionar.",
+    "pl": "Cześć! Napisz lub powiedz, co chcesz zrobić. Mogę dodać to do wydatków, kalendarza, trasy, mapy, listy kontrolnej lub dziennika. Przed dodaniem pokażę podgląd.",
+    "el": "Γεια σας! Γράψτε ή πείτε τι θέλετε να κάνετε. Μπορώ να το προσθέσω στα έξοδα, στο ημερολόγιο, στη διαδρομή, στον χάρτη, στη λίστα ελέγχου ή στο ημερολόγιο ταξιδιού. Θα δείξω μια προεπισκόπηση πριν από την προσθήκη.",
+    "tr": "Merhaba! Ne yapmak istediğinizi yazın veya söyleyin. Bunu harcamalara, takvime, rotaya, haritaya, kontrol listesine veya günlüğe ekleyebilirim. Eklemeden önce size önizleme göstereceğim."
+  }
+}

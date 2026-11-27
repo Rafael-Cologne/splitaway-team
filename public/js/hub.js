@@ -102,13 +102,14 @@
   const ks = index => (KEY_STATUS[lang()] || KEY_STATUS.en)[index];
   const svcTitle = s => s.title[lang()] || s.title.en || s.id;
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const say = msg => { if (typeof toast === 'function') toast(msg); };
+  const say = msg => { if (typeof toast === 'function') toast(window.STModuleUI?.translate(msg) || msg); };
   const icons = root => { if (typeof initializeIcons === 'function') initializeIcons(root); };
 
   const LANGS = [
     ['ru', 'Русский'], ['en', 'English'], ['de', 'Deutsch'], ['fr', 'Français'], ['it', 'Italiano'],
     ['es', 'Español'], ['pt', 'Português'], ['pl', 'Polski'], ['el', 'Ελληνικά'], ['tr', 'Türkçe']
   ];
+  const LANG_FLAGS = { ru:'🇷🇺', en:'🇬🇧', de:'🇩🇪', fr:'🇫🇷', it:'🇮🇹', es:'🇪🇸', pt:'🇵🇹', pl:'🇵🇱', el:'🇬🇷', tr:'🇹🇷' };
 
   // ---------- Состояние ----------
   let view = 'home';      // 'home' | 'trips'
@@ -331,6 +332,25 @@
     icons(ov);
   }
 
+  function openLanguageSettings() {
+    let ov = $('m-hub-profile');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.className = 'ov'; ov.id = 'm-hub-profile';
+      ov.innerHTML = '<div class="mdl hub-sheet"></div>';
+      document.body.appendChild(ov);
+    }
+    ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd">' +
+      `<button class="hub-nav-picker-back" type="button" data-hub="more-open" aria-label="${esc(tx('back'))}"><i data-lucide="arrow-left"></i></button>` +
+      `<div class="mdl-title">${esc(tx('language'))}</div>` +
+      `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
+      '<div class="hub-lang-grid">' +
+      LANGS.map(([code]) => `<button class="btn btn-g btn-sm lang-btn${lang() === code ? ' active' : ''}" type="button" data-hub="settings-lang" data-v="${code}" aria-pressed="${lang() === code}">${LANG_FLAGS[code]} ${code.toUpperCase()}</button>`).join('') +
+      '</div>';
+    if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
+    icons(ov);
+  }
+
   // Личный ключ входа (js/personal-key.js): тёмный QR с замком — только для себя, в отличие от QR-приглашения
   function keyRow() {
     if (!window.STKey) return '';
@@ -407,6 +427,7 @@
       document.body.appendChild(ov);
     }
     const rows = [
+      ['language-settings', 'languages', tx('language'), LANGS.find(([code]) => code === lang())?.[1] || ''],
       ['profile', 'user', st(0), st(1)],
       ['nav-settings', 'panel-bottom', st(2), st(3)],
       ['saved', 'bookmark', st(4), st(5)],
@@ -598,6 +619,8 @@
       case 'my-key': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (window.STKey) STKey.openMyKey(); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
+      case 'settings-lang': if (typeof setLang === 'function') setLang(v); render(); openLanguageSettings(); break;
+      case 'more-open': openMore(); break;
       case 'nav-reset': try { localStorage.removeItem('st_hub_nav_slots'); } catch (_) {} render(); openNavSettings(); break;
       case 'nav-settings': openNavSettings(); break;
       case 'nav-pick': openNavPicker(Number(v)); break;
@@ -612,6 +635,7 @@
       case 'more':
         if (typeof closeModal === 'function') closeModal('m-hub-profile');
         if (v === 'profile') setTimeout(openProfile, 60);
+        else if (v === 'language-settings') setTimeout(openLanguageSettings, 60);
         else if (v === 'nav-settings') setTimeout(openNavSettings, 60);
         else if (v === 'saved') say(st(4) + ' — ' + tx('soon'));
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }

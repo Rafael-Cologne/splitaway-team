@@ -20,7 +20,7 @@
   const plural = (n, a, b, c) => { const t = n % 10, h = n % 100; return t === 1 && h !== 11 ? a : t >= 2 && t <= 4 && (h < 12 || h > 14) ? b : c; };
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   const addDay = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d); };
-  const dShort = s => new Date(s + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
+  const dShort = s => new Date(s + 'T12:00:00').toLocaleDateString(window.STModuleUI?.locale() || 'ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
   const ls = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { return null; } };
 
   // Категории: значок расхода → категория; без значка — по словам в названии
@@ -113,7 +113,7 @@
     const trip = ctx.trip || {};
     const App = typeof S !== 'undefined' ? S : {};
     const cur = () => (App.trip && App.trip.currency) || trip.currency || 'EUR';
-    const money = (v, d) => { try { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: cur(), maximumFractionDigits: d == null ? 2 : d, minimumFractionDigits: d == null ? 2 : 0 }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
+    const money = (v, d) => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur(), maximumFractionDigits: d == null ? 2 : d, minimumFractionDigits: d == null ? 2 : 0 }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
     const expenses = () => (Array.isArray(App.expenses) ? App.expenses : []).filter(e => Number(e.amount) > 0);
     const members = () => (Array.isArray(App.members) ? App.members : ctx.members || []).map(m => m.name);
     const expDate = e => { const v = String(e.date || ''); if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10); const t = new Date(v); return isNaN(t) ? '' : iso(t); };

@@ -270,7 +270,7 @@
     const allExpenses = () => (typeof S !== 'undefined' && Array.isArray(S.expenses) ? S.expenses : []);
     const expDate = e => { const v = String(e.date || ''); if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10); const t = new Date(v); return isNaN(t) ? '' : isoOf(t); };
     const cur = () => (typeof S !== 'undefined' && S.trip && S.trip.currency) || trip.currency || 'EUR';
-    const money = v => { try { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: cur() }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
+    const money = v => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur() }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
     const linked = e => (e.expenses || []).map(id => allExpenses().find(x => x.id === id)).filter(Boolean);
     const expSum = list => list.reduce((s, x) => s + (Number(x.amount) || 0), 0);
     const tripPhoto = img => { if (window.STPlacePhoto && img) STPlacePhoto.tripImg(img, trip, { width: 900 }); };
