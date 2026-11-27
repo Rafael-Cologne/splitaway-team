@@ -1,0 +1,335 @@
+{
+  "Очистить переписку": {
+    "en": "Clear chat", "de": "Chatverlauf löschen", "fr": "Effacer la conversation", "it": "Cancella la chat", "es": "Borrar conversación", "pt": "Limpar conversa", "pl": "Wyczyść rozmowę", "el": "Διαγραφή συνομιλίας", "tr": "Sohbeti temizle"
+  },
+  "что потратили": {
+    "en": "what you spent", "de": "was Sie ausgegeben haben", "fr": "ce que vous avez dépensé", "it": "quanto hai speso", "es": "lo que gastaste", "pt": "o que gastou", "pl": "ile wydano", "el": "τι ξοδέψατε", "tr": "ne kadar harcadığınızı"
+  },
+  "Привет! Напишите или скажите, что нужно сделать, — я пойму, куда это добавить: расходы, календарь, маршрут, карта, чек-лист или дневник. Перед добавлением покажу, что получилось.": {
+    "en": "Hi! Type or say what you'd like to do. I can add it to expenses, calendar, route, map, checklist or diary. I'll show you a preview before adding anything.", "de": "Hallo! Schreiben oder sagen Sie, was Sie tun möchten. Ich kann es zu Ausgaben, Kalender, Route, Karte, Checkliste oder Tagebuch hinzufügen. Vor dem Hinzufügen zeige ich Ihnen eine Vorschau.", "fr": "Bonjour ! Écrivez ou dites ce que vous souhaitez faire. Je peux l'ajouter aux dépenses, au calendrier, à l'itinéraire, à la carte, à la liste ou au journal. Je vous montrerai un aperçu avant l'ajout.", "it": "Ciao! Scrivi o di' cosa vuoi fare. Posso aggiungerlo a spese, calendario, itinerario, mappa, lista di controllo o diario. Ti mostrerò un'anteprima prima di aggiungere.", "es": "¡Hola! Escribe o di qué quieres hacer. Puedo añadirlo a gastos, calendario, ruta, mapa, lista de verificación o diario. Te mostraré una vista previa antes de añadirlo.", "pt": "Olá! Escreva ou diga o que pretende fazer. Posso adicioná-lo às despesas, calendário, percurso, mapa, lista de verificação ou diário. Mostrarei uma pré-visualização antes de adicionar.", "pl": "Cześć! Napisz lub powiedz, co chcesz zrobić. Mogę dodać to do wydatków, kalendarza, trasy, mapy, listy kontrolnej lub dziennika. Przed dodaniem pokażę podgląd.", "el": "Γεια σας! Γράψτε ή πείτε τι θέλετε να κάνετε. Μπορώ να το προσθέσω στα έξοδα, στο ημερολόγιο, στη διαδρομή, στον χάρτη, στη λίστα ελέγχου ή στο ημερολόγιο ταξιδιού. Θα δείξω μια προεπισκόπηση πριν από την προσθήκη.", "tr": "Merhaba! Ne yapmak istediğinizi yazın veya söyleyin. Bunu harcamalara, takvime, rotaya, haritaya, kontrol listesine veya günlüğe ekleyebilirim. Eklemeden önce size önizleme göstereceğim."
+  },
+  "Добавь расход: ужин 48 € на двоих": {
+    "en": "Add an expense: dinner for two, €48", "de": "Ausgabe hinzufügen: Abendessen für zwei, 48 €", "fr": "Ajouter une dépense : dîner pour deux, 48 €", "it": "Aggiungi una spesa: cena per due, 48 €", "es": "Añade un gasto: cena para dos, 48 €", "pt": "Adicionar despesa: jantar para dois, 48 €", "pl": "Dodaj wydatek: kolacja dla dwojga, 48 €", "el": "Πρόσθεσε έξοδο: δείπνο για δύο, 48 €", "tr": "Harcama ekle: iki kişilik akşam yemeği, 48 €"
+  },
+  "Внеси в маршрут: Кёльн → Берлин, 20 ноября": {
+    "en": "Add to route: Cologne → Berlin, 20 November", "de": "Zur Route hinzufügen: Köln → Berlin, 20. November", "fr": "Ajouter à l’itinéraire : Cologne → Berlin, 20 novembre", "it": "Aggiungi all’itinerario: Colonia → Berlino, 20 novembre", "es": "Añade a la ruta: Colonia → Berlín, 20 de noviembre", "pt": "Adicionar ao percurso: Colónia → Berlim, 20 de novembro", "pl": "Dodaj do trasy: Kolonia → Berlin, 20 listopada", "el": "Πρόσθεσε στη διαδρομή: Κολωνία → Βερολίνο, 20 Νοεμβρίου", "tr": "Rotaya ekle: Köln → Berlin, 20 Kasım"
+  },
+  "Создай событие: экскурсия в 10:00": {
+    "en": "Create an event: guided tour at 10:00", "de": "Termin erstellen: Führung um 10:00 Uhr", "fr": "Créer un événement : visite guidée à 10 h", "it": "Crea un evento: visita guidata alle 10:00", "es": "Crea un evento: visita guiada a las 10:00", "pt": "Criar evento: visita guiada às 10:00", "pl": "Utwórz wydarzenie: zwiedzanie o 10:00", "el": "Δημιούργησε εκδήλωση: ξενάγηση στις 10:00", "tr": "Etkinlik oluştur: saat 10:00’da rehberli tur"
+  },
+  "Не забыть зарядку и паспорт": {
+    "en": "Remember the charger and passport", "de": "Ladegerät und Reisepass nicht vergessen", "fr": "Ne pas oublier le chargeur et le passeport", "it": "Non dimenticare caricabatterie e passaporto", "es": "No olvidar el cargador ni el pasaporte", "pt": "Não esquecer o carregador nem o passaporte", "pl": "Nie zapomnieć ładowarki i paszportu", "el": "Να μην ξεχάσω τον φορτιστή και το διαβατήριο", "tr": "Şarj cihazını ve pasaportu unutma"
+  },
+  "Поиск и карта": {
+    "en": "Search and map", "de": "Suche und Karte", "fr": "Recherche et carte", "it": "Ricerca e mappa", "es": "Búsqueda y mapa", "pt": "Pesquisa e mapa", "pl": "Wyszukiwanie i mapa", "el": "Αναζήτηση και χάρτης", "tr": "Arama ve harita"
+  },
+  "Мой план": {
+    "en": "My plan", "de": "Mein Plan", "fr": "Mon programme", "it": "Il mio piano", "es": "Mi plan", "pt": "O meu plano", "pl": "Mój plan", "el": "Το πρόγραμμά μου", "tr": "Planım"
+  },
+  "Паспорт, страховка, контакты": {
+    "en": "Passport, insurance, contacts", "de": "Reisepass, Versicherung, Kontakte", "fr": "Passeport, assurance, contacts", "it": "Passaporto, assicurazione, contatti", "es": "Pasaporte, seguro, contactos", "pt": "Passaporte, seguro, contactos", "pl": "Paszport, ubezpieczenie, kontakty", "el": "Διαβατήριο, ασφάλιση, επαφές", "tr": "Pasaport, sigorta, kişiler"
+  },
+  "Офлайн-данные:": {
+    "en": "Offline data:", "de": "Offline-Daten:", "fr": "Données hors ligne :", "it": "Dati offline:", "es": "Datos sin conexión:", "pt": "Dados offline:", "pl": "Dane offline:", "el": "Δεδομένα εκτός σύνδεσης:", "tr": "Çevrimdışı veriler:"
+  },
+  "свободно": {
+    "en": "free", "de": "frei", "fr": "libres", "it": "liberi", "es": "libres", "pt": "livres", "pl": "wolne", "el": "ελεύθερα", "tr": "boş alan"
+  },
+  "защищено от автоудаления": {
+    "en": "protected from automatic deletion", "de": "vor automatischem Löschen geschützt", "fr": "protégé contre la suppression automatique", "it": "protetto dall’eliminazione automatica", "es": "protegido contra el borrado automático", "pt": "protegido contra eliminação automática", "pl": "chronione przed automatycznym usunięciem", "el": "προστατευμένα από αυτόματη διαγραφή", "tr": "otomatik silinmeye karşı korumalı"
+  },
+  "Карты": {
+    "en": "Maps", "de": "Karten", "fr": "Cartes", "it": "Mappe", "es": "Mapas", "pt": "Mapas", "pl": "Mapy", "el": "Χάρτες", "tr": "Haritalar"
+  },
+  "Бюджет": {
+    "en": "Budget", "de": "Budget", "fr": "Budget", "it": "Budget", "es": "Presupuesto", "pt": "Orçamento", "pl": "Budżet", "el": "Προϋπολογισμός", "tr": "Bütçe"
+  },
+  "самый дорогой день —": {
+    "en": "highest-spending day —", "de": "Tag mit den höchsten Ausgaben —", "fr": "journée la plus coûteuse —", "it": "giorno con più spese —", "es": "día de mayor gasto —", "pt": "dia com mais despesas —", "pl": "dzień z największymi wydatkami —", "el": "ημέρα με τις μεγαλύτερες δαπάνες —", "tr": "en çok harcama yapılan gün —"
+  },
+  "Из кассы оплачено": {
+    "en": "Paid from the shared fund", "de": "Aus der Gemeinschaftskasse bezahlt", "fr": "Payé par la caisse commune", "it": "Pagato dalla cassa comune", "es": "Pagado del fondo común", "pt": "Pago pelo fundo comum", "pl": "Zapłacono ze wspólnej kasy", "el": "Πληρώθηκε από το κοινό ταμείο", "tr": "Ortak kasadan ödendi"
+  },
+  "дни поездки": {
+    "en": "trip days", "de": "Reisetage", "fr": "jours de voyage", "it": "giorni di viaggio", "es": "días de viaje", "pt": "dias de viagem", "pl": "dni podróży", "el": "ημέρες ταξιδιού", "tr": "seyahat günü"
+  },
+  "места в Гиде": {
+    "en": "places in Guide", "de": "Orte im Reiseführer", "fr": "lieux dans le Guide", "it": "luoghi nella Guida", "es": "lugares en la Guía", "pt": "lugares no Guia", "pl": "miejsca w Przewodniku", "el": "μέρη στον Οδηγό", "tr": "Rehber'deki yerler"
+  },
+  "записи в дневнике": {
+    "en": "diary entries", "de": "Tagebucheinträge", "fr": "entrées du journal", "it": "voci del diario", "es": "entradas del diario", "pt": "registos no diário", "pl": "wpisy w dzienniku", "el": "καταχωρίσεις ημερολογίου", "tr": "günlük kaydı"
+  },
+  "изменение курса с прошлой публикации": {
+    "en": "rate change since the last publication", "de": "Kursänderung seit der letzten Veröffentlichung", "fr": "variation du taux depuis la dernière publication", "it": "variazione del cambio dall'ultima pubblicazione", "es": "variación del tipo desde la última publicación", "pt": "variação da taxa desde a última publicação", "pl": "zmiana kursu od ostatniej publikacji", "el": "μεταβολή ισοτιμίας από την τελευταία δημοσίευση", "tr": "son yayından bu yana kur değişimi"
+  },
+  "нет курса": {
+    "en": "rate unavailable", "de": "Kurs nicht verfügbar", "fr": "taux indisponible", "it": "tasso non disponibile", "es": "tipo no disponible", "pt": "taxa indisponível", "pl": "brak kursu", "el": "μη διαθέσιμη ισοτιμία", "tr": "kur mevcut değil"
+  },
+  "Получится": {
+    "en": "You receive", "de": "Sie erhalten", "fr": "Vous obtenez", "it": "Ricevi", "es": "Recibes", "pt": "Recebe", "pl": "Otrzymasz", "el": "Θα λάβετε", "tr": "Alacağınız tutar"
+  },
+  "Свой курс": {
+    "en": "Custom rate", "de": "Eigener Kurs", "fr": "Taux personnalisé", "it": "Cambio personalizzato", "es": "Tipo personalizado", "pt": "Taxa personalizada", "pl": "Własny kurs", "el": "Δική μου ισοτιμία", "tr": "Özel kur"
+  },
+  "Курс банка или обменника": {
+    "en": "Bank or exchange office rate", "de": "Kurs der Bank oder Wechselstube", "fr": "Taux de la banque ou du bureau de change", "it": "Tasso della banca o del cambio", "es": "Tipo del banco o de la casa de cambio", "pt": "Taxa do banco ou da casa de câmbio", "pl": "Kurs banku lub kantoru", "el": "Ισοτιμία τράπεζας ή ανταλλακτηρίου", "tr": "Banka veya döviz bürosu kuru"
+  },
+  "· изменение курса с прошлой публикации": {
+    "en": "· rate change since the last publication", "de": "· Kursänderung seit der letzten Veröffentlichung", "fr": "· variation du taux depuis la dernière publication", "it": "· variazione del cambio dall'ultima pubblicazione", "es": "· variación del tipo desde la última publicación", "pt": "· variação da taxa desde a última publicação", "pl": "· zmiana kursu od ostatniej publikacji", "el": "· μεταβολή ισοτιμίας από την τελευταία δημοσίευση", "tr": "· son yayından bu yana kur değişimi"
+  },
+  "Загружаю курс…": {
+    "en": "Loading rate…", "de": "Kurs wird geladen…", "fr": "Chargement du taux…", "it": "Caricamento del cambio…", "es": "Cargando el tipo de cambio…", "pt": "A carregar a taxa…", "pl": "Ładowanie kursu…", "el": "Φόρτωση ισοτιμίας…", "tr": "Kur yükleniyor…"
+  },
+  "Кросс-курс по данным ЕЦБ": {
+    "en": "Cross rate based on ECB data", "de": "Kreuzkurs nach EZB-Daten", "fr": "Taux croisé selon les données de la BCE", "it": "Cambio incrociato su dati BCE", "es": "Tipo cruzado según datos del BCE", "pt": "Taxa cruzada com dados do BCE", "pl": "Kurs krzyżowy według danych EBC", "el": "Διασταυρούμενη ισοτιμία με βάση στοιχεία της ΕΚΤ", "tr": "ECB verilerine göre çapraz kur"
+  },
+  "Курс не получен": {
+    "en": "Rate not available", "de": "Kurs nicht abrufbar", "fr": "Taux indisponible", "it": "Cambio non disponibile", "es": "No se pudo obtener el tipo de cambio", "pt": "Não foi possível obter a taxa", "pl": "Nie udało się pobrać kursu", "el": "Δεν ήταν δυνατή η λήψη ισοτιμίας", "tr": "Kur alınamadı"
+  },
+  "Курс обновлён": {
+    "en": "Rate updated", "de": "Kurs aktualisiert", "fr": "Taux mis à jour", "it": "Cambio aggiornato", "es": "Tipo de cambio actualizado", "pt": "Taxa atualizada", "pl": "Kurs zaktualizowany", "el": "Η ισοτιμία ενημερώθηκε", "tr": "Kur güncellendi"
+  },
+  "Курсы относительно": {
+    "en": "Rates against", "de": "Kurse gegenüber", "fr": "Taux par rapport à", "it": "Cambi rispetto a", "es": "Tipos frente a", "pt": "Taxas face a", "pl": "Kursy względem", "el": "Ισοτιμίες έναντι", "tr": "Karşılaştırma para birimi"
+  },
+  "Нет связи — сохранённый курс.": {
+    "en": "No connection — saved rate.", "de": "Keine Verbindung – gespeicherter Kurs.", "fr": "Pas de connexion — taux enregistré.", "it": "Nessuna connessione — cambio salvato.", "es": "Sin conexión — tipo de cambio guardado.", "pt": "Sem ligação — taxa guardada.", "pl": "Brak połączenia — zapisany kurs.", "el": "Χωρίς σύνδεση — αποθηκευμένη ισοτιμία.", "tr": "Bağlantı yok — kayıtlı kur."
+  },
+  "Обновить курс": {
+    "en": "Refresh rate", "de": "Kurs aktualisieren", "fr": "Actualiser le taux", "it": "Aggiorna il cambio", "es": "Actualizar tipo de cambio", "pt": "Atualizar taxa", "pl": "Odśwież kurs", "el": "Ανανέωση ισοτιμίας", "tr": "Kuru güncelle"
+  },
+  "Официальные справочные курсы ЕЦБ и центральных банков. В банке или обменнике курс может отличаться — для этого есть «Свой курс».": {
+    "en": "Official reference rates of the ECB and central banks. Your bank or exchange office may use a different rate — that is what “Custom rate” is for.", "de": "Offizielle Referenzkurse der EZB und der Zentralbanken. Bei der Bank oder Wechselstube kann der Kurs abweichen – dafür gibt es „Eigener Kurs“.", "fr": "Taux de référence officiels de la BCE et des banques centrales. À la banque ou au bureau de change, le taux peut différer — c’est à cela que sert « Taux personnalisé ».", "it": "Cambi di riferimento ufficiali della BCE e delle banche centrali. In banca o al cambiavalute il tasso può essere diverso: per questo c’è «Cambio personalizzato».", "es": "Tipos de referencia oficiales del BCE y de los bancos centrales. En el banco o en la casa de cambio el tipo puede ser distinto; para eso está «Tipo personalizado».", "pt": "Taxas de referência oficiais do BCE e dos bancos centrais. No banco ou na casa de câmbio a taxa pode ser diferente — para isso existe «Taxa personalizada».", "pl": "Oficjalne kursy referencyjne EBC i banków centralnych. W banku lub kantorze kurs może być inny — do tego służy „Własny kurs”.", "el": "Επίσημες ισοτιμίες αναφοράς της ΕΚΤ και των κεντρικών τραπεζών. Στην τράπεζα ή στο ανταλλακτήριο η ισοτιμία μπορεί να διαφέρει — γι’ αυτό υπάρχει η «Δική μου ισοτιμία».", "tr": "ECB ve merkez bankalarının resmi referans kurları. Bankada veya döviz bürosunda kur farklı olabilir — bunun için “Özel kur” var."
+  },
+  "Официальный курс": {
+    "en": "Official rate", "de": "Offizieller Kurs", "fr": "Taux officiel", "it": "Cambio ufficiale", "es": "Tipo oficial", "pt": "Taxa oficial", "pl": "Oficjalny kurs", "el": "Επίσημη ισοτιμία", "tr": "Resmi kur"
+  },
+  "Официальный курс ЕЦБ": {
+    "en": "Official ECB rate", "de": "Offizieller EZB-Kurs", "fr": "Taux officiel de la BCE", "it": "Cambio ufficiale BCE", "es": "Tipo oficial del BCE", "pt": "Taxa oficial do BCE", "pl": "Oficjalny kurs EBC", "el": "Επίσημη ισοτιμία της ΕΚΤ", "tr": "Resmi ECB kuru"
+  },
+  "Проверьте интернет или введите свой курс": {
+    "en": "Check your connection or enter your own rate", "de": "Prüfen Sie die Verbindung oder geben Sie einen eigenen Kurs ein", "fr": "Vérifiez la connexion ou saisissez votre propre taux", "it": "Controlla la connessione o inserisci il tuo cambio", "es": "Comprueba la conexión o introduce tu propio tipo", "pt": "Verifique a ligação ou introduza a sua taxa", "pl": "Sprawdź połączenie lub wpisz własny kurs", "el": "Ελέγξτε τη σύνδεση ή εισαγάγετε δική σας ισοτιμία", "tr": "Bağlantıyı kontrol edin veya kendi kurunuzu girin"
+  },
+  "Сверху — курс, который вырос сильнее всего": {
+    "en": "Top: the rate that rose the most", "de": "Oben: der am stärksten gestiegene Kurs", "fr": "En haut : le taux qui a le plus augmenté", "it": "In alto: il cambio salito di più", "es": "Arriba: el tipo que más ha subido", "pt": "No topo: a taxa que mais subiu", "pl": "Na górze: kurs, który najbardziej wzrósł", "el": "Πάνω: η ισοτιμία με τη μεγαλύτερη άνοδο", "tr": "Üstte: en çok yükselen kur"
+  },
+  "Сверху — курс, который упал сильнее всего": {
+    "en": "Top: the rate that fell the most", "de": "Oben: der am stärksten gefallene Kurs", "fr": "En haut : le taux qui a le plus baissé", "it": "In alto: il cambio sceso di più", "es": "Arriba: el tipo que más ha bajado", "pt": "No topo: a taxa que mais desceu", "pl": "Na górze: kurs, który najbardziej spadł", "el": "Πάνω: η ισοτιμία με τη μεγαλύτερη πτώση", "tr": "Üstte: en çok düşen kur"
+  },
+  "Справочный курс Frankfurter": {
+    "en": "Frankfurter reference rate", "de": "Referenzkurs (Frankfurter)", "fr": "Taux de référence Frankfurter", "it": "Cambio di riferimento Frankfurter", "es": "Tipo de referencia Frankfurter", "pt": "Taxa de referência Frankfurter", "pl": "Kurs referencyjny Frankfurter", "el": "Ισοτιμία αναφοράς Frankfurter", "tr": "Frankfurter referans kuru"
+  },
+  "Яндекс Афиша": {
+    "en": "Yandex Afisha", "de": "Yandex Afisha", "fr": "Yandex Afisha", "it": "Yandex Afisha", "es": "Yandex Afisha", "pt": "Yandex Afisha", "pl": "Yandex Afisha", "el": "Yandex Afisha", "tr": "Yandex Afisha"
+  },
+  "Нет почасовых данных": {
+    "en": "No hourly data", "de": "Keine stündlichen Daten", "fr": "Aucune donnée horaire", "it": "Nessun dato orario", "es": "Sin datos horarios", "pt": "Sem dados por hora", "pl": "Brak danych godzinowych", "el": "Δεν υπάρχουν ωριαία δεδομένα", "tr": "Saatlik veri yok"
+  },
+  "Открыть полную форму": {
+    "en": "Open full form", "de": "Vollständiges Formular öffnen", "fr": "Ouvrir le formulaire complet", "it": "Apri il modulo completo", "es": "Abrir formulario completo", "pt": "Abra o formulário completo", "pl": "Otwórz pełną formę", "el": "Ανοίξτε την πλήρη φόρμα", "tr": "Tam formu aç"
+  },
+  "по месту поездки": {
+    "en": "according to the place of travel", "de": "je nach Reiseort", "fr": "selon le lieu de déplacement", "it": "a seconda del luogo di viaggio", "es": "según el lugar de viaje", "pt": "de acordo com o local da viagem", "pl": "według miejsca podróży", "el": "σύμφωνα με τον τόπο ταξιδιού", "tr": "seyahat yerine göre"
+  },
+  "Погода на даты поездки": {
+    "en": "Weather for travel dates", "de": "Wetter für Reisedaten", "fr": "Météo pour les dates de voyage", "it": "Meteo per le date di viaggio", "es": "Clima para fechas de viaje", "pt": "Tempo para datas de viagem", "pl": "Pogoda na daty podróży", "el": "Καιρός για ημερομηνίες ταξιδιού", "tr": "Seyahat tarihlerinde hava durumu"
+  },
+  "Погода на этот день": {
+    "en": "Weather for this day", "de": "Wetter für diesen Tag", "fr": "Météo pour ce jour", "it": "Tempo per oggi", "es": "El tiempo para este día", "pt": "Tempo para este dia", "pl": "Pogoda na ten dzień", "el": "Ο καιρός για αυτήν την ημέρα", "tr": "Bu günün hava durumu"
+  },
+  "Подготовка к поездке": {
+    "en": "Preparing for the trip", "de": "Vorbereitung auf die Reise", "fr": "Préparation du voyage", "it": "Preparazione per il viaggio", "es": "Preparando el viaje", "pt": "Preparando-se para a viagem", "pl": "Przygotowania do podróży", "el": "Προετοιμασία για το ταξίδι", "tr": "Seyahat hazırlığı"
+  },
+  "Показать номера этой страны": {
+    "en": "Show numbers for this country", "de": "Nummern für dieses Land anzeigen", "fr": "Afficher les numéros pour ce pays", "it": "Mostra i numeri per questo paese", "es": "Mostrar números de este país", "pt": "Mostrar números deste país", "pl": "Pokaż liczby dla tego kraju", "el": "Εμφάνιση αριθμών για αυτήν τη χώρα", "tr": "Bu ülkenin numaralarını göster"
+  },
+  "Полиция (не срочно)": {
+    "en": "Police (not urgent)", "de": "Polizei (nicht dringend)", "fr": "Police (pas urgent)", "it": "Polizia (non urgente)", "es": "Policía (no urgente)", "pt": "Polícia (não urgente)", "pl": "Policja (niepilne)", "el": "Αστυνομία (όχι επείγον)", "tr": "Polis (acil olmayan)"
+  },
+  "Получение авто": {
+    "en": "Receiving a car", "de": "Erhalt eines Autos", "fr": "Réception d'une voiture", "it": "Ricezione di un'auto", "es": "Recibir un coche", "pt": "Recebendo um carro", "pl": "Odbiór samochodu", "el": "Παραλαβή αυτοκινήτου", "tr": "Araç teslim alma"
+  },
+  "Поменять языки": {
+    "en": "Change languages", "de": "Sprachen ändern", "fr": "Changer de langue", "it": "Cambia lingua", "es": "Cambiar idiomas", "pt": "Alterar idiomas", "pl": "Zmień języki", "el": "Αλλαγή γλώσσας", "tr": "Dilleri değiştir"
+  },
+  "Порядок точек оптимизирован": {
+    "en": "Point order optimized", "de": "Punktreihenfolge optimiert", "fr": "Ordre des points optimisé", "it": "Ordine dei punti ottimizzato", "es": "Orden de puntos optimizado", "pt": "Ordem de pontos otimizada", "pl": "Zoptymalizowana kolejność punktów", "el": "Βελτιστοποιημένη σειρά σημείων", "tr": "Noktaların sırası optimize edildi"
+  },
+  "Посадочные талоны": {
+    "en": "Boarding passes", "de": "Bordkarten", "fr": "Cartes d'embarquement", "it": "Carte d'imbarco", "es": "Tarjetas de embarque", "pt": "Cartões de embarque", "pl": "Karty pokładowe", "el": "κάρτες επιβίβασης", "tr": "Biniş kartları"
+  },
+  "Посольство / консульство": {
+    "en": "Embassy/Consulate", "de": "Botschaft/Konsulat", "fr": "Ambassade/Consulat", "it": "Ambasciata/Consolato", "es": "Embajada/Consulado", "pt": "Embaixada/Consulado", "pl": "Ambasada/Konsulat", "el": "Πρεσβεία/Προξενείο", "tr": "Büyükelçilik / konsolosluk"
+  },
+  "Посольство поможет при потере паспорта (временный документ на возвращение), аресте, тяжёлой болезни или если нужна связь с родными.": {
+    "en": "The embassy will help if you lose your passport (temporary document for return), arrest, serious illness, or if you need contact with family.", "de": "Die Botschaft hilft Ihnen bei Verlust Ihres Reisepasses (vorläufiges Dokument für die Rückkehr), Festnahme, schwerer Krankheit oder wenn Sie Kontakt zu Ihrer Familie benötigen.", "fr": "L'ambassade vous aidera en cas de perte de votre passeport (document temporaire de retour), d'arrestation, de maladie grave ou si vous avez besoin de contact avec votre famille.", "it": "L'ambasciata ti aiuterà se perdi il passaporto (documento temporaneo per il ritorno), arresto, malattia grave o se hai bisogno di contatti con la famiglia.", "es": "La embajada le ayudará si pierde su pasaporte (documento temporal para el regreso), arresto, enfermedad grave o si necesita contacto con su familia.", "pt": "A embaixada ajudará em caso de perda do passaporte (documento temporário para retorno), prisão, doença grave ou necessidade de contato com familiares.", "pl": "Ambasada pomoże w przypadku utraty paszportu (dokumentu tymczasowego do powrotu), aresztowania, poważnej choroby lub konieczności kontaktu z rodziną.", "el": "Η πρεσβεία θα σας βοηθήσει εάν χάσετε το διαβατήριό σας (προσωρινό έγγραφο για επιστροφή), σύλληψη, σοβαρή ασθένεια ή εάν χρειάζεστε επαφή με την οικογένειά σας.", "tr": "Büyükelçilik; pasaport kaybında (dönüş için geçici belge), tutuklanma, ağır hastalık durumunda veya yakınlarınızla iletişim gerektiğinde yardımcı olur."
+  },
+  "Потратил на себя": {
+    "en": "Spent on myself", "de": "Für mich selbst ausgegeben", "fr": "Dépensé pour moi-même", "it": "Speso per me stesso", "es": "Gastado en mí mismo", "pt": "Gasto comigo mesmo", "pl": "Wydane na siebie", "el": "Ξόδεψα για τον εαυτό μου", "tr": "Kendine harcanan"
+  },
+  "Примеры запросов:": {
+    "en": "Examples of requests:", "de": "Beispiele für Anfragen:", "fr": "Exemples de demandes :", "it": "Esempi di richieste:", "es": "Ejemplos de solicitudes:", "pt": "Exemplos de solicitações:", "pl": "Przykłady żądań:", "el": "Παραδείγματα αιτημάτων:", "tr": "Örnek istekler:"
+  },
+  "Проверить по очереди": {
+    "en": "Check one by one", "de": "Überprüfen Sie eine nach der anderen", "fr": "Vérifiez un par un", "it": "Controlla uno per uno", "es": "Verifique uno por uno", "pt": "Verifique um por um", "pl": "Sprawdzaj jeden po drugim", "el": "Ελέγξτε ένα προς ένα", "tr": "Sırayla kontrol et"
+  },
+  "Проверьте аэропорт": {
+    "en": "Check the airport", "de": "Überprüfen Sie den Flughafen", "fr": "Vérifiez l'aéroport", "it": "Controlla l'aeroporto", "es": "Consulta el aeropuerto", "pt": "Verifique o aeroporto", "pl": "Sprawdź lotnisko", "el": "Ελέγξτε το αεροδρόμιο", "tr": "Havalimanını kontrol edin"
+  },
+  "Прогноз на 7 дней": {
+    "en": "7 day forecast", "de": "7-Tage-Vorhersage", "fr": "Prévisions sur 7 jours", "it": "Previsioni a 7 giorni", "es": "Previsión de 7 días", "pt": "Previsão para 7 dias", "pl": "Prognoza na 7 dni", "el": "Πρόβλεψη 7 ημερών", "tr": "7 günlük tahmin"
+  },
+  "Пропустить эту бронь": {
+    "en": "Skip this booking", "de": "Diese Buchung überspringen", "fr": "Ignorer cette réservation", "it": "Salta questa prenotazione", "es": "Saltar esta reserva", "pt": "Ignorar esta reserva", "pl": "Pomiń tę rezerwację", "el": "Παράβλεψη αυτής της κράτησης", "tr": "Bu rezervasyonu atla"
+  },
+  "Региональный экспресс": {
+    "en": "Regional Express", "de": "Regionalexpress", "fr": "Express Régional", "it": "Espresso Regionale", "es": "Expreso Regional", "pt": "Expresso Regional", "pl": "Ekspres regionalny", "el": "Περιφερειακό εξπρές", "tr": "Bölgesel Ekspres"
+  },
+  "вс": {
+    "en": "Sun", "de": "So", "fr": "dim.", "it": "dom", "es": "dom", "pt": "dom", "pl": "nd", "el": "Κυρ", "tr": "Paz"
+  },
+  "Вс": {
+    "en": "Sun", "de": "So", "fr": "Dim.", "it": "Dom", "es": "Dom", "pt": "Dom", "pl": "Nd", "el": "Κυρ", "tr": "Paz"
+  },
+  "пн": {
+    "en": "Mon", "de": "Mo", "fr": "lun.", "it": "lun", "es": "lun", "pt": "seg", "pl": "pn", "el": "Δευ", "tr": "Pzt"
+  },
+  "Пн": {
+    "en": "Mon", "de": "Mo", "fr": "Lun.", "it": "Lun", "es": "Lun", "pt": "Seg", "pl": "Pn", "el": "Δευ", "tr": "Pzt"
+  },
+  "вт": {
+    "en": "Tue", "de": "Di", "fr": "mar.", "it": "mar", "es": "mar", "pt": "ter", "pl": "wt", "el": "Τρί", "tr": "Sal"
+  },
+  "Вт": {
+    "en": "Tue", "de": "Di", "fr": "Mar.", "it": "Mar", "es": "Mar", "pt": "Ter", "pl": "Wt", "el": "Τρί", "tr": "Sal"
+  },
+  "ср": {
+    "en": "Wed", "de": "Mi", "fr": "mer.", "it": "mer", "es": "mié", "pt": "qua", "pl": "śr", "el": "Τετ", "tr": "Çar"
+  },
+  "Ср": {
+    "en": "Wed", "de": "Mi", "fr": "Mer.", "it": "Mer", "es": "Mié", "pt": "Qua", "pl": "Śr", "el": "Τετ", "tr": "Çar"
+  },
+  "чт": {
+    "en": "Thu", "de": "Do", "fr": "jeu.", "it": "gio", "es": "jue", "pt": "qui", "pl": "czw", "el": "Πέμ", "tr": "Per"
+  },
+  "Чт": {
+    "en": "Thu", "de": "Do", "fr": "Jeu.", "it": "Gio", "es": "Jue", "pt": "Qui", "pl": "Czw", "el": "Πέμ", "tr": "Per"
+  },
+  "пт": {
+    "en": "Fri", "de": "Fr", "fr": "ven.", "it": "ven", "es": "vie", "pt": "sex", "pl": "pt", "el": "Παρ", "tr": "Cum"
+  },
+  "Пт": {
+    "en": "Fri", "de": "Fr", "fr": "Ven.", "it": "Ven", "es": "Vie", "pt": "Sex", "pl": "Pt", "el": "Παρ", "tr": "Cum"
+  },
+  "сб": {
+    "en": "Sat", "de": "Sa", "fr": "sam.", "it": "sab", "es": "sáb", "pt": "sáb", "pl": "sob", "el": "Σάβ", "tr": "Cmt"
+  },
+  "Сб": {
+    "en": "Sat", "de": "Sa", "fr": "Sam.", "it": "Sab", "es": "Sáb", "pt": "Sáb", "pl": "Sob", "el": "Σάβ", "tr": "Cmt"
+  },
+  "Бар": {
+    "en": "Bar", "de": "Bar", "fr": "Bar", "it": "Bar", "es": "Bar", "pt": "Bar", "pl": "Bar", "el": "Μπαρ", "tr": "Bar"
+  },
+  "мест": {
+    "en": "places", "de": "Orte", "fr": "lieux", "it": "luoghi", "es": "lugares", "pt": "locais", "pl": "miejsc", "el": "μέρη", "tr": "yer"
+  },
+  "Рост": {
+    "en": "Rise", "de": "Anstieg", "fr": "Hausse", "it": "Rialzo", "es": "Subida", "pt": "Subida", "pl": "Wzrost", "el": "Άνοδος", "tr": "Artış"
+  },
+  "Ясно": {
+    "en": "Clear", "de": "Klar", "fr": "Dégagé", "it": "Sereno", "es": "Despejado", "pt": "Limpo", "pl": "Bezchmurnie", "el": "Αίθριος", "tr": "Açık"
+  },
+  "По": {
+    "en": "To", "de": "Bis", "fr": "Au", "it": "Al", "es": "Hasta", "pt": "Até", "pl": "Do", "el": "Έως", "tr": "Bitiş"
+  },
+  "Куда": {
+    "en": "To", "de": "Ziel", "fr": "Destination", "it": "Destinazione", "es": "Destino", "pt": "Destino", "pl": "Dokąd", "el": "Προορισμός", "tr": "Nereye"
+  },
+  "Откуда": {
+    "en": "From", "de": "Start", "fr": "Départ", "it": "Partenza", "es": "Origen", "pt": "Origem", "pl": "Skąd", "el": "Αφετηρία", "tr": "Nereden"
+  },
+  "СВ": {
+    "en": "NE", "de": "NO", "fr": "NE", "it": "NE", "es": "NE", "pt": "NE", "pl": "PnW", "el": "ΒΑ", "tr": "KD"
+  },
+  "СЗ": {
+    "en": "NW", "de": "NW", "fr": "NO", "it": "NO", "es": "NO", "pt": "NO", "pl": "PnZ", "el": "ΒΔ", "tr": "KB"
+  },
+  "ЮВ": {
+    "en": "SE", "de": "SO", "fr": "SE", "it": "SE", "es": "SE", "pt": "SE", "pl": "PdW", "el": "ΝΑ", "tr": "GD"
+  },
+  "ЮЗ": {
+    "en": "SW", "de": "SW", "fr": "SO", "it": "SO", "es": "SO", "pt": "SO", "pl": "PdZ", "el": "ΝΔ", "tr": "GB"
+  },
+  "Жара": {
+    "en": "Heat", "de": "Hitze", "fr": "Chaleur", "it": "Caldo", "es": "Calor", "pt": "Calor", "pl": "Upał", "el": "Καύσωνας", "tr": "Sıcak hava"
+  },
+  "Доп. валюта": {
+    "en": "Second currency", "de": "Zweitwährung", "fr": "Devise secondaire", "it": "Valuta secondaria", "es": "Moneda secundaria", "pt": "Moeda secundária", "pl": "Druga waluta", "el": "Δεύτερο νόμισμα", "tr": "İkinci para birimi"
+  },
+  "Ищу…": {
+    "en": "Searching…", "de": "Suche…", "fr": "Vous recherchez...", "it": "Alla ricerca di...", "es": "Buscando...", "pt": "Procurando por...", "pl": "Szukam...", "el": "Αναζήτηση…", "tr": "Aranıyor..."
+  },
+  "Парк": {
+    "en": "Park", "de": "Park", "fr": "Parc", "it": "Parcheggia", "es": "Parque", "pt": "Parque", "pl": "Park", "el": "Πάρκο", "tr": "Park"
+  },
+  "Ниже": {
+    "en": "Below", "de": "Unten", "fr": "Ci-dessous", "it": "Sotto", "es": "Abajo", "pt": "Abaixo", "pl": "Poniżej", "el": "Παρακάτω", "tr": "Aşağıda"
+  },
+  "ФИО": {
+    "en": "Full name", "de": "Vollständiger Name", "fr": "Nom complet", "it": "Nome completo", "es": "Nombre completo", "pt": "Nome completo", "pl": "Pełne imię i nazwisko", "el": "Πλήρες όνομα", "tr": "Ad soyad"
+  },
+  "(открытые данные перевозчиков) · ©": {
+    "en": "(open carrier data) · ©", "de": "(offene Trägerdaten) · ©", "fr": "(données ouvertes du transporteur) · ©", "it": "(apri i dati del corriere) · ©", "es": "(datos abiertos del operador) · ©", "pt": "(dados abertos da operadora) · ©", "pl": "(otwarte dane przewoźnika) · ©", "el": "(ανοικτά δεδομένα φορέα) · ©", "tr": "(taşıyıcıların açık verileri) · ©"
+  },
+  "от центра": {
+    "en": "from the centre", "de": "vom Zentrum", "fr": "du centre", "it": "dal centro", "es": "del centro", "pt": "do centro", "pl": "od centrum", "el": "από το κέντρο", "tr": "merkeze"
+  },
+  "Найдено мест:": {
+    "en": "Places found:", "de": "Gefundene Orte:", "fr": "Lieux trouvés :", "it": "Luoghi trovati:", "es": "Lugares encontrados:", "pt": "Locais encontrados:", "pl": "Znalezione miejsca:", "el": "Βρέθηκαν μέρη:", "tr": "Bulunan yerler:"
+  },
+  "На карте": {
+    "en": "On map", "de": "Auf der Karte", "fr": "Sur la carte", "it": "Sulla mappa", "es": "En el mapa", "pt": "No mapa", "pl": "Na mapie", "el": "Στον χάρτη", "tr": "Haritada"
+  },
+  "Добавьте первый расход в «Расходах» — здесь появятся итоги, графики по дням, категориям и участникам.": {
+    "en": "Add the first expense in “Expenses” — totals and charts by day, category and participant will appear here.", "de": "Füge die erste Ausgabe unter „Ausgaben“ hinzu – hier erscheinen Summen und Diagramme nach Tagen, Kategorien und Teilnehmern.", "fr": "Ajoutez la première dépense dans « Dépenses » — les totaux et graphiques par jour, catégorie et participant apparaîtront ici.", "it": "Aggiungi la prima spesa in «Spese»: qui compariranno totali e grafici per giorno, categoria e partecipante.", "es": "Añade el primer gasto en «Gastos»: aquí aparecerán los totales y gráficos por día, categoría y participante.", "pt": "Adicione a primeira despesa em «Despesas» — aqui aparecerão totais e gráficos por dia, categoria e participante.", "pl": "Dodaj pierwszy wydatek w „Wydatkach” — tutaj pojawią się podsumowania i wykresy według dni, kategorii i uczestników.", "el": "Προσθέστε την πρώτη δαπάνη στις «Δαπάνες» — εδώ θα εμφανιστούν σύνολα και γραφήματα ανά ημέρα, κατηγορία και συμμετέχοντα.", "tr": "İlk harcamayı «Harcamalar» bölümüne ekleyin — günlere, kategorilere ve katılımcılara göre toplamlar ve grafikler burada görünecek."
+  },
+  "Ваш личный кабинет создан": {
+    "en": "Your personal account is ready", "de": "Dein persönliches Konto ist bereit", "fr": "Votre espace personnel est créé", "it": "Il tuo account personale è pronto", "es": "Tu cuenta personal está lista", "pt": "A sua conta pessoal foi criada", "pl": "Twoje konto osobiste jest gotowe", "el": "Ο προσωπικός σας λογαριασμός δημιουργήθηκε", "tr": "Kişisel hesabınız oluşturuldu"
+  },
+  "Ваши поездки и личные события календаря сохраняются в личном кабинете. Чтобы открыть их на другом телефоне или компьютере, достаточно этого номера:": {
+    "en": "Your trips and personal calendar events are saved in your personal account. To open them on another phone or computer, this number is all you need:", "de": "Deine Reisen und persönlichen Kalendertermine werden in deinem persönlichen Konto gespeichert. Um sie auf einem anderen Handy oder Computer zu öffnen, reicht diese Nummer:", "fr": "Vos voyages et événements personnels du calendrier sont enregistrés dans votre espace personnel. Pour les ouvrir sur un autre téléphone ou ordinateur, ce numéro suffit :", "it": "I tuoi viaggi e gli eventi personali del calendario sono salvati nel tuo account personale. Per aprirli su un altro telefono o computer basta questo numero:", "es": "Tus viajes y eventos personales del calendario se guardan en tu cuenta personal. Para abrirlos en otro teléfono u ordenador, basta con este número:", "pt": "As suas viagens e eventos pessoais do calendário ficam guardados na sua conta pessoal. Para os abrir noutro telemóvel ou computador, basta este número:", "pl": "Twoje podróże i osobiste wydarzenia z kalendarza są zapisane na koncie osobistym. Aby otworzyć je na innym telefonie lub komputerze, wystarczy ten numer:", "el": "Τα ταξίδια και τα προσωπικά σας γεγονότα ημερολογίου αποθηκεύονται στον προσωπικό σας λογαριασμό. Για να τα ανοίξετε σε άλλο κινητό ή υπολογιστή, αρκεί αυτός ο αριθμός:", "tr": "Seyahatleriniz ve kişisel takvim etkinlikleriniz kişisel hesabınızda saklanır. Bunları başka bir telefonda veya bilgisayarda açmak için bu numara yeterli:"
+  },
+  "МОЙ ЛИЧНЫЙ НОМЕР": {
+    "en": "MY PERSONAL NUMBER", "de": "MEINE PERSÖNLICHE NUMMER", "fr": "MON NUMÉRO PERSONNEL", "it": "IL MIO NUMERO PERSONALE", "es": "MI NÚMERO PERSONAL", "pt": "O MEU NÚMERO PESSOAL", "pl": "MÓJ NUMER OSOBISTY", "el": "Ο ΠΡΟΣΩΠΙΚΟΣ ΜΟΥ ΑΡΙΘΜΟΣ", "tr": "KİŞİSEL NUMARAM"
+  },
+  "Вход на другом устройстве: «Войти по личному ключу» → номер": {
+    "en": "On another device: “Sign in with personal key” → number", "de": "Auf einem anderen Gerät: „Mit persönlichem Schlüssel anmelden“ → Nummer", "fr": "Sur un autre appareil : « Se connecter avec la clé personnelle » → numéro", "it": "Su un altro dispositivo: «Accedi con la chiave personale» → numero", "es": "En otro dispositivo: «Entrar con clave personal» → número", "pt": "Noutro dispositivo: «Entrar com chave pessoal» → número", "pl": "Na innym urządzeniu: „Zaloguj się kluczem osobistym” → numer", "el": "Σε άλλη συσκευή: «Σύνδεση με προσωπικό κλειδί» → αριθμός", "tr": "Başka bir cihazda: “Kişisel anahtarla giriş” → numara"
+  },
+  "Номер сохранится на сервере, как только появится связь": {
+    "en": "The number will be saved on the server once you are online", "de": "Die Nummer wird auf dem Server gespeichert, sobald eine Verbindung besteht", "fr": "Le numéro sera enregistré sur le serveur dès que la connexion reviendra", "it": "Il numero verrà salvato sul server appena torna la connessione", "es": "El número se guardará en el servidor en cuanto haya conexión", "pt": "O número será guardado no servidor assim que houver ligação", "pl": "Numer zostanie zapisany na serwerze, gdy tylko pojawi się połączenie", "el": "Ο αριθμός θα αποθηκευτεί στον διακομιστή μόλις υπάρξει σύνδεση", "tr": "Numara, bağlantı kurulur kurulmaz sunucuya kaydedilecek"
+  },
+  "Номер — как пароль: не отправляйте его в общие чаты. Друзей приглашайте QR-кодом «Пригласить» в поездке.": {
+    "en": "Treat the number like a password: don’t post it in group chats. Invite friends with the “Invite” QR code in the trip.", "de": "Die Nummer ist wie ein Passwort: Schick sie nicht in Gruppenchats. Freunde lädst du mit dem QR-Code „Einladen“ in der Reise ein.", "fr": "Le numéro est comme un mot de passe : ne l’envoyez pas dans des discussions de groupe. Invitez vos amis avec le QR code « Inviter » du voyage.", "it": "Il numero è come una password: non inviarlo nelle chat di gruppo. Invita gli amici con il codice QR «Invita» nel viaggio.", "es": "El número es como una contraseña: no lo envíes a chats de grupo. Invita a tus amigos con el código QR «Invitar» del viaje.", "pt": "O número é como uma palavra-passe: não o envie para conversas de grupo. Convide amigos com o código QR «Convidar» na viagem.", "pl": "Numer jest jak hasło: nie wysyłaj go na czaty grupowe. Znajomych zapraszaj kodem QR „Zaproś” w podróży.", "el": "Ο αριθμός είναι σαν κωδικός πρόσβασης: μην τον στέλνετε σε ομαδικές συνομιλίες. Προσκαλέστε φίλους με τον κωδικό QR «Πρόσκληση» στο ταξίδι.", "tr": "Numara bir şifre gibidir: grup sohbetlerine göndermeyin. Arkadaşlarınızı seyahatteki “Davet et” QR koduyla davet edin."
+  },
+  "Скопировать": {
+    "en": "Copy", "de": "Kopieren", "fr": "Copier", "it": "Copia", "es": "Copiar", "pt": "Copiar", "pl": "Kopiuj", "el": "Αντιγραφή", "tr": "Kopyala"
+  },
+  "QR и картинка": {
+    "en": "QR and image", "de": "QR und Bild", "fr": "QR et image", "it": "QR e immagine", "es": "QR e imagen", "pt": "QR e imagem", "pl": "QR i obraz", "el": "QR και εικόνα", "tr": "QR ve görsel"
+  },
+  "Добавить PIN-код": {
+    "en": "Add PIN", "de": "PIN hinzufügen", "fr": "Ajouter un code PIN", "it": "Aggiungi PIN", "es": "Añadir PIN", "pt": "Adicionar PIN", "pl": "Dodaj PIN", "el": "Προσθήκη PIN", "tr": "PIN ekle"
+  },
+  "У меня уже есть номер — войти": {
+    "en": "I already have a number — sign in", "de": "Ich habe schon eine Nummer – anmelden", "fr": "J’ai déjà un numéro — me connecter", "it": "Ho già un numero — accedi", "es": "Ya tengo un número — entrar", "pt": "Já tenho um número — entrar", "pl": "Mam już numer — zaloguj się", "el": "Έχω ήδη αριθμό — σύνδεση", "tr": "Zaten numaram var — giriş yap"
+  },
+  "Номер всегда можно посмотреть: «Ещё» → «Мой ключ входа». Там же можно выпустить ключ с PIN-кодом.": {
+    "en": "You can always see the number under “More” → “My sign-in key”. There you can also issue a key with a PIN.", "de": "Die Nummer findest du jederzeit unter „Mehr“ → „Mein Anmeldeschlüssel“. Dort kannst du auch einen Schlüssel mit PIN erstellen.", "fr": "Le numéro est toujours visible dans « Plus » → « Ma clé de connexion ». Vous pouvez aussi y créer une clé avec code PIN.", "it": "Il numero è sempre visibile in «Altro» → «La mia chiave di accesso». Lì puoi anche creare una chiave con PIN.", "es": "Siempre puedes ver el número en «Más» → «Mi clave de acceso». Allí también puedes crear una clave con PIN.", "pt": "Pode ver o número a qualquer momento em «Mais» → «A minha chave de acesso». Aí também pode criar uma chave com PIN.", "pl": "Numer zawsze znajdziesz w „Więcej” → „Mój klucz logowania”. Tam też możesz utworzyć klucz z PIN-em.", "el": "Μπορείτε πάντα να δείτε τον αριθμό στο «Περισσότερα» → «Το κλειδί σύνδεσής μου». Εκεί μπορείτε επίσης να δημιουργήσετε κλειδί με PIN.", "tr": "Numarayı her zaman “Daha fazla” → “Giriş anahtarım” bölümünde görebilirsiniz. Orada PIN’li bir anahtar da oluşturabilirsiniz."
+  },
+  "Номер скопирован — храните как пароль": {
+    "en": "Number copied — keep it like a password", "de": "Nummer kopiert – bewahre sie wie ein Passwort auf", "fr": "Numéro copié — gardez-le comme un mot de passe", "it": "Numero copiato — custodiscilo come una password", "es": "Número copiado — guárdalo como una contraseña", "pt": "Número copiado — guarde-o como uma palavra-passe", "pl": "Numer skopiowany — przechowuj go jak hasło", "el": "Ο αριθμός αντιγράφηκε — φυλάξτε τον σαν κωδικό", "tr": "Numara kopyalandı — şifre gibi saklayın"
+  },
+  "Не удалось скопировать": {
+    "en": "Could not copy", "de": "Kopieren fehlgeschlagen", "fr": "Impossible de copier", "it": "Impossibile copiare", "es": "No se pudo copiar", "pt": "Não foi possível copiar", "pl": "Nie udało się skopiować", "el": "Η αντιγραφή απέτυχε", "tr": "Kopyalanamadı"
+  }
+}

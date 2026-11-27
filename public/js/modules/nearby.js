@@ -9,8 +9,23 @@
 (function () {
   'use strict';
   if (!window.STHub) return;
- 
+
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const NEAR_KEYS = ['helperError','noGps','locating','gpsDenied','findMe','all','cafe','shops','fuel','km','places','routing','min','searching','nothing','route','selectedPoint','searchCenter','trip','searchPoint','mapLoad','placesError','addressMissing','routeNotFound','m','ev','parking','allParking','publicParking','privateParking','free','paid'];
+  const NEAR_TEXT = {
+    ru:'Не найден nearby-api.js|Нет GPS|Определяем геопозицию…|Нет доступа к геопозиции|Найти меня|Все|Кафе|Магазины|Заправки|км|Места рядом|Строим маршрут…|мин|Поиск мест…|Ничего не найдено|Маршрут|Выбранная точка|Центр поиска|Поездка|Точка поиска|Не удалось загрузить карту|Не удалось загрузить места рядом — проверьте интернет и попробуйте ещё раз|Адрес не указан|Маршрут не найден|м|Электрозаправки|Парковки|Все парковки|Общественные|Частные|Бесплатная|Платная',
+    en:'nearby-api.js not found|GPS unavailable|Finding your location…|Location access denied|Find me|All|Cafés|Shops|Fuel|km|Nearby places|Building route…|min|Searching places…|Nothing found|Route|Selected point|Search center|Trip|Search point|Could not load map|Could not load nearby places — check your internet connection and try again|Address unavailable|Route not found|m|EV charging|Parking|All parking|Public|Private|Free|Paid',
+    de:'nearby-api.js nicht gefunden|GPS nicht verfügbar|Standort wird ermittelt…|Kein Zugriff auf Standort|Meinen Standort finden|Alle|Cafés|Geschäfte|Tankstellen|km|Orte in der Nähe|Route wird berechnet…|Min.|Orte werden gesucht…|Nichts gefunden|Route|Ausgewählter Punkt|Suchzentrum|Reise|Suchpunkt|Karte konnte nicht geladen werden|Orte in der Nähe konnten nicht geladen werden — Internet prüfen und erneut versuchen|Adresse nicht angegeben|Route nicht gefunden|m|Ladestationen|Parkplätze|Alle Parkplätze|Öffentlich|Privat|Kostenlos|Kostenpflichtig',
+    fr:'nearby-api.js introuvable|GPS indisponible|Recherche de votre position…|Accès à la position refusé|Me localiser|Tout|Cafés|Boutiques|Stations-service|km|Lieux à proximité|Calcul de l’itinéraire…|min|Recherche de lieux…|Aucun résultat|Itinéraire|Point sélectionné|Centre de recherche|Voyage|Point de recherche|Impossible de charger la carte|Impossible de charger les lieux à proximité — vérifiez Internet et réessayez|Adresse non indiquée|Itinéraire introuvable|m|Bornes de recharge|Parkings|Tous les parkings|Publics|Privés|Gratuit|Payant',
+    it:'nearby-api.js non trovato|GPS non disponibile|Ricerca della posizione…|Accesso alla posizione negato|Trova la mia posizione|Tutti|Caffè|Negozi|Carburante|km|Luoghi vicini|Calcolo itinerario…|min|Ricerca luoghi…|Nessun risultato|Itinerario|Punto selezionato|Centro ricerca|Viaggio|Punto ricerca|Impossibile caricare la mappa|Impossibile caricare i luoghi vicini — controlla Internet e riprova|Indirizzo non disponibile|Itinerario non trovato|m|Colonnine di ricarica|Parcheggi|Tutti i parcheggi|Pubblici|Privati|Gratuito|A pagamento',
+    es:'No se encontró nearby-api.js|GPS no disponible|Buscando ubicación…|Acceso a la ubicación denegado|Encontrarme|Todos|Cafés|Tiendas|Gasolineras|km|Lugares cercanos|Calculando ruta…|min|Buscando lugares…|No se encontró nada|Ruta|Punto seleccionado|Centro de búsqueda|Viaje|Punto de búsqueda|No se pudo cargar el mapa|No se pudieron cargar lugares cercanos: revisa Internet e inténtalo de nuevo|Dirección no indicada|Ruta no encontrada|m|Puntos de carga|Aparcamientos|Todos los aparcamientos|Públicos|Privados|Gratis|De pago',
+    pt:'nearby-api.js não encontrado|GPS indisponível|A obter localização…|Acesso à localização negado|Encontrar-me|Todos|Cafés|Lojas|Combustível|km|Locais próximos|A calcular percurso…|min|A procurar locais…|Nada encontrado|Percurso|Ponto selecionado|Centro da pesquisa|Viagem|Ponto de pesquisa|Não foi possível carregar o mapa|Não foi possível carregar locais próximos — verifique a Internet e tente novamente|Morada não indicada|Percurso não encontrado|m|Postos de carregamento|Estacionamento|Todos os parques|Públicos|Privados|Gratuito|Pago',
+    pl:'Nie znaleziono nearby-api.js|GPS niedostępny|Ustalanie lokalizacji…|Brak dostępu do lokalizacji|Znajdź mnie|Wszystkie|Kawiarnie|Sklepy|Stacje paliw|km|Miejsca w pobliżu|Wyznaczanie trasy…|min|Wyszukiwanie miejsc…|Nic nie znaleziono|Trasa|Wybrany punkt|Środek wyszukiwania|Podróż|Punkt wyszukiwania|Nie udało się załadować mapy|Nie udało się wczytać pobliskich miejsc — sprawdź Internet i spróbuj ponownie|Brak adresu|Nie znaleziono trasy|m|Ładowarki|Parkingi|Wszystkie parkingi|Publiczne|Prywatne|Bezpłatny|Płatny',
+    el:'Δεν βρέθηκε το nearby-api.js|Το GPS δεν είναι διαθέσιμο|Εντοπισμός θέσης…|Δεν επιτρέπεται η πρόσβαση στη θέση|Εντοπισμός μου|Όλα|Καφέ|Καταστήματα|Καύσιμα|χλμ.|Κοντινά μέρη|Υπολογισμός διαδρομής…|λεπ.|Αναζήτηση μερών…|Δεν βρέθηκε τίποτα|Διαδρομή|Επιλεγμένο σημείο|Κέντρο αναζήτησης|Ταξίδι|Σημείο αναζήτησης|Δεν ήταν δυνατή η φόρτωση του χάρτη|Δεν ήταν δυνατή η φόρτωση κοντινών μερών — ελέγξτε το διαδίκτυο και δοκιμάστε ξανά|Δεν υπάρχει διεύθυνση|Δεν βρέθηκε διαδρομή|μ.|Σταθμοί φόρτισης|Στάθμευση|Όλοι οι χώροι στάθμευσης|Δημόσιοι|Ιδιωτικοί|Δωρεάν|Επί πληρωμή',
+    tr:'nearby-api.js bulunamadı|GPS kullanılamıyor|Konum belirleniyor…|Konum erişimi reddedildi|Konumumu bul|Tümü|Kafeler|Mağazalar|Benzinlikler|km|Yakındaki yerler|Rota oluşturuluyor…|dk|Yerler aranıyor…|Sonuç bulunamadı|Rota|Seçilen nokta|Arama merkezi|Gezi|Arama noktası|Harita yüklenemedi|Yakındaki yerler yüklenemedi — interneti kontrol edip tekrar deneyin|Adres belirtilmemiş|Rota bulunamadı|m|Şarj istasyonları|Otoparklar|Tüm otoparklar|Halka açık|Özel|Ücretsiz|Ücretli'
+  };
+  const ntxt = key => (NEAR_TEXT[typeof getLang === 'function' ? getLang() : 'ru'] || NEAR_TEXT.en).split('|')[NEAR_KEYS.indexOf(key)] || key;
+  window.STNearbyText = ntxt;
 
   STHub.addStyles('nearby', `
     .nb-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
@@ -26,9 +41,9 @@
     if (window.NearbyAPI) return Promise.resolve(window.NearbyAPI);
     return new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = '/js/modules/nearby-api.js?v=7'; // ?v= — чтобы телефон не брал старую копию из кэша; при изменении nearby-api.js увеличить число
+      s.src = '/js/modules/nearby-api.js?v=146'; // ?v= — чтобы телефон не брал старую копию из кэша
       s.onload = () => res(window.NearbyAPI);
-      s.onerror = () => rej(new Error('Не найден nearby-api.js'));
+      s.onerror = () => rej(new Error(ntxt('helperError')));
       document.head.appendChild(s);
     });
   }
@@ -40,42 +55,43 @@
     let map, layer, uMark, circle, rLine;
 
     const locate = manual => {
-      if (!('geolocation' in navigator)) return manual && ctx.toast('Нет GPS');
-      if (manual) ctx.toast('Определяем геопозицию...');
+      if (!('geolocation' in navigator)) return manual && ctx.toast(ntxt('noGps'));
+      if (manual) ctx.toast(ntxt('locating'));
       navigator.geolocation.getCurrentPosition(p => {
         lat = p.coords.latitude; lon = p.coords.longitude;
         document.getElementById('nb-rad')?.dispatchEvent(new Event('change'));
-      }, () => manual && ctx.toast('Нет доступа к геопозиции'), { enableHighAccuracy: true, timeout: 6000 });
+      }, () => manual && ctx.toast(ntxt('gpsDenied')), { enableHighAccuracy: true, timeout: 6000 });
     };
 
     ctx.openScreen({
       title: ctx.title,
-      action: { icon: 'locate-fixed', label: 'Найти меня', onClick: () => locate(true) },
+      action: { icon: 'locate-fixed', label: ntxt('findMe'), onClick: () => locate(true) },
       async render(body) {
         body.innerHTML = `
           <div class="nb-bar">
-            <button class="st-btn ${type === 'all' ? '' : 'st-btn-g'}" data-t="all">🌍 Все</button>
-            <button class="st-btn ${type === 'cafe' ? '' : 'st-btn-g'}" data-t="cafe">☕ Кафе</button>
-            <button class="st-btn ${type === 'shop' ? '' : 'st-btn-g'}" data-t="shop">🛒 Магазины</button>
-            <button class="st-btn ${type === 'fuel' ? '' : 'st-btn-g'}" data-t="fuel">⛽ Заправки</button>
+            <button class="st-btn ${type === 'all' ? '' : 'st-btn-g'}" data-t="all">🌍 ${ntxt('all')}</button>
+            <button class="st-btn ${type === 'cafe' ? '' : 'st-btn-g'}" data-t="cafe">☕ ${ntxt('cafe')}</button>
+            <button class="st-btn ${type === 'shop' ? '' : 'st-btn-g'}" data-t="shop">🛒 ${ntxt('shops')}</button>
+            <button class="st-btn ${type === 'fuel' ? '' : 'st-btn-g'}" data-t="fuel">⛽ ${ntxt('fuel')}</button>
             <select class="st-input" id="nb-rad" style="width:auto;padding:6px 10px;margin:0;margin-left:auto;">
-              <option value="1000" ${radius === 1000 ? 'selected' : ''}>1 км</option>
-              <option value="2000" ${radius === 2000 ? 'selected' : ''}>2 км</option>
-              <option value="5000" ${radius === 5000 ? 'selected' : ''}>5 км</option>
-              <option value="10000" ${radius === 10000 ? 'selected' : ''}>10 км</option>
+              <option value="1000" ${radius === 1000 ? 'selected' : ''}>1 ${ntxt('km')}</option>
+              <option value="2000" ${radius === 2000 ? 'selected' : ''}>2 ${ntxt('km')}</option>
+              <option value="5000" ${radius === 5000 ? 'selected' : ''}>5 ${ntxt('km')}</option>
+              <option value="10000" ${radius === 10000 ? 'selected' : ''}>10 ${ntxt('km')}</option>
             </select>
-            <button class="st-btn ${type === 'ev' ? '' : 'st-btn-g'}" data-t="ev">🔌 Электрозаправки</button>
-            <button class="st-btn ${type === 'parking' ? '' : 'st-btn-g'}" data-t="parking">🅿️ Парковки</button>
+            <button class="st-btn ${type === 'ev' ? '' : 'st-btn-g'}" data-t="ev">🔌 ${ntxt('ev')}</button>
+            <button class="st-btn ${type === 'parking' ? '' : 'st-btn-g'}" data-t="parking">🅿️ ${ntxt('parking')}</button>
             <select class="st-input" id="nb-pacc" style="width:auto;padding:6px 10px;margin:0;display:${type === 'parking' ? 'inline-block' : 'none'};">
-              <option value="all" ${pAccess === 'all' ? 'selected' : ''}>Все парковки</option>
-              <option value="public" ${pAccess === 'public' ? 'selected' : ''}>Общественные</option>
-              <option value="private" ${pAccess === 'private' ? 'selected' : ''}>Частные</option>
+              <option value="all" ${pAccess === 'all' ? 'selected' : ''}>${ntxt('allParking')}</option>
+              <option value="public" ${pAccess === 'public' ? 'selected' : ''}>${ntxt('publicParking')}</option>
+              <option value="private" ${pAccess === 'private' ? 'selected' : ''}>${ntxt('privateParking')}</option>
             </select>
           </div>
           <div class="nb-route" id="nb-rbar"><span id="nb-rtxt"></span><button class="st-btn st-btn-g" id="nb-roff" style="padding:4px 8px;font-size:12px;">✖</button></div>
           <div class="nb-map-box"><div id="nb-map"></div></div>
-          <div class="st-card-title" id="nb-ttl" style="margin-bottom:8px;">Места рядом</div>
+          <div class="st-card-title" id="nb-ttl" style="margin-bottom:8px;">${ntxt('places')}</div>
           <div id="nb-list"></div>`;
+
         let api;
         try { api = await loadHelper(); await api.ensureLeaflet(); }
         catch (e) { body.querySelector('#nb-list').innerHTML = `<div class="st-empty"><div>${esc(e.message)}</div></div>`; return; }
@@ -94,20 +110,20 @@
         };
 
         const buildRoute = async p => {
-          ctx.toast('Строим маршрут...');
+          ctx.toast(ntxt('routing'));
           try {
             const r = await api.fetchRoute(lat, lon, p.lat, p.lon);
             clearRoute();
             rLine = L.polyline(r.coords, { color: '#2980b9', weight: 5, opacity: 0.85 }).addTo(map);
             map.fitBounds(rLine.getBounds(), { padding: new Array(30, 30) });
-            body.querySelector('#nb-rtxt').textContent = `${p.name}: ${api.fmtDist(r.distance)} (~${r.mins} мин)`;
+            body.querySelector('#nb-rtxt').textContent = `${p.name}: ${api.fmtDist(r.distance)} (~${r.mins} ${ntxt('min')})`;
             body.querySelector('#nb-rbar').style.display = 'flex';
           } catch (e) { ctx.toast(e.message); }
         };
 
         const loadPlaces = async () => {
           const list = body.querySelector('#nb-list');
-          list.innerHTML = '<div class="st-empty"><div>Поиск мест...</div></div>';
+          list.innerHTML = `<div class="st-empty"><div>${ntxt('searching')}</div></div>`;
           layer.clearLayers();
           try {
             let places = await api.fetchPlaces(lat, lon, type, radius);
@@ -116,21 +132,22 @@
               if (pAccess === 'public') places = places.filter(p => !isPriv(p));
               if (pAccess === 'private') places = places.filter(p => isPriv(p));
             }
-            body.querySelector('#nb-ttl').textContent = `Места рядом (${places.length})`;
-            if (!places.length) { list.innerHTML = '<div class="st-empty"><div>Ничего не найдено</div></div>'; return; }
+            body.querySelector('#nb-ttl').textContent = `${ntxt('places')} (${places.length})`;
+            if (!places.length) { list.innerHTML = `<div class="st-empty"><div>${ntxt('nothing')}</div></div>`; return; }
             list.innerHTML = '';
             places.forEach(p => {
-              const st = p.category === 'Кафе' ? { c: '#e67e22', e: '☕' }
-                        : p.category === 'Заправка' ? { c: '#2980b9', e: '⛽' }
-                        : p.category === 'Электрозаправка' ? { c: '#16a085', e: '🔌' }
-                        : p.category === 'Парковка' ? { c: '#34495e', e: '🅿️' }
-                        : { c: '#27ae60', e: '🛒' };
-              const feeTxt = /^no$/i.test(p.fee) ? ' • Бесплатная' : /^(yes|conditional)$/i.test(p.fee) ? ' • Платная' : '';
+              const st = p.category === 'Кафе' ? { c: '#e67e22', e: '☕', label: ntxt('cafe') }
+                : p.category === 'Заправка' ? { c: '#2980b9', e: '⛽', label: ntxt('fuel') }
+                : p.category === 'Электрозаправка' ? { c: '#16a085', e: '🔌', label: ntxt('ev') }
+                : p.category === 'Парковка' ? { c: '#34495e', e: '🅿️', label: ntxt('parking') }
+                : { c: '#27ae60', e: '🛒', label: ntxt('shops') };
+              const feeTxt = /^no$/i.test(p.fee) ? ' • ' + ntxt('free') : /^(yes|conditional)$/i.test(p.fee) ? ' • ' + ntxt('paid') : '';
               const icon = L.divIcon({ className: '', html: `<div class="nb-pin" style="background:${st.c}">${st.e}</div>`, iconSize: new Array(32, 32), iconAnchor: new Array(16, 16), popupAnchor: new Array(0, -16) });
-              const m = L.marker(new Array(p.lat, p.lon), { icon }).bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.category)}${feeTxt} • ${api.fmtDist(p.distance)}<br>${esc(p.address)}`).addTo(layer);
+              const m = L.marker(new Array(p.lat, p.lon), { icon }).bindPopup(`<b>${esc(p.name)}</b><br>${esc(st.label)}${esc(feeTxt)} • ${api.fmtDist(p.distance)}<br>${esc(p.address)}`).addTo(layer);
+
               const card = document.createElement('div');
               card.className = 'st-card'; card.style.cssText = 'cursor:pointer;margin-bottom:8px;';
-              card.innerHTML = `<div class="st-row" style="padding:0;"><span class="st-row-ic">${st.e}</span><span class="st-row-txt"><span class="st-row-ttl">${esc(p.name)} <span class="st-muted">(${api.fmtDist(p.distance)})</span></span><span class="st-muted" style="font-size:12px;">${esc(p.category)}${feeTxt} • ${esc(p.address)}</span></span><button class="st-btn st-btn-g nb-go" style="padding:6px 10px;font-size:12px;">🧭 Маршрут</button></div>`;
+              card.innerHTML = `<div class="st-row" style="padding:0;"><span class="st-row-ic">${st.e}</span><span class="st-row-txt"><span class="st-row-ttl">${esc(p.name)} <span class="st-muted">(${api.fmtDist(p.distance)})</span></span><span class="st-muted" style="font-size:12px;">${esc(st.label)}${esc(feeTxt)} • ${esc(p.address)}</span></span><button class="st-btn st-btn-g nb-go" style="padding:6px 10px;font-size:12px;">🧭 ${ntxt('route')}</button></div>`;
               card.onclick = () => { body.querySelectorAll('.st-card').forEach(x => x.classList.remove('nb-card-on')); card.classList.add('nb-card-on'); map.flyTo(new Array(p.lat, p.lon), 16, { duration: 0.7 }); m.openPopup(); };
               card.querySelector('.nb-go').onclick = e => { e.stopPropagation(); buildRoute(p); };
               list.appendChild(card);
@@ -138,24 +155,19 @@
           } catch (e) { list.innerHTML = `<div class="st-empty"><div>${esc(e.message)}</div></div>`; }
         };
 
-        map.on('click', e => { lat = e.latlng.lat; lon = e.latlng.lng; clearRoute(); updateCenter('Выбранная точка', false); loadPlaces(); });
+        map.on('click', e => { lat = e.latlng.lat; lon = e.latlng.lng; clearRoute(); updateCenter(ntxt('selectedPoint'), false); loadPlaces(); });
         body.querySelectorAll('.nb-bar button[data-t]').forEach(b => b.onclick = () => {
           type = b.dataset.t; ctx.store.set('type', type);
           body.querySelectorAll('.nb-bar button[data-t]').forEach(x => x.classList.toggle('st-btn-g', x.dataset.t !== type));
           body.querySelector('#nb-pacc').style.display = type === 'parking' ? 'inline-block' : 'none';
           loadPlaces();
         });
-        body.querySelector('#nb-pacc').onchange = e => {
-          pAccess = e.target.value; ctx.store.set('pAccess', pAccess);
-          loadPlaces();
-        };
-
-        
-        body.querySelector('#nb-rad').onchange = e => { radius = +e.target.value; ctx.store.set('radius', radius); clearRoute(); updateCenter('Центр поиска', true); loadPlaces(); };
+        body.querySelector('#nb-pacc').onchange = e => { pAccess = e.target.value; ctx.store.set('pAccess', pAccess); loadPlaces(); };
+        body.querySelector('#nb-rad').onchange = e => { radius = +e.target.value; ctx.store.set('radius', radius); clearRoute(); updateCenter(ntxt('searchCenter'), true); loadPlaces(); };
         body.querySelector('#nb-roff').onclick = clearRoute;
 
         if (ctx.trip?.dest) { const c = await api.geocodeCity(ctx.trip.dest); if (c) { lat = c.lat; lon = c.lon; } }
-        updateCenter(ctx.trip?.dest ? `Поездка: ${ctx.trip.dest}` : 'Точка поиска', true);
+        updateCenter(ctx.trip?.dest ? `${ntxt('trip')}: ${ctx.trip.dest}` : ntxt('searchPoint'), true);
         loadPlaces(); locate(false);
       }
     });

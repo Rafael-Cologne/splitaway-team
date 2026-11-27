@@ -1,11 +1,13 @@
 (function () {
   'use strict';
- 
+
   // Места рядом — OpenStreetMap, бесплатно и без ключа (правило команды: никаких ключей в коде).
   //  1) Nominatim — быстро (~0,3 с на запрос); его правило: не чаще 1 запроса в секунду;
   //  2) запасной вариант — Overpass (бывает перегружен и отвечает долго или не отвечает).
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
   const NOMINATIM_Q = { cafe: ['cafe'], shop: ['supermarket', 'convenience store', 'mall'], fuel: ['fuel'], ev: ['charging station'], parking: ['parking'] };
+  const lang = () => typeof getLang === 'function' ? getLang() : 'ru';
+  const label = key => window.STNearbyText?.(key) || key;
 
   function ensureLeaflet() {
     if (window.L) return Promise.resolve();
@@ -20,14 +22,14 @@
       const script = document.createElement('script');
       script.src = 'https://' + ['unpkg', 'com'].join('.') + '/leaflet@1.9.4/dist/leaflet.js';
       script.onload = resolve;
-      script.onerror = () => reject(new Error('Не удалось загрузить карту'));
+      script.onerror = () => reject(new Error(label('mapLoad')));
       document.head.appendChild(script);
     });
   }
 
   function fmtDist(m) {
     if (!m && m !== 0) return '';
-    return m < 1000 ? Math.round(m) + ' м' : (m / 1000).toFixed(1) + ' км';
+    return m < 1000 ? Math.round(m) + ' ' + label('m') : (m / 1000).toFixed(1) + ' ' + label('km');
   }
 
   async function geocodeCity(cityName) {
@@ -64,7 +66,7 @@
     for (let i = 0; i < qs.length; i++) {
       if (i) await pause(1100); // правило Nominatim: не чаще 1 запроса в секунду
       try {
-        const list = await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&&extratags=1&accept-language=ru&limit=40&bounded=1&viewbox=${box}&q=${encodeURIComponent(qs[i])}`, null, 10000);
+        const list = await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&extratags=1&accept-language=${encodeURIComponent(lang())}&limit=40&bounded=1&viewbox=${box}&q=${encodeURIComponent(qs[i])}`, null, 10000);
         ok++;
         list.forEach(p => {
           const cat = p.category, typ = p.type;
@@ -96,29 +98,31 @@
 
   const memo = {}; // одинаковый запрос второй раз — мгновенно (на 10 минут)
   async function fetchPlaces(lat, lon, type, radius) {
-    const key = [type, radius, lat.toFixed(3), lon.toFixed(3)].join('|');
+    const key = [lang(), type, radius, lat.toFixed(3), lon.toFixed(3)].join('|');
     if (memo[key] && Date.now() - memo[key].t < 600000) return memo[key].list;
     let raw;
     try { raw = await nominatimPlaces(lat, lon, type, radius); }
     catch (_) {
       try { raw = await overpassPlaces(lat, lon, type, radius); }
-      catch (__) { throw new Error('Не удалось загрузить места рядом — проверьте интернет и попробуйте ещё раз'); }
+      catch (__) { throw new Error(label('placesError')); }
     }
     const seen = new Set();
     const list = raw.map(p => {
       const t = p.tags || {};
-      const category = t.amenity === 'cafe' ? 'Кафе' 
-      : t.amenity === 'fuel' ? 'Заправка' 
-      : t.amenity === 'charging_station' ? 'Электрозаправка' 
-      : t.amenity === 'parking' ? 'Парковка' 
-      : 'Магазин';
+      // category — внутренний код (по-русски, как раньше); подпись на экране — через label()/ntxt()
+      const category = t.amenity === 'cafe' ? 'Кафе'
+        : t.amenity === 'fuel' ? 'Заправка'
+        : t.amenity === 'charging_station' ? 'Электрозаправка'
+        : t.amenity === 'parking' ? 'Парковка'
+        : 'Магазин';
+      const catLabel = { 'Кафе': 'cafe', 'Заправка': 'fuel', 'Электрозаправка': 'ev', 'Парковка': 'parking' }[category] || 'shops';
       return {
         id: p.id, lat: p.lat, lon: p.lon,
-        name: t['name:ru'] || t.name || t.brand || category,
+        name: t['name:' + lang()] || t.name || t.brand || label(catLabel),
         category,
         access: t.access || '',
         fee: t.fee || '',
-        address: t['addr:street'] ? `${t['addr:street']} ${t['addr:housenumber'] || ''}`.trim() : 'Адрес не указан',
+        address: t['addr:street'] ? `${t['addr:street']} ${t['addr:housenumber'] || ''}`.trim() : label('addressMissing'),
         distance: distM(lat, lon, p.lat, p.lon)
       };
     }).filter(p => p.distance <= radius && !seen.has(p.id) && seen.add(p.id))
@@ -132,7 +136,7 @@
     const res = await fetch(`https://${host}/route/v1/driving/${fromLon},${fromLat};${toLon},${toLat}?overview=full&geometries=geojson`);
     const data = await res.json();
     const route = data.routes && data.routes.at(0);
-    if (!route) throw new Error('Маршрут не найден');
+    if (!route) throw new Error(label('routeNotFound'));
     return {
       coords: route.geometry.coordinates.map(c => new Array(c.at(1), c.at(0))),
       distance: route.distance,

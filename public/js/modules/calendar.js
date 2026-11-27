@@ -18,6 +18,50 @@
 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const CAL_KEYS = ['trip','mine','all','calendar','more','prevMonth','nextMonth','addEvent','tripDates','today','deletePast','noPast','confirmPast','start','end','save','clearDates','bothDates','endBeforeStart','tripTooLong','setTripDates','event','booking','note','weatherDay','rain','noEvents','member','members','flight','stay','transport','arrival','food','ticket','other','allDay'];
+  const CAL_TEXT = {
+    ru:'Поездка|Мои|Все|Календарь|Ещё|Предыдущий месяц|Следующий месяц|Добавить событие|Даты поездки|Перейти к сегодня|Удалить прошедшие события|Прошедших событий нет|Удалить все прошедшие события?|Начало|Конец|Сохранить|Убрать даты|Укажите обе даты|Конец не может быть раньше начала|Поездка длиннее 90 дней — проверьте даты|Укажите даты поездки|Событие|Бронь|Заметка|Погода на этот день|дождь|В этот день событий нет. Нажмите «+», чтобы добавить.|участник|участников|Перелёт|Проживание|Транспорт|Прилёт|Еда|Билеты|Другое|весь день',
+    en:'Trip|Mine|All|Calendar|More|Previous month|Next month|Add event|Trip dates|Go to today|Delete past events|No past events|Delete all past events?|Start|End|Save|Remove dates|Enter both dates|End cannot be before start|Trip exceeds 90 days — check the dates|Set trip dates|Event|Booking|Note|Weather for this day|rain|No events on this day. Tap “+” to add one.|member|members|Flight|Stay|Transport|Arrival|Food|Tickets|Other|all day',
+    de:'Reise|Meine|Alle|Kalender|Mehr|Vorheriger Monat|Nächster Monat|Ereignis hinzufügen|Reisedaten|Zu heute springen|Vergangene Ereignisse löschen|Keine vergangenen Ereignisse|Alle vergangenen Ereignisse löschen?|Beginn|Ende|Speichern|Daten entfernen|Beide Daten eingeben|Das Ende darf nicht vor dem Beginn liegen|Reise länger als 90 Tage — Daten prüfen|Reisedaten eingeben|Ereignis|Buchung|Notiz|Wetter für diesen Tag|Regen|Keine Ereignisse an diesem Tag. Tippe auf „+“, um eines hinzuzufügen.|Teilnehmer|Teilnehmer|Flug|Unterkunft|Transport|Ankunft|Essen|Tickets|Sonstiges|ganztägig',
+    fr:'Voyage|Mes événements|Tout|Calendrier|Plus|Mois précédent|Mois suivant|Ajouter un événement|Dates du voyage|Aller à aujourd’hui|Supprimer les événements passés|Aucun événement passé|Supprimer tous les événements passés ?|Début|Fin|Enregistrer|Supprimer les dates|Saisissez les deux dates|La fin ne peut pas précéder le début|Le voyage dépasse 90 jours — vérifiez les dates|Définir les dates du voyage|Événement|Réservation|Note|Météo de ce jour|pluie|Aucun événement ce jour. Touchez « + » pour en ajouter un.|participant|participants|Vol|Hébergement|Transport|Arrivée|Repas|Billets|Autre|toute la journée',
+    it:'Viaggio|Miei|Tutti|Calendario|Altro|Mese precedente|Mese successivo|Aggiungi evento|Date del viaggio|Vai a oggi|Elimina eventi passati|Nessun evento passato|Eliminare tutti gli eventi passati?|Inizio|Fine|Salva|Rimuovi le date|Inserisci entrambe le date|La fine non può precedere l’inizio|Il viaggio supera 90 giorni — controlla le date|Imposta le date del viaggio|Evento|Prenotazione|Nota|Meteo di questo giorno|pioggia|Nessun evento in questo giorno. Tocca «+» per aggiungerne uno.|partecipante|partecipanti|Volo|Soggiorno|Trasporto|Arrivo|Cibo|Biglietti|Altro|tutto il giorno',
+    es:'Viaje|Míos|Todos|Calendario|Más|Mes anterior|Mes siguiente|Añadir evento|Fechas del viaje|Ir a hoy|Eliminar eventos pasados|No hay eventos pasados|¿Eliminar todos los eventos pasados?|Inicio|Fin|Guardar|Quitar fechas|Indica ambas fechas|El fin no puede ser anterior al inicio|El viaje supera 90 días: revisa las fechas|Indica las fechas del viaje|Evento|Reserva|Nota|Tiempo para este día|lluvia|No hay eventos este día. Toca «+» para añadir uno.|participante|participantes|Vuelo|Alojamiento|Transporte|Llegada|Comida|Entradas|Otro|todo el día',
+    pt:'Viagem|Meus|Todos|Calendário|Mais|Mês anterior|Mês seguinte|Adicionar evento|Datas da viagem|Ir para hoje|Eliminar eventos passados|Sem eventos passados|Eliminar todos os eventos passados?|Início|Fim|Guardar|Remover datas|Indique ambas as datas|O fim não pode ser anterior ao início|A viagem ultrapassa 90 dias — verifique as datas|Indique as datas da viagem|Evento|Reserva|Nota|Meteorologia para este dia|chuva|Sem eventos neste dia. Toque em «+» para adicionar.|participante|participantes|Voo|Alojamento|Transporte|Chegada|Comida|Bilhetes|Outro|o dia todo',
+    pl:'Podróż|Moje|Wszystkie|Kalendarz|Więcej|Poprzedni miesiąc|Następny miesiąc|Dodaj wydarzenie|Daty podróży|Przejdź do dziś|Usuń minione wydarzenia|Brak minionych wydarzeń|Usunąć wszystkie minione wydarzenia?|Początek|Koniec|Zapisz|Usuń daty|Podaj obie daty|Koniec nie może być przed początkiem|Podróż trwa ponad 90 dni — sprawdź daty|Ustaw daty podróży|Wydarzenie|Rezerwacja|Notatka|Pogoda na ten dzień|deszcz|Brak wydarzeń w tym dniu. Dotknij „+”, aby dodać.|uczestnik|uczestnicy|Lot|Nocleg|Transport|Przylot|Jedzenie|Bilety|Inne|cały dzień',
+    el:'Ταξίδι|Δικά μου|Όλα|Ημερολόγιο|Περισσότερα|Προηγούμενος μήνας|Επόμενος μήνας|Προσθήκη συμβάντος|Ημερομηνίες ταξιδιού|Μετάβαση στο σήμερα|Διαγραφή παλιών συμβάντων|Δεν υπάρχουν παλιά συμβάντα|Διαγραφή όλων των παλιών συμβάντων;|Έναρξη|Λήξη|Αποθήκευση|Αφαίρεση ημερομηνιών|Εισαγάγετε και τις δύο ημερομηνίες|Η λήξη δεν μπορεί να προηγείται της έναρξης|Το ταξίδι υπερβαίνει τις 90 ημέρες — ελέγξτε τις ημερομηνίες|Ορίστε ημερομηνίες ταξιδιού|Συμβάν|Κράτηση|Σημείωση|Καιρός για αυτή την ημέρα|βροχή|Δεν υπάρχουν συμβάντα σήμερα. Πατήστε «+» για προσθήκη.|συμμετέχων|συμμετέχοντες|Πτήση|Διαμονή|Μεταφορά|Άφιξη|Φαγητό|Εισιτήρια|Άλλο|όλη μέρα',
+    tr:'Gezi|Benim|Tümü|Takvim|Diğer|Önceki ay|Sonraki ay|Etkinlik ekle|Gezi tarihleri|Bugüne git|Geçmiş etkinlikleri sil|Geçmiş etkinlik yok|Tüm geçmiş etkinlikler silinsin mi?|Başlangıç|Bitiş|Kaydet|Tarihleri kaldır|Her iki tarihi de girin|Bitiş başlangıçtan önce olamaz|Gezi 90 günü aşıyor — tarihleri kontrol edin|Gezi tarihlerini belirleyin|Etkinlik|Rezervasyon|Not|Bu günün hava durumu|yağmur|Bu gün etkinlik yok. Eklemek için «+»ya dokunun.|katılımcı|katılımcı|Uçuş|Konaklama|Ulaşım|Varış|Yemek|Biletler|Diğer|tüm gün'
+  };
+  const calLocale = () => (typeof getLang === 'function' ? getLang() : 'ru');
+  const c = key => (CAL_TEXT[calLocale()] || CAL_TEXT.en).split('|')[CAL_KEYS.indexOf(key)] || key;
+  const FORM_KEYS = ['title','date','timeOptional','dateIfOther','dateTime','place','noteOptional','reminder','customType','custom','myEvents','minutes30','hour1','hours2','day1','attachMax','addTicket','addDocument','attached','tapPhoto','multiplePhotos','photoTicket','removePhoto','deleteEvent','onlyPhotos','maxPhotos','imageError','deleted','newType','editType','exampleConcert','icon','replaceImage','ownImage','color','create','deleteType','selectImage','enterTitle','selectDate','endTimeBefore','eventTooLong','memoryImage','saved','added','checkIn','checkOut','departure','landing','finish','day','of'];
+  const FORM_TEXT = {
+    ru:'Название|Дата|Время (необязательно)|Дата (если другой день)|дата и время|Место|Заметка (необязательно)|Напоминание|Свой тип события|Своё|Мои события|За 30 минут|За 1 час|За 2 часа|За 1 день|Прикреплено {n} — это максимум|Добавить ещё билет|Добавить документ / билет|Прикреплено: {n}|нажмите на фото, чтобы открыть|Можно несколько фото, например билеты на двоих|Билет {n}|Убрать фото|Удалить событие|Пока можно прикрепить только фото или скриншот|Можно прикрепить не больше {n} фото|Не получилось открыть картинку|Событие удалено|Новый тип события|Свой тип|Например: Концерт|Иконка|Заменить свою картинку|Своя иконка или фото|Цвет|Создать|Удалить тип|Выберите картинку или фото|Введите название|Выберите дату|Время окончания раньше начала|Событие длиннее 90 дней — проверьте даты|Не хватает памяти: попробуйте картинку меньше|Сохранено|Событие добавлено|Заезд|Выезд|Вылет|Прилёт|Окончание|день|из',
+    en:'Title|Date|Time (optional)|Date (if different day)|date and time|Place|Note (optional)|Reminder|Custom event type|Custom|My events|30 minutes before|1 hour before|2 hours before|1 day before|{n} attached — maximum|Add another ticket|Add document / ticket|Attached: {n}|tap a photo to open it|You can attach several photos, such as two tickets|Ticket {n}|Remove photo|Delete event|Only photos or screenshots can be attached|You can attach up to {n} photos|Could not open image|Event deleted|New event type|Custom type|For example: Concert|Icon|Replace image|Custom icon or photo|Color|Create|Delete type|Choose an image or photo|Enter a title|Choose a date|End time is before start time|Event exceeds 90 days — check the dates|Not enough storage: try a smaller image|Saved|Event added|Check-in|Check-out|Departure|Arrival|End|day|of',
+    de:'Titel|Datum|Uhrzeit (optional)|Datum (falls anderer Tag)|Datum und Uhrzeit|Ort|Notiz (optional)|Erinnerung|Eigener Ereignistyp|Eigener|Meine Ereignisse|30 Minuten vorher|1 Stunde vorher|2 Stunden vorher|1 Tag vorher|{n} angehängt — Maximum|Weiteres Ticket hinzufügen|Dokument / Ticket hinzufügen|Angehängt: {n}|Foto zum Öffnen antippen|Mehrere Fotos möglich, zum Beispiel zwei Tickets|Ticket {n}|Foto entfernen|Ereignis löschen|Nur Fotos oder Screenshots können angehängt werden|Höchstens {n} Fotos möglich|Bild konnte nicht geöffnet werden|Ereignis gelöscht|Neuer Ereignistyp|Eigener Typ|Zum Beispiel: Konzert|Symbol|Eigenes Bild ersetzen|Eigenes Symbol oder Foto|Farbe|Erstellen|Typ löschen|Bild oder Foto auswählen|Titel eingeben|Datum auswählen|Endzeit liegt vor der Startzeit|Ereignis länger als 90 Tage — Daten prüfen|Nicht genug Speicher: kleineres Bild versuchen|Gespeichert|Ereignis hinzugefügt|Check-in|Check-out|Abflug|Ankunft|Ende|Tag|von',
+    fr:'Titre|Date|Heure (facultatif)|Date (si autre jour)|date et heure|Lieu|Note (facultatif)|Rappel|Type personnalisé|Personnalisé|Mes événements|30 minutes avant|1 heure avant|2 heures avant|1 jour avant|{n} fichiers joints — maximum|Ajouter un autre billet|Ajouter un document / billet|Joints : {n}|touchez une photo pour l’ouvrir|Plusieurs photos possibles, par exemple deux billets|Billet {n}|Supprimer la photo|Supprimer l’événement|Seules les photos et captures d’écran sont acceptées|Maximum {n} photos|Impossible d’ouvrir l’image|Événement supprimé|Nouveau type d’événement|Type personnalisé|Par exemple : Concert|Icône|Remplacer l’image|Icône ou photo personnalisée|Couleur|Créer|Supprimer le type|Choisissez une image ou une photo|Saisissez un titre|Choisissez une date|L’heure de fin précède le début|L’événement dépasse 90 jours — vérifiez les dates|Stockage insuffisant : essayez une image plus petite|Enregistré|Événement ajouté|Arrivée|Départ|Départ du vol|Arrivée du vol|Fin|jour|sur',
+    it:'Titolo|Data|Ora (facoltativa)|Data (se giorno diverso)|data e ora|Luogo|Nota (facoltativa)|Promemoria|Tipo personalizzato|Personalizzato|I miei eventi|30 minuti prima|1 ora prima|2 ore prima|1 giorno prima|{n} allegati — massimo|Aggiungi un altro biglietto|Aggiungi documento / biglietto|Allegati: {n}|tocca una foto per aprirla|Puoi allegare più foto, per esempio due biglietti|Biglietto {n}|Rimuovi foto|Elimina evento|Puoi allegare solo foto o schermate|Massimo {n} foto|Impossibile aprire l’immagine|Evento eliminato|Nuovo tipo di evento|Tipo personalizzato|Per esempio: Concerto|Icona|Sostituisci immagine|Icona o foto personalizzata|Colore|Crea|Elimina tipo|Scegli un’immagine o una foto|Inserisci un titolo|Scegli una data|L’ora di fine precede quella di inizio|L’evento supera 90 giorni — controlla le date|Spazio insufficiente: prova un’immagine più piccola|Salvato|Evento aggiunto|Check-in|Check-out|Partenza|Arrivo|Fine|giorno|di',
+    es:'Título|Fecha|Hora (opcional)|Fecha (si es otro día)|fecha y hora|Lugar|Nota (opcional)|Recordatorio|Tipo personalizado|Personalizado|Mis eventos|30 minutos antes|1 hora antes|2 horas antes|1 día antes|{n} adjuntos — máximo|Añadir otra entrada|Añadir documento / entrada|Adjuntos: {n}|toca una foto para abrirla|Puedes adjuntar varias fotos, por ejemplo dos entradas|Entrada {n}|Quitar foto|Eliminar evento|Solo se pueden adjuntar fotos o capturas|Máximo {n} fotos|No se pudo abrir la imagen|Evento eliminado|Nuevo tipo de evento|Tipo personalizado|Por ejemplo: Concierto|Icono|Cambiar imagen|Icono o foto personalizada|Color|Crear|Eliminar tipo|Elige una imagen o foto|Escribe un título|Elige una fecha|La hora de fin es anterior al inicio|El evento supera 90 días: revisa las fechas|Sin espacio suficiente: prueba una imagen más pequeña|Guardado|Evento añadido|Entrada|Salida|Salida del vuelo|Llegada del vuelo|Fin|día|de',
+    pt:'Título|Data|Hora (opcional)|Data (se for outro dia)|data e hora|Local|Nota (opcional)|Lembrete|Tipo personalizado|Personalizado|Os meus eventos|30 minutos antes|1 hora antes|2 horas antes|1 dia antes|{n} anexos — máximo|Adicionar outro bilhete|Adicionar documento / bilhete|Anexos: {n}|toque numa foto para abrir|Pode anexar várias fotos, por exemplo dois bilhetes|Bilhete {n}|Remover foto|Eliminar evento|Só pode anexar fotos ou capturas de ecrã|Máximo de {n} fotos|Não foi possível abrir a imagem|Evento eliminado|Novo tipo de evento|Tipo personalizado|Por exemplo: Concerto|Ícone|Substituir imagem|Ícone ou foto personalizada|Cor|Criar|Eliminar tipo|Escolha uma imagem ou foto|Introduza um título|Escolha uma data|A hora de fim é anterior à de início|O evento ultrapassa 90 dias — verifique as datas|Espaço insuficiente: tente uma imagem menor|Guardado|Evento adicionado|Entrada|Saída|Partida|Chegada|Fim|dia|de',
+    pl:'Tytuł|Data|Godzina (opcjonalnie)|Data (jeśli inny dzień)|data i godzina|Miejsce|Notatka (opcjonalnie)|Przypomnienie|Własny typ wydarzenia|Własny|Moje wydarzenia|30 minut wcześniej|1 godzinę wcześniej|2 godziny wcześniej|1 dzień wcześniej|Dodano {n} — limit|Dodaj kolejny bilet|Dodaj dokument / bilet|Dodano: {n}|dotknij zdjęcia, aby je otworzyć|Można dodać kilka zdjęć, np. dwa bilety|Bilet {n}|Usuń zdjęcie|Usuń wydarzenie|Można dodać tylko zdjęcia lub zrzuty ekranu|Maksymalnie {n} zdjęcia|Nie udało się otworzyć obrazu|Wydarzenie usunięte|Nowy typ wydarzenia|Własny typ|Na przykład: Koncert|Ikona|Zmień obraz|Własna ikona lub zdjęcie|Kolor|Utwórz|Usuń typ|Wybierz obraz lub zdjęcie|Wpisz tytuł|Wybierz datę|Godzina końca jest przed początkiem|Wydarzenie trwa ponad 90 dni — sprawdź daty|Za mało miejsca: użyj mniejszego obrazu|Zapisano|Dodano wydarzenie|Zameldowanie|Wymeldowanie|Wylot|Przylot|Koniec|dzień|z',
+    el:'Τίτλος|Ημερομηνία|Ώρα (προαιρετικά)|Ημερομηνία (αν άλλη ημέρα)|ημερομηνία και ώρα|Τοποθεσία|Σημείωση (προαιρετικά)|Υπενθύμιση|Προσαρμοσμένος τύπος|Προσαρμοσμένο|Τα συμβάντα μου|30 λεπτά πριν|1 ώρα πριν|2 ώρες πριν|1 ημέρα πριν|{n} συνημμένα — μέγιστο|Προσθήκη άλλου εισιτηρίου|Προσθήκη εγγράφου / εισιτηρίου|Συνημμένα: {n}|πατήστε τη φωτογραφία για άνοιγμα|Μπορείτε να προσθέσετε πολλές φωτογραφίες|Εισιτήριο {n}|Αφαίρεση φωτογραφίας|Διαγραφή συμβάντος|Μόνο φωτογραφίες ή στιγμιότυπα μπορούν να επισυναφθούν|Έως {n} φωτογραφίες|Δεν ήταν δυνατό το άνοιγμα της εικόνας|Το συμβάν διαγράφηκε|Νέος τύπος συμβάντος|Προσαρμοσμένος τύπος|Για παράδειγμα: Συναυλία|Εικονίδιο|Αντικατάσταση εικόνας|Δικό σας εικονίδιο ή φωτογραφία|Χρώμα|Δημιουργία|Διαγραφή τύπου|Επιλέξτε εικόνα ή φωτογραφία|Εισαγάγετε τίτλο|Επιλέξτε ημερομηνία|Η ώρα λήξης προηγείται της έναρξης|Το συμβάν υπερβαίνει τις 90 ημέρες — ελέγξτε τις ημερομηνίες|Ανεπαρκής χώρος: δοκιμάστε μικρότερη εικόνα|Αποθηκεύτηκε|Το συμβάν προστέθηκε|Άφιξη|Αναχώρηση|Αναχώρηση πτήσης|Άφιξη πτήσης|Λήξη|ημέρα|από',
+    tr:'Başlık|Tarih|Saat (isteğe bağlı)|Tarih (farklı günse)|tarih ve saat|Yer|Not (isteğe bağlı)|Hatırlatıcı|Özel etkinlik türü|Özel|Etkinliklerim|30 dakika önce|1 saat önce|2 saat önce|1 gün önce|{n} ekli — en fazla|Başka bilet ekle|Belge / bilet ekle|Ekli: {n}|açmak için fotoğrafa dokunun|Birden fazla fotoğraf ekleyebilirsiniz|Bilet {n}|Fotoğrafı kaldır|Etkinliği sil|Yalnızca fotoğraf veya ekran görüntüsü eklenebilir|En fazla {n} fotoğraf|Görsel açılamadı|Etkinlik silindi|Yeni etkinlik türü|Özel tür|Örneğin: Konser|Simge|Görseli değiştir|Özel simge veya fotoğraf|Renk|Oluştur|Türü sil|Görsel veya fotoğraf seçin|Başlık girin|Tarih seçin|Bitiş saati başlangıçtan önce|Etkinlik 90 günü aşıyor — tarihleri kontrol edin|Yeterli alan yok: daha küçük görsel deneyin|Kaydedildi|Etkinlik eklendi|Giriş|Çıkış|Kalkış|Varış|Bitiş|gün|/’den'
+  };
+  const f = (key, n) => ((FORM_TEXT[calLocale()] || FORM_TEXT.en).split('|')[FORM_KEYS.indexOf(key)] || key).replaceAll('{n}', n ?? '');
+  const BOOK_KEYS = ['bookingCode','flightFrom','arrivalAt','checkInAt','checkOutAt','accommodation','carPickup','carReturn','typeEnd','deleteTypeConfirm','typeEventsChange'];
+  const BOOK_TEXT = {
+    ru:'Бронирование|Вылет|Прилёт в|Заселение|Выезд|жильё|Получение авто|Возврат авто|конец|Удалить тип|В {n} событиях он сменится на «Другое».',
+    en:'Booking|Departure|Arrival in|Check-in|Check-out|accommodation|Car pickup|Car return|end|Delete type|In {n} events it will change to “Other”.',
+    de:'Buchung|Abflug|Ankunft in|Check-in|Check-out|Unterkunft|Auto abholen|Auto zurückgeben|Ende|Typ löschen|Bei {n} Ereignissen wird der Typ zu „Sonstiges“ geändert.',
+    fr:'Réservation|Départ|Arrivée à|Arrivée|Départ|hébergement|Prise en charge du véhicule|Retour du véhicule|fin|Supprimer le type|Dans {n} événements, il deviendra « Autre ».',
+    it:'Prenotazione|Partenza|Arrivo a|Check-in|Check-out|alloggio|Ritiro auto|Riconsegna auto|fine|Elimina tipo|In {n} eventi diventerà «Altro».',
+    es:'Reserva|Salida|Llegada a|Entrada|Salida|alojamiento|Recogida del coche|Devolución del coche|fin|Eliminar tipo|En {n} eventos cambiará a «Otro».',
+    pt:'Reserva|Partida|Chegada a|Entrada|Saída|alojamento|Recolha do carro|Devolução do carro|fim|Eliminar tipo|Em {n} eventos passará a «Outro».',
+    pl:'Rezerwacja|Wylot|Przylot do|Zameldowanie|Wymeldowanie|nocleg|Odbiór auta|Zwrot auta|koniec|Usuń typ|W {n} wydarzeniach typ zmieni się na „Inne”.',
+    el:'Κράτηση|Αναχώρηση|Άφιξη σε|Άφιξη|Αναχώρηση|κατάλυμα|Παραλαβή αυτοκινήτου|Επιστροφή αυτοκινήτου|τέλος|Διαγραφή τύπου|Σε {n} συμβάντα θα αλλάξει σε «Άλλο».',
+    tr:'Rezervasyon|Kalkış|Varış|Giriş|Çıkış|konaklama|Araç teslim alma|Araç iadesi|bitiş|Türü sil|{n} etkinlikte tür “Diğer” olarak değişecek.'
+  };
+  const bText = (key, n) => ((BOOK_TEXT[calLocale()] || BOOK_TEXT.en).split('|')[BOOK_KEYS.indexOf(key)] || key).replaceAll('{n}', n ?? '');
+  const dateLocale = () => ({en:'en-GB',pt:'pt-PT',el:'el-GR',tr:'tr-TR'}[calLocale()] || calLocale());
 
   // ---------- Даты ----------
   const pad = n => String(n).padStart(2, '0');
@@ -27,14 +71,14 @@
   const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
   const diffDays = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
   const mondayOf = s => { const d = parse(s); const wd = (d.getDay() + 6) % 7; return addDays(s, -wd); };
-  const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const MONTHS_N = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-  const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  const fullDate = s => { const d = parse(s); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); };
+  const monthName = (d, style='long') => new Intl.DateTimeFormat(dateLocale(), {month:style}).format(d);
+  const weekdayNames = () => Array.from({length:7},(_,i)=>new Intl.DateTimeFormat(dateLocale(),{weekday:'short'}).format(new Date(2024,0,1+i)));
+  const fullDate = s => new Intl.DateTimeFormat(dateLocale(), {day:'numeric',month:'long',year:'numeric'}).format(parse(s));
   function rangeLabel(a, b) {
     const A = parse(a), B = parse(b);
-    if (A.getMonth() === B.getMonth()) return A.getDate() + ' – ' + B.getDate() + ' ' + MONTHS[B.getMonth()];
-    return A.getDate() + ' ' + MONTHS[A.getMonth()] + ' – ' + B.getDate() + ' ' + MONTHS[B.getMonth()];
+    const short = d => new Intl.DateTimeFormat(dateLocale(),{day:'numeric',month:'long'}).format(d);
+    if (A.getMonth() === B.getMonth()) return A.getDate() + ' – ' + short(B);
+    return short(A) + ' – ' + short(B);
   }
   function plural(n, one, few, many) {
     const m10 = n % 10, m100 = n % 100;
@@ -337,7 +381,7 @@
     const saveDates = () => store.set('dates', dates);
     const saveEvents = () => store.set('events', events);
     const savePersonalEvents = () => window.STKey?.setCalendarEvents?.(personalEvents);
-    const filtersHtml = () => ctx.trip ? `<div class="cal-filters">${[['trip','Поездка'],['personal','Мои'],['all','Все']].map(([id,name]) => `<button class="cal-filter${scope === id ? ' on' : ''}" type="button" data-scope="${id}">${name}</button>`).join('')}</div>` : '';
+    const filtersHtml = () => ctx.trip ? `<div class="cal-filters">${[['trip',c('trip')],['personal',c('mine')],['all',c('all')]].map(([id,name]) => `<button class="cal-filter${scope === id ? ' on' : ''}" type="button" data-scope="${id}">${esc(name)}</button>`).join('')}</div>` : '';
     const bindFilters = (body, screen) => body.querySelectorAll('[data-scope]').forEach(b => b.addEventListener('click', () => { scope = b.dataset.scope; store.set('scope', scope); screen.refresh(); }));
 
     // выбранный день и показанный месяц
@@ -356,19 +400,19 @@
       list.filter(b => b && b.date && b.status !== 'cancelled').forEach(b => {
         const ev = (suffix, o) => out.push(Object.assign({ id: 'bk_' + b.id + suffix, bookingId: b.id, booking: true, endDate: '', endTime: '', place: '', note: '' }, o));
         const end = b.endDate || b.date, hasEnd = !!(b.endDate || b.endTime);
-        const code = b.code ? 'Бронирование ' + b.code : '';
+        const code = b.code ? bText('bookingCode') + ' ' + b.code : '';
         if (b.cat === 'flight') {
-          ev('_a', { type: 'flight', title: 'Вылет ' + (b.from || '') + ' → ' + (b.to || ''), date: b.date, time: b.time || '', sub: [b.provider, b.number].filter(Boolean).join(' · ') || code, place: [b.from, b.fromCity].filter(Boolean).join(' ') + ' airport' });
-          if (b.endTime) ev('_b', { type: 'arrival', title: 'Прилёт в ' + (b.toCity || b.to || ''), date: end, time: b.endTime, sub: b.toName || b.to || '' });
+          ev('_a', { type: 'flight', title: bText('flightFrom') + ' ' + (b.from || '') + ' → ' + (b.to || ''), date: b.date, time: b.time || '', sub: [b.provider, b.number].filter(Boolean).join(' · ') || code, place: [b.from, b.fromCity].filter(Boolean).join(' ') + ' airport' });
+          if (b.endTime) ev('_b', { type: 'arrival', title: bText('arrivalAt') + ' ' + (b.toCity || b.to || ''), date: end, time: b.endTime, sub: b.toName || b.to || '' });
         } else if (b.cat === 'stay') {
-          ev('_a', { type: 'stay', title: 'Заселение · ' + (b.title || 'жильё'), date: b.date, time: b.time || '', sub: b.place || code, place: b.place || '' });
-          if (hasEnd && end !== b.date) ev('_b', { type: 'stay', title: 'Выезд · ' + (b.title || 'жильё'), date: end, time: b.endTime || '', sub: b.place || code });
+          ev('_a', { type: 'stay', title: bText('checkInAt') + ' · ' + (b.title || bText('accommodation')), date: b.date, time: b.time || '', sub: b.place || code, place: b.place || '' });
+          if (hasEnd && end !== b.date) ev('_b', { type: 'stay', title: bText('checkOutAt') + ' · ' + (b.title || bText('accommodation')), date: end, time: b.endTime || '', sub: b.place || code });
         } else if (b.cat === 'transport') {
           const car = /авто|машин|car|miet/i.test(b.title || '') || /sixt|europcar|hertz|avis|goldcar|enterprise/i.test(b.provider || '');
-          ev('_a', { type: 'transport', title: car ? 'Получение авто' : (b.title || 'Транспорт'), date: b.date, time: b.time || '', sub: [b.provider, code].filter(Boolean).join(' · ') || b.place || '', place: b.place || '' });
-          if (hasEnd && end !== b.date) ev('_b', { type: 'transport', title: car ? 'Возврат авто' : (b.title || 'Транспорт') + ' — конец', date: end, time: b.endTime || '', sub: [b.provider, b.placeTo || b.place].filter(Boolean).join(' · '), place: b.placeTo || b.place || '' });
+          ev('_a', { type: 'transport', title: car ? bText('carPickup') : (b.title || c('transport')), date: b.date, time: b.time || '', sub: [b.provider, code].filter(Boolean).join(' · ') || b.place || '', place: b.place || '' });
+          if (hasEnd && end !== b.date) ev('_b', { type: 'transport', title: car ? bText('carReturn') : (b.title || c('transport')) + ' — ' + bText('typeEnd'), date: end, time: b.endTime || '', sub: [b.provider, b.placeTo || b.place].filter(Boolean).join(' · '), place: b.placeTo || b.place || '' });
         } else {
-          ev('', { type: 'ticket', title: b.title || 'Билеты', date: b.date, time: b.time || '', endDate: b.endDate || '', endTime: b.endTime || '', sub: [b.place, b.people].filter(Boolean).join(' · '), place: b.place || '' });
+          ev('', { type: 'ticket', title: b.title || c('ticket'), date: b.date, time: b.time || '', endDate: b.endDate || '', endTime: b.endTime || '', sub: [b.place, b.people].filter(Boolean).join(' · '), place: b.place || '' });
         }
       });
       return out;
@@ -380,7 +424,7 @@
     const nowKey = () => { const d = new Date(); return iso(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
     const isPast = e => (endOf(e) + ' ' + ((e.endDate ? e.endTime : (e.endTime || e.time)) || '23:59')) < nowKey();
     // подписи начала и конца по типу события
-    const SE = t => t.id === 'stay' ? ['Заезд', 'Выезд'] : t.id === 'flight' ? ['Вылет', 'Прилёт'] : ['Начало', 'Окончание'];
+    const SE = t => t.id === 'stay' ? [f('checkIn'), f('checkOut')] : t.id === 'flight' ? [f('departure'), f('landing')] : [c('start'), f('finish')];
     const inTrip = d => scope !== 'personal' && !!dates && d >= dates.start && d <= dates.end;
     const dots = d => {
       const kinds = [...new Set(byDay(d).map(e => typeOf(e.type).kind))].slice(0, 3);
@@ -391,19 +435,19 @@
     function tripCard() {
       const t = ctx.trip || {};
       const n = ctx.members.length;
-      const sub = dates ? rangeLabel(dates.start, dates.end) : 'Укажите даты поездки';
+      const sub = dates ? rangeLabel(dates.start, dates.end) : c('setTripDates');
       return `<button class="cal-card cal-trip" type="button" data-a="dates">
         <div class="cal-trip-art"><img src="/img/trips/abstract.jpg" alt=""></div>
-        <div><div class="cal-trip-name">${esc(t.name || 'Поездка')}</div>
-        <div class="cal-trip-sub${dates ? '' : ' need'}">${esc(sub)}${n ? ' · ' + n + ' ' + plural(n, 'участник', 'участника', 'участников') : ''}</div></div>
+        <div><div class="cal-trip-name">${esc(t.name || c('trip'))}</div>
+        <div class="cal-trip-sub${dates ? '' : ' need'}">${esc(sub)}${n ? ' · ' + n + ' ' + c(n===1?'member':'members') : ''}</div></div>
         <i data-lucide="chevron-down" class="cal-chev"></i></button>`;
     }
 
     // ===== Страница 1: месяц =====
     function openMonth() {
       ctx.openScreen({
-        title: 'Календарь',
-        action: { icon: 'more-vertical', label: 'Ещё', onClick: menu },
+        title: c('calendar'),
+        action: { icon: 'more-vertical', label: c('more'), onClick: menu },
         render(body, screen) {
           const first = parse(month + '-01');
           const start = mondayOf(month + '-01');
@@ -423,18 +467,18 @@
             ${ctx.trip ? tripCard() : ''}
             ${filtersHtml()}
             <div class="cal-card cal-mbar">
-              <button class="cal-nav" type="button" data-m="-1" aria-label="Предыдущий месяц"><i data-lucide="chevron-left"></i></button>
-              <b>${MONTHS_N[first.getMonth()]} ${first.getFullYear()}</b>
-              <button class="cal-nav" type="button" data-m="1" aria-label="Следующий месяц"><i data-lucide="chevron-right"></i></button>
+              <button class="cal-nav" type="button" data-m="-1" aria-label="${esc(c('prevMonth'))}"><i data-lucide="chevron-left"></i></button>
+              <b>${esc(new Intl.DateTimeFormat(dateLocale(),{month:'long',year:'numeric'}).format(first))}</b>
+              <button class="cal-nav" type="button" data-m="1" aria-label="${esc(c('nextMonth'))}"><i data-lucide="chevron-right"></i></button>
             </div>
             <div class="cal-month2" id="cal-month">
-              <div class="cal-grid">${WD.map(w => `<div class="cal-wd">${w}</div>`).join('')}${cells.join('')}</div>
+              <div class="cal-grid">${weekdayNames().map(w => `<div class="cal-wd">${esc(w)}</div>`).join('')}${cells.join('')}</div>
             </div>
             <div class="cal-legend">
-              <span><i style="background:#C9BCFF"></i>Поездка</span>
-              ${Object.values(KINDS).map(k => `<span><i style="background:${k.color}"></i>${k.name}</span>`).join('')}
+              <span><i style="background:#C9BCFF"></i>${esc(c('trip'))}</span>
+              ${Object.entries(KINDS).map(([id,k]) => `<span><i style="background:${k.color}"></i>${esc(c(id))}</span>`).join('')}
             </div>
-            <button class="cal-add" type="button" data-a="add"><i data-lucide="plus"></i>Добавить событие</button>
+            <button class="cal-add" type="button" data-a="add"><i data-lucide="plus"></i>${esc(c('addEvent'))}</button>
           `;
           body.querySelector('[data-a="dates"]')?.addEventListener('click', datesForm);
           bindFilters(body, screen);
@@ -450,10 +494,10 @@
     }
 
     function menu() {
-      sheet('Календарь', `<div class="cal-form" style="margin-top:10px">
-          ${ctx.trip ? '<button class="st-btn st-btn-g st-btn-fw" data-a="dates"><i data-lucide="calendar-range"></i>Даты поездки</button>' : ''}
-          <button class="st-btn st-btn-g st-btn-fw" data-a="today"><i data-lucide="calendar-check"></i>Перейти к сегодня</button>
-          <button class="st-btn st-btn-g st-btn-fw" data-a="past" style="color:#E5484D"><i data-lucide="trash-2"></i>Удалить прошедшие события</button>
+      sheet(c('calendar'), `<div class="cal-form" style="margin-top:10px">
+          ${ctx.trip ? `<button class="st-btn st-btn-g st-btn-fw" data-a="dates"><i data-lucide="calendar-range"></i>${esc(c('tripDates'))}</button>` : ''}
+          <button class="st-btn st-btn-g st-btn-fw" data-a="today"><i data-lucide="calendar-check"></i>${esc(c('today'))}</button>
+          <button class="st-btn st-btn-g st-btn-fw" data-a="past" style="color:#E5484D"><i data-lucide="trash-2"></i>${esc(c('deletePast'))}</button>
         </div>`, (root, close) => {
         root.querySelector('[data-a="dates"]')?.addEventListener('click', () => { close(); datesForm(); });
         root.querySelector('[data-a="today"]').addEventListener('click', () => { selected = today(); month = selected.slice(0, 7); close(); openMonth(); });
@@ -461,8 +505,8 @@
           const tripLeft = events.filter(e => !isPast(e));
           const personalLeft = personalEvents.filter(e => !isPast(e));
           const changed = (scope !== 'personal' && tripLeft.length !== events.length) || (scope !== 'trip' && personalLeft.length !== personalEvents.length);
-          if (!changed) { ctx.toast('Прошедших событий нет'); return; }
-          if (!confirm('Удалить все прошедшие события?')) return;
+          if (!changed) { ctx.toast(c('noPast')); return; }
+          if (!confirm(c('confirmPast'))) return;
           if (scope !== 'personal') { events = tripLeft; saveEvents(); }
           if (scope !== 'trip') { personalEvents = personalLeft; savePersonalEvents(); }
           close(); openMonth();
@@ -472,17 +516,17 @@
 
     function datesForm() {
       const s0 = dates ? dates.start : today(), e0 = dates ? dates.end : addDays(s0, 6);
-      sheet('Даты поездки', `<div class="cal-form">
-          <div class="cal-2"><div><label>Начало</label><input class="st-input" type="date" id="cal-s" value="${s0}"></div>
-          <div><label>Конец</label><input class="st-input" type="date" id="cal-e" value="${e0}"></div></div>
-          <button class="st-btn st-btn-fw" data-a="ok">Сохранить</button>
-          ${dates ? '<button class="st-btn st-btn-g st-btn-fw" data-a="clear" style="color:#E5484D">Убрать даты</button>' : ''}
+      sheet(c('tripDates'), `<div class="cal-form">
+          <div class="cal-2"><div><label>${esc(c('start'))}</label><input class="st-input" type="date" id="cal-s" value="${s0}"></div>
+          <div><label>${esc(c('end'))}</label><input class="st-input" type="date" id="cal-e" value="${e0}"></div></div>
+          <button class="st-btn st-btn-fw" data-a="ok">${esc(c('save'))}</button>
+          ${dates ? `<button class="st-btn st-btn-g st-btn-fw" data-a="clear" style="color:#E5484D">${esc(c('clearDates'))}</button>` : ''}
         </div>`, (root, close) => {
         root.querySelector('[data-a="ok"]').addEventListener('click', () => {
           const s = root.querySelector('#cal-s').value, e = root.querySelector('#cal-e').value;
-          if (!s || !e) { ctx.toast('Укажите обе даты'); return; }
-          if (e < s) { ctx.toast('Конец не может быть раньше начала'); return; }
-          if (diffDays(s, e) > 90) { ctx.toast('Поездка длиннее 90 дней — проверьте даты'); return; }
+          if (!s || !e) { ctx.toast(c('bothDates')); return; }
+          if (e < s) { ctx.toast(c('endBeforeStart')); return; }
+          if (diffDays(s, e) > 90) { ctx.toast(c('tripTooLong')); return; }
           dates = { start: s, end: e }; saveDates(); selected = s; month = s.slice(0, 7); close(); openMonth();
         });
         root.querySelector('[data-a="clear"]')?.addEventListener('click', () => { dates = null; saveDates(); close(); openMonth(); });
@@ -495,7 +539,7 @@
       if (!ctx.trip || ahead < 0 || ahead > 15) return '';
       let w = null;
       try { const s = JSON.parse(localStorage.getItem('st_wx_days_' + ctx.trip.id)); w = s && s.days && s.days[d] ? { city: s.city, v: s.days[d] } : null; } catch (_) {}
-      const txt = w ? `${esc(w.city)}: ${Math.round(w.v[2])}° / ${Math.round(w.v[1])}°${w.v[3] >= 20 ? ' · дождь ' + w.v[3] + '%' : ''}` : 'Погода на этот день';
+      const txt = w ? `${esc(w.city)}: ${Math.round(w.v[2])}° / ${Math.round(w.v[1])}°${w.v[3] >= 20 ? ' · ' + c('rain') + ' ' + w.v[3] + '%' : ''}` : c('weatherDay');
       return `<button class="cal-card cal-wx" type="button" data-a="wx"><i data-lucide="${w && w.v[0] >= 51 ? 'cloud-rain' : w && w.v[0] >= 2 ? 'cloud-sun' : 'sun'}"></i><span>${txt}</span><i data-lucide="chevron-right" class="cal-fchev"></i></button>`;
     }
 
@@ -503,16 +547,16 @@
     function evRow(e, d) {
       const t = typeOf(e.type);
       const tm = timeOn(e, d);
-      let sub = e.sub != null ? e.sub : ([e.place, e.note].filter(Boolean).join(' · ') || t.name);
+      let sub = e.sub != null ? e.sub : ([e.place, e.note].filter(Boolean).join(' · ') || (TYPES.includes(t)?c(t.id):t.name));
       if (endOf(e) !== e.date && e.sub == null) { // несколько дней: «Заезд», «Выезд» или «день 2 из 4»
-        const [s, f] = SE(t), n = diffDays(e.date, endOf(e)) + 1;
-        const tag = d === e.date ? s : d === endOf(e) ? f : 'день ' + (diffDays(e.date, d) + 1) + ' из ' + n;
+        const [s, endLabel] = SE(t), n = diffDays(e.date, endOf(e)) + 1;
+        const tag = d === e.date ? s : d === endOf(e) ? endLabel : f('day') + ' ' + (diffDays(e.date, d) + 1) + ' ' + f('of') + ' ' + n;
         sub = tag + ' · ' + rangeLabel(e.date, endOf(e)) + (e.place ? ' · ' + e.place : '');
       } else if (e.time && e.endTime) sub = e.time + '–' + e.endTime + ' · ' + sub;
       const pin = !!e.place && !e.booking; // брони открываются по нажатию, свои события с местом — на карте
       const go = pin ? 'map-pin' : 'chevron-right';
       return `<button class="cal-card cal-ev${isPast(e) ? ' past' : ''}" type="button" data-ev="${e.id}">
-        ${tm ? `<span class="cal-ev-time">${esc(tm)}</span>` : '<span class="cal-ev-time none">весь<br>день</span>'}
+        ${tm ? `<span class="cal-ev-time">${esc(tm)}</span>` : `<span class="cal-ev-time none">${esc(c('allDay'))}</span>`}
         <span class="cal-ev-ic" style="background:${tBg(t)};color:${t.color}">${tIcon(t)}</span>
         <span class="cal-ev-txt"><span class="cal-ev-ttl">${esc(e.title)}</span><span class="cal-ev-sub">${esc(sub)}</span></span>
         <i data-lucide="${go}" class="cal-ev-go${pin ? ' pin' : ''}"${pin ? ' data-map="1"' : ''}></i>
@@ -523,7 +567,7 @@
       ctx.openScreen({
         title: fullDate(selected),
         onBack: openMonth,
-        action: { icon: 'more-vertical', label: 'Ещё', onClick: menu },
+        action: { icon: 'more-vertical', label: c('more'), onClick: menu },
         render(body, screen) {
           const mon = mondayOf(selected);
           const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
@@ -532,15 +576,15 @@
             ${filtersHtml()}
             <div class="cal-week2" id="cal-week">${days.map((d, i) => `
               <button class="cal-wday${d === selected ? ' sel' : ''}${d === today() ? ' today' : ''}" type="button" data-day="${d}">
-                <small>${WD[i]}</small><b>${parse(d).getDate()}</b>${dots(d)}
+                <small>${esc(weekdayNames()[i])}</small><b>${parse(d).getDate()}</b>${dots(d)}
               </button>`).join('')}
             </div>
             ${wxRow(selected)}
             <div class="cal-tl" id="cal-tl">
-              ${list.length ? list.map(e => evRow(e, selected)).join('') : `<div class="cal-empty" style="margin-left:-72px">В этот день событий нет.<br>Нажмите «+», чтобы добавить.</div>`}
+              ${list.length ? list.map(e => evRow(e, selected)).join('') : `<div class="cal-empty" style="margin-left:-72px">${esc(c('noEvents'))}</div>`}
             </div>
             <div style="height:90px"></div>
-            <button class="cal-fab" type="button" aria-label="Добавить событие"><i data-lucide="plus"></i></button>
+            <button class="cal-fab" type="button" aria-label="${esc(c('addEvent'))}"><i data-lucide="plus"></i></button>
           `;
           screen.setTitle(fullDate(selected));
           bindFilters(body, screen);
@@ -594,16 +638,16 @@
     }
 
     // ===== Страница 3: добавить / изменить событие =====
-    const REMIND = [[0.5, 'За 30 минут'], [1, 'За 1 час'], [2, 'За 2 часа'], [24, 'За 1 день']];
+    const REMIND = [[0.5, 'minutes30'], [1, 'hour1'], [2, 'hours2'], [24, 'day1']];
     function openForm(ev, day, back) {
       const draft = ev ? Object.assign({}, ev, { type: typeOf(ev.type).id, docs: ev.docs ? ev.docs.slice() : ev.doc ? [ev.doc] : [] })
         : { id: uid(), title: '', date: day || selected, time: '', type: 'transport', endDate: '', endTime: '', place: '', note: '', remind: false, docs: [], source: ctx.trip && scope !== 'personal' ? 'trip' : 'personal' };
       delete draft.doc;
       const MAX_DOCS = 4; // фото хранятся на телефоне — больше 4 на событие не даём, чтобы не переполнить память
       const screen = ctx.openScreen({
-        title: ev ? 'Событие' : 'Добавить событие',
+        title: ev ? c('event') : c('addEvent'),
         onBack: back,
-        action: { icon: 'check', label: 'Сохранить', onClick: save },
+        action: { icon: 'check', label: c('save'), onClick: save },
         render(body) {
           const t = typeOf(draft.type);
           const [l1, l2] = SE(t);
@@ -618,34 +662,34 @@
             <div class="cal-form" style="gap:12px">
               <div class="cal-types">${allTypes().filter(x => !x.hidden || x.id === draft.type).map(x => `
                 <button class="cal-type${x.id === draft.type ? ' on' : ''}" type="button" data-type="${x.id}" style="color:${x.color}">
-                  ${tIcon(x)}<span style="color:var(--text)">${esc(x.name)}</span></button>`).join('')}
-                <button class="cal-type plus" type="button" data-a="new-type" aria-label="Свой тип события"><i data-lucide="plus"></i><span style="color:var(--text)">Своё</span></button>
+                  ${tIcon(x)}<span style="color:var(--text)">${esc(TYPES.includes(x) ? c(x.id) : x.name)}</span></button>`).join('')}
+                <button class="cal-type plus" type="button" data-a="new-type" aria-label="${f('customType')}"><i data-lucide="plus"></i><span style="color:var(--text)">${f('custom')}</span></button>
               </div>
-              <div class="cal-row in" style="margin-top:4px">${tIcon(t)}<input id="f-title" maxlength="80" placeholder="Название" value="${esc(draft.title)}"></div>
-              ${ctx.trip ? `<label class="cal-source">Календарь <select id="f-source"><option value="trip"${draft.source !== 'personal' ? ' selected' : ''}>Поездка</option><option value="personal"${draft.source === 'personal' ? ' selected' : ''}>Мои события</option></select></label>` : ''}
-              ${dateRow('f-date', draft.date, 'calendar', 'Дата')}
-              ${timeRow('f-time', draft.time, 'Время (необязательно)')}
+              <div class="cal-row in" style="margin-top:4px">${tIcon(t)}<input id="f-title" maxlength="80" placeholder="${f('title')}" value="${esc(draft.title)}"></div>
+              ${ctx.trip ? `<label class="cal-source">${c('calendar')} <select id="f-source"><option value="trip"${draft.source !== 'personal' ? ' selected' : ''}>${c('trip')}</option><option value="personal"${draft.source === 'personal' ? ' selected' : ''}>${f('myEvents')}</option></select></label>` : ''}
+              ${dateRow('f-date', draft.date, 'calendar', f('date'))}
+              ${timeRow('f-time', draft.time, f('timeOptional'))}
               ${showEnd ? `<div class="cal-endlbl">${l2}</div>
-                ${dateRow('f-edate', draft.endDate, 'calendar-check', 'Дата (если другой день)')}
-                ${timeRow('f-etime', draft.endTime, 'Время (необязательно)')}`
-                : `<button class="cal-row sub" type="button" data-a="end"><i data-lucide="plus"></i>${l2}: дата и время</button>`}
-              <div class="cal-row in"><i data-lucide="map-pin"></i><input id="f-place" maxlength="120" placeholder="Место" value="${esc(draft.place)}"></div>
-              <div class="cal-row in"><i data-lucide="file-text"></i><input id="f-note" maxlength="200" placeholder="Заметка (необязательно)" value="${esc(draft.note)}"></div>
+                ${dateRow('f-edate', draft.endDate, 'calendar-check', f('dateIfOther'))}
+                ${timeRow('f-etime', draft.endTime, f('timeOptional'))}`
+                : `<button class="cal-row sub" type="button" data-a="end"><i data-lucide="plus"></i>${l2}: ${f('dateTime')}</button>`}
+              <div class="cal-row in"><i data-lucide="map-pin"></i><input id="f-place" maxlength="120" placeholder="${f('place')}" value="${esc(draft.place)}"></div>
+              <div class="cal-row in"><i data-lucide="file-text"></i><input id="f-note" maxlength="200" placeholder="${f('noteOptional')}" value="${esc(draft.note)}"></div>
               <div class="cal-card cal-rem" style="margin-top:4px">
                 <i data-lucide="bell"></i>
-                <div class="cal-rem-txt"><b>Напоминание</b>
-                  <select id="f-rem"${draft.remind ? '' : ' disabled'}>${REMIND.map(([h, n]) => `<option value="${h}"${+(draft.remind || 2) === h ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
+                <div class="cal-rem-txt"><b>${f('reminder')}</b>
+                  <select id="f-rem"${draft.remind ? '' : ' disabled'}>${REMIND.map(([h, key]) => `<option value="${h}"${+(draft.remind || 2) === h ? ' selected' : ''}>${f(key)}</option>`).join('')}</select></div>
                 <label class="cal-switch"><input type="checkbox" id="f-rem-on"${draft.remind ? ' checked' : ''}><span></span></label>
               </div>
               <div class="cal-card" style="padding:10px 12px">
                 <button class="cal-doc" type="button" id="f-doc" style="padding:0;border:0;background:none"${draft.docs.length >= MAX_DOCS ? ' disabled' : ''}>
                   <span class="cal-doc-ic"><i data-lucide="${draft.docs.length ? 'plus' : 'ticket'}"></i></span>
-                  <span class="cal-doc-txt">${draft.docs.length >= MAX_DOCS ? 'Прикреплено ' + MAX_DOCS + ' — это максимум' : draft.docs.length ? 'Добавить ещё билет' : 'Добавить документ / билет'}<br><small style="color:var(--t2)">${draft.docs.length ? 'Прикреплено: ' + draft.docs.length + ' · нажмите на фото, чтобы открыть' : 'Можно несколько фото, например билеты на двоих'}</small></span>
+                  <span class="cal-doc-txt">${draft.docs.length >= MAX_DOCS ? f('attachMax', MAX_DOCS) : draft.docs.length ? f('addTicket') : f('addDocument')}<br><small style="color:var(--t2)">${draft.docs.length ? f('attached', draft.docs.length) + ' · ' + f('tapPhoto') : f('multiplePhotos')}</small></span>
                 </button>
-                ${draft.docs.length ? `<div class="cal-docs">${draft.docs.map((d, i) => `<div data-doc="${i}"><img src="${d}" alt="Билет ${i + 1}"><button type="button" data-doc-x="${i}" aria-label="Убрать фото"><i data-lucide="x"></i></button></div>`).join('')}</div>` : ''}
+                ${draft.docs.length ? `<div class="cal-docs">${draft.docs.map((d, i) => `<div data-doc="${i}"><img src="${d}" alt="${f('photoTicket', i + 1)}"><button type="button" data-doc-x="${i}" aria-label="${f('removePhoto')}"><i data-lucide="x"></i></button></div>`).join('')}</div>` : ''}
               </div>
               <input type="file" id="f-file" accept="image/*" multiple hidden>
-              ${ev ? '<button class="cal-del" type="button" id="f-del"><i data-lucide="trash-2"></i>Удалить событие</button>' : ''}
+              ${ev ? `<button class="cal-del" type="button" id="f-del"><i data-lucide="trash-2"></i>${f('deleteEvent')}</button>` : ''}
               <div style="height:12px"></div>
             </div>`;
           document.getElementById('mod-action')?.classList.add('cal-save');
@@ -675,7 +719,7 @@
             inp.addEventListener('click', () => { try { inp.showPicker && inp.showPicker(); } catch (_) {} });
             inp.addEventListener('change', () => {
               const v = body.querySelector('#' + inp.id + '-v');
-              const ph = { 'f-date': 'Дата', 'f-edate': 'Дата (если другой день)' }[inp.id] || 'Время (необязательно)';
+              const ph = { 'f-date': f('date'), 'f-edate': f('dateIfOther') }[inp.id] || f('timeOptional');
               v.textContent = inp.value ? (inp.type === 'date' ? fullDate(inp.value) : inp.value) : ph;
               v.classList.toggle('ph', !inp.value);
               if (inp.id === 'f-date' && body.querySelector('#f-edate')) body.querySelector('#f-edate').min = inp.value;
@@ -694,20 +738,20 @@
             const files = [...file.files]; file.value = '';
             if (!files.length) return;
             const imgs = files.filter(f => f.type.startsWith('image/'));
-            if (imgs.length < files.length) ctx.toast('Пока можно прикрепить только фото или скриншот');
+            if (imgs.length < files.length) ctx.toast(f('onlyPhotos'));
             const free = MAX_DOCS - draft.docs.length;
-            if (imgs.length > free) ctx.toast('Можно прикрепить не больше ' + MAX_DOCS + ' фото');
+            if (imgs.length > free) ctx.toast(f('maxPhotos', MAX_DOCS));
             read();
-            for (const f of imgs.slice(0, free)) { try { draft.docs.push(await compress(f)); } catch (_) { ctx.toast('Не получилось открыть картинку'); } }
+            for (const fileImage of imgs.slice(0, free)) { try { draft.docs.push(await compress(fileImage)); } catch (_) { ctx.toast(f('imageError')); } }
             screen.refresh();
           });
           // нажатие на иконку или пустое место строки — курсор в поле
           body.querySelectorAll('.cal-row.in').forEach(row => row.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') row.querySelector('input')?.focus(); }));
           body.querySelector('#f-del')?.addEventListener('click', () => {
-            if (!confirm('Удалить событие «' + draft.title + '»?')) return;
+            if (!confirm(f('deleteEvent') + ' «' + draft.title + '»?')) return;
             if (draft.source === 'personal') { personalEvents = personalEvents.filter(x => x.id !== draft.id); savePersonalEvents(); }
             else { events = events.filter(x => x.id !== draft.id); saveEvents(); }
-            ctx.toast('Событие удалено'); back();
+            ctx.toast(f('deleted')); back();
           });
           body._read = read;
         }
@@ -716,19 +760,19 @@
       function typeForm(old) {
         const t = old ? Object.assign({}, old) : { id: 'c_' + uid(), name: '', icon: 'star', img: '', color: COLORS[0], kind: 'note' };
         const prev = () => `<span class="cal-ev-ic" style="background:${tBg(t)};color:${t.color}">${tIcon(t)}</span>
-          <b style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(t.name) || '<span style="color:var(--t3);font-weight:600">Название</span>'}</b>`;
-        sheet(old ? 'Свой тип' : 'Новый тип события', `<div class="cal-form" style="margin-top:10px">
+          <b style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(t.name) || `<span style="color:var(--t3);font-weight:600">${f('title')}</span>`}</b>`;
+        sheet(old ? f('editType') : f('newType'), `<div class="cal-form" style="margin-top:10px">
             <div class="cal-ct-prev" id="cal-ct-prev">${prev()}</div>
-            <label>Название</label>
-            <input class="st-input" id="cal-ct-name" maxlength="16" value="${esc(t.name)}" placeholder="Например: Концерт">
-            <label>Иконка</label>
+            <label>${f('title')}</label>
+            <input class="st-input" id="cal-ct-name" maxlength="16" value="${esc(t.name)}" placeholder="${f('exampleConcert')}">
+            <label>${f('icon')}</label>
             <div class="cal-icons">${ICON_SET.map(i => `<button type="button" data-i="${i}" class="${!t.img && t.icon === i ? 'on' : ''}"><i data-lucide="${i}"></i></button>`).join('')}</div>
-            <button class="st-btn st-btn-g st-btn-fw" type="button" data-a="img"><i data-lucide="image-plus"></i>${t.img ? 'Заменить свою картинку' : 'Своя иконка или фото'}</button>
+            <button class="st-btn st-btn-g st-btn-fw" type="button" data-a="img"><i data-lucide="image-plus"></i>${t.img ? f('replaceImage') : f('ownImage')}</button>
             <input type="file" id="cal-ct-file" accept="image/*" hidden>
-            <label>Цвет</label>
-            <div class="cal-colors">${COLORS.map(c => `<button type="button" data-c="${c}" class="${t.color === c ? 'on' : ''}" style="background:${c}" aria-label="Цвет"></button>`).join('')}</div>
-            <button class="st-btn st-btn-fw" type="button" data-a="ok" style="margin-top:6px">${old ? 'Сохранить' : 'Создать'}</button>
-            ${old ? '<button class="cal-del" type="button" data-a="del"><i data-lucide="trash-2"></i>Удалить тип</button>' : ''}
+            <label>${f('color')}</label>
+            <div class="cal-colors">${COLORS.map(color => `<button type="button" data-c="${color}" class="${t.color === color ? 'on' : ''}" style="background:${color}" aria-label="${f('color')}"></button>`).join('')}</div>
+            <button class="st-btn st-btn-fw" type="button" data-a="ok" style="margin-top:6px">${old ? c('save') : f('create')}</button>
+            ${old ? `<button class="cal-del" type="button" data-a="del"><i data-lucide="trash-2"></i>${f('deleteType')}</button>` : ''}
           </div>`, (root, close) => {
           const pv = root.querySelector('#cal-ct-prev');
           const redraw = () => { pv.innerHTML = prev(); if (typeof initializeIcons === 'function') initializeIcons(pv); };
@@ -743,21 +787,21 @@
           const file = root.querySelector('#cal-ct-file');
           root.querySelector('[data-a="img"]').addEventListener('click', () => file.click());
           file.addEventListener('change', async () => {
-            const f = file.files[0]; if (!f) return;
-            if (!f.type.startsWith('image/')) { ctx.toast('Выберите картинку или фото'); return; }
-            try { t.img = await compress(f, 128, true); root.querySelectorAll('[data-i]').forEach(x => x.classList.remove('on')); redraw(); }
-            catch (_) { ctx.toast('Не получилось открыть картинку'); }
+            const imageFile = file.files[0]; if (!imageFile) return;
+            if (!imageFile.type.startsWith('image/')) { ctx.toast(f('selectImage')); return; }
+            try { t.img = await compress(imageFile, 128, true); root.querySelectorAll('[data-i]').forEach(x => x.classList.remove('on')); redraw(); }
+            catch (_) { ctx.toast(f('imageError')); }
           });
           root.querySelector('[data-a="ok"]').addEventListener('click', () => {
-            if (!t.name) { ctx.toast('Введите название'); root.querySelector('#cal-ct-name').focus(); return; }
+            if (!t.name) { ctx.toast(f('enterTitle')); root.querySelector('#cal-ct-name').focus(); return; }
             const i = CUSTOM.findIndex(x => x.id === t.id);
             if (i >= 0) CUSTOM[i] = t; else CUSTOM.push(t);
-            if (!saveCustom()) { ctx.toast('Не хватает памяти: попробуйте картинку меньше'); return; }
+            if (!saveCustom()) { ctx.toast(f('memoryImage')); return; }
             draft.type = t.id; close(); screen.refresh();
           });
           root.querySelector('[data-a="del"]')?.addEventListener('click', () => {
             const n = events.concat(personalEvents).filter(e => e.type === t.id).length;
-            if (!confirm('Удалить тип «' + t.name + '»?' + (n ? ' У ' + n + ' ' + plural(n, 'события', 'событий', 'событий') + ' он сменится на «Другое».' : ''))) return;
+            if (!confirm(bText('deleteTypeConfirm') + ' «' + t.name + '»?' + (n ? ' ' + bText('typeEventsChange', n) : ''))) return;
             CUSTOM = CUSTOM.filter(x => x.id !== t.id); saveCustom();
             if (draft.type === t.id) draft.type = 'transport';
             close(); screen.refresh();
@@ -768,12 +812,12 @@
       function save() {
         const body = document.getElementById('mod-body');
         body && body._read && body._read();
-        if (!draft.title) { ctx.toast('Введите название'); body.querySelector('#f-title')?.focus(); return; }
-        if (!draft.date) { ctx.toast('Выберите дату'); return; }
+        if (!draft.title) { ctx.toast(f('enterTitle')); body.querySelector('#f-title')?.focus(); return; }
+        if (!draft.date) { ctx.toast(f('selectDate')); return; }
         if (draft.endTime && !draft.endDate) draft.endDate = draft.date;
-        if (draft.endDate && draft.endDate < draft.date) { ctx.toast('Окончание не может быть раньше начала'); return; }
-        if (draft.endDate === draft.date && draft.time && draft.endTime && draft.endTime < draft.time) { ctx.toast('Время окончания раньше начала'); return; }
-        if (draft.endDate && diffDays(draft.date, draft.endDate) > 90) { ctx.toast('Событие длиннее 90 дней — проверьте даты'); return; }
+        if (draft.endDate && draft.endDate < draft.date) { ctx.toast(c('endBeforeStart')); return; }
+        if (draft.endDate === draft.date && draft.time && draft.endTime && draft.endTime < draft.time) { ctx.toast(f('endTimeBefore')); return; }
+        if (draft.endDate && diffDays(draft.date, draft.endDate) > 90) { ctx.toast(f('eventTooLong')); return; }
         if (draft.endDate === draft.date && !draft.endTime) draft.endDate = '';
         delete draft._end;
         draft.updatedAt = Date.now();
@@ -783,9 +827,9 @@
         personalEvents = personalEvents.filter(x => x.id !== draft.id);
         if (draft.source === 'personal') personalEvents.push(draft); else events.push(draft);
         try { if (ctx.trip && (wasTrip || draft.source === 'trip')) saveEvents(); if (wasPersonal || draft.source === 'personal') savePersonalEvents(); }
-        catch (_) { ctx.toast('Не хватает памяти: попробуйте фото меньше'); return; }
+        catch (_) { ctx.toast(f('memoryImage')); return; }
         selected = draft.date; month = selected.slice(0, 7);
-        ctx.toast(ev ? 'Сохранено' : 'Событие добавлено');
+        ctx.toast(ev ? f('saved') : f('added'));
         back === openMonth ? openMonth() : openDay();
       }
     }

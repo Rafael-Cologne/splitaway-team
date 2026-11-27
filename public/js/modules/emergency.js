@@ -19,6 +19,7 @@
   const ID = 'emergency';
   const IMG = '/img/emergency/';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const regionName = cc => { try { return new Intl.DisplayNames(['ru'], { type: 'region' }).of(cc.toUpperCase()); } catch (_) { return cc.toUpperCase(); } };
   const flagEmoji = cc => cc && cc.length === 2 ? String.fromCodePoint(...cc.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0))) : '';
@@ -201,7 +202,7 @@
   const TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
   const translit = t => String(t).replace(/[а-яё]/gi, ch => { const l = TR[ch.toLowerCase()] ?? ch; return ch === ch.toLowerCase() ? l : l.charAt(0).toUpperCase() + l.slice(1); });
   const flagImg = cc => cc ? `<img src="https://flagcdn.com/w40/${cc.toLowerCase()}.png" alt="" style="width:20px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:4px;object-fit:cover">` : '';
-  const dateRu = s => { try { return new Date(s + 'T12:00:00').toLocaleDateString('ru-RU'); } catch (_) { return s; } };
+  const dateRu = s => { try { return new Date(s + 'T12:00:00').toLocaleDateString(window.STModuleUI?.locale() || 'ru-RU'); } catch (_) { return s; } };
 
   // ---------- личные данные: только на устройстве ----------
   const ME_KEY = 'st_emergency_me';
@@ -350,9 +351,9 @@
               <button class="em-hero-btn" type="button" data-a="set" style="right:6px" aria-label="Настройки"><i data-lucide="settings"></i></button>
               <div class="em-hero-t"><h1>Экстренно</h1><p>Быстрая помощь в любой стране</p></div>
             </div>
-            <a class="em-sos" href="${tel(mainNum())}" aria-label="Экстренный вызов ${esc(mainNum())}"><span class="l1"><i data-lucide="phone"></i>SOS</span><span class="l2">Экстренный вызов · ${esc(mainNum())}</span></a>
+            <a class="em-sos" href="${tel(mainNum())}" aria-label="${esc(ui('Экстренный вызов'))} ${esc(mainNum())}"><span class="l1"><i data-lucide="phone"></i>SOS</span><span class="l2">${esc(ui('Экстренный вызов'))} · ${esc(mainNum())}</span></a>
             <div class="em-grid">${tiles.map(([k, img, l]) => `<button class="em-tile" type="button" data-go="${k}"><img src="${IMG}${img}.webp" alt=""><b>${l}</b></button>`).join('')}</div>
-            <button class="em-me" type="button" data-go="me"><img src="${IMG}idcard.webp" alt=""><span><b>Моя информация</b><small>${me.name ? esc(me.name) + ' · ' : ''}Паспорт, страховка, контакты</small></span><i data-lucide="chevron-right"></i></button>
+            <button class="em-me" type="button" data-go="me"><img src="${IMG}idcard.webp" alt=""><span><b>Моя информация</b><small>${me.name ? esc(me.name) + ' · ' : ''}${esc(ui('Паспорт, страховка, контакты'))}</small></span><i data-lucide="chevron-right"></i></button>
             ${!n && ccNow() ? `<div class="em-note">Для страны «${esc(regionName(ccNow()))}» номеров в приложении нет — SOS набирает 112, он работает с мобильного в большинстве стран.</div>` : ''}`;
           icons(body);
           body.querySelector('[data-a="back"]').addEventListener('click', () => ctx.close());
