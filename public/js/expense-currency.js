@@ -31,8 +31,8 @@
   // 1.0.22: курс всегда показывается и вводится как «1 <основная валюта> = X <другая>»
   const perBase=(code,rate)=>code===base()?rate:1/rate;
   const foreignOf=(code,target)=>code===base()?target:code;
-  // Four decimals normally; for very small rates retain the first two significant digits.
-  const rateDigits=value=>Math.min(16,Math.max(4,Math.ceil(-Math.log10(value))+1));
+  // Two decimals normally; extend small rates past leading zeros to show two significant digits.
+  const rateDigits=value=>Math.min(16,Math.max(2,Math.ceil(-Math.log10(value))+1));
   const plain=value=>Number.isFinite(value)&&value>0?value.toFixed(rateDigits(value)):'';
   function fmtRate(value){
     const locale=typeof fmtLocale==='function'?fmtLocale():undefined;
