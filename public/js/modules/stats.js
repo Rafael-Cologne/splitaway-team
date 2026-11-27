@@ -16,6 +16,7 @@
 
   const ID = 'stats';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const plural = (n, a, b, c) => { const t = n % 10, h = n % 100; return t === 1 && h !== 11 ? a : t >= 2 && t <= 4 && (h < 12 || h > 14) ? b : c; };
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -210,15 +211,15 @@
         const check = ls('st_mod_checklist_' + trip.id + '_items') || [];
         const curs = new Set([cur()]); list.forEach(e => { if (e.originalCurrency) curs.add(e.originalCurrency); });
         const nums = [
-          ['calendar-days', tripDays, plural(tripDays, 'день', 'дня', 'дней') + ' поездки'],
-          ['receipt', list.length, plural(list.length, 'расход', 'расхода', 'расходов')],
-          ['ticket', books, plural(books, 'бронь', 'брони', 'броней')],
-          ['map-pin', saved, plural(saved, 'место', 'места', 'мест') + ' в «Гиде»'],
-          ['book-open', diary.length, plural(diary.length, 'запись', 'записи', 'записей') + ' в дневнике'],
-          ['image', photos, 'фото в дневнике'],
-          ['list-checks', check.filter(x => x.done).length + '/' + check.length, 'чек-лист готов'],
-          ['coins', curs.size, plural(curs.size, 'валюта', 'валюты', 'валют')],
-          ['users', ppl.length, plural(ppl.length, 'участник', 'участника', 'участников')]
+          ['calendar-days', tripDays, ui('дни поездки')],
+          ['receipt', list.length, window.STModuleUI.noun(list.length, 'expense')],
+          ['ticket', books, window.STModuleUI.noun(books, 'booking')],
+          ['map-pin', saved, ui('места в Гиде')],
+          ['book-open', diary.length, ui('записи в дневнике')],
+          ['image', photos, ui('фото в дневнике')],
+          ['list-checks', check.filter(x => x.done).length + '/' + check.length, ui('чек-лист готов')],
+          ['coins', curs.size, window.STModuleUI.noun(curs.size, 'currency')],
+          ['users', ppl.length, window.STModuleUI.noun(ppl.length, 'participant')]
         ];
         const numsHtml = `<div class="sx-h"><i data-lucide="sparkles"></i>Поездка в цифрах</div>
           <div class="sx-nums">${nums.map(([ic, v, l]) => `<div class="sx-num"><i data-lucide="${ic}"></i><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join('')}</div>`;
@@ -268,12 +269,12 @@
 
         body.innerHTML = `<div class="sx">
           <div class="sx-tiles">
-            <div class="sx-tile hero"><small>Всего потрачено</small><b>${esc(money(total))}</b><span>${list.length} ${plural(list.length, 'расход', 'расхода', 'расходов')}${maxDay ? ' · самый дорогой день — ' + esc(dShort(maxDay)) : ''}</span></div>
+            <div class="sx-tile hero"><small>Всего потрачено</small><b>${esc(money(total))}</b><span>${esc(window.STModuleUI.count(list.length, 'expense'))}${maxDay ? ' · ' + esc(ui('самый дорогой день —')) + ' ' + esc(dShort(maxDay)) : ''}</span></div>
             <div class="sx-tile"><small>В среднем в день</small><b>${esc(money(perDay))}</b></div>
             <div class="sx-tile"><small>На человека</small><b>${esc(money(ppl.length ? total / ppl.length : total))}</b></div>
           </div>
 
-          <div class="sx-h"><i data-lucide="piggy-bank"></i>Бюджет${bud ? '<button class="sx-h-act" type="button" data-a="bud">Изменить</button>' : ''}</div>
+          <div class="sx-h"><i data-lucide="piggy-bank"></i>${esc(ui('Бюджет'))}${bud ? '<button class="sx-h-act" type="button" data-a="bud">Изменить</button>' : ''}</div>
           ${budHtml}
 
           <div class="sx-h"><i data-lucide="bar-chart-3"></i>По дням</div>
@@ -281,20 +282,20 @@
 
           <div class="sx-h"><i data-lucide="pie-chart"></i>По категориям</div>
           <div class="sx-card sx-donut">${donut(parts, total)}
-            <div class="sx-leg">${parts.slice().sort((a, b) => b.sum - a.sum).map(p => `<div><i style="background:${p.color}"></i><span>${esc(p.name)}</span><b>${esc(money(p.sum, 0))}</b><em>${Math.round(p.sum / total * 100)}%</em></div>`).join('')}</div></div>
+            <div class="sx-leg">${parts.slice().sort((a, b) => b.sum - a.sum).map(p => `<div><i style="background:${p.color}"></i><span>${esc(ui(p.name))}</span><b>${esc(money(p.sum, 0))}</b><em>${Math.round(p.sum / total * 100)}%</em></div>`).join('')}</div></div>
 
           <div class="sx-h"><i data-lucide="users"></i>По участникам</div>
           <div class="sx-card">
             <div class="sx-mleg"><span><i style="background:var(--s1)"></i>Заплатил лично</span><span><i style="background:var(--s2)"></i>Потратил на себя</span></div>
-            ${rows.map(r => `<div class="sx-mrow"><div class="sx-mname">${esc(r.p)}<small>${r.personalNet > 0 ? 'ему должны ' + esc(money(r.personalNet)) : r.personalNet < 0 ? 'должен ' + esc(money(-r.personalNet)) : 'в расчёте'}</small></div>
+            ${rows.map(r => `<div class="sx-mrow"><div class="sx-mname">${esc(r.p)}<small>${r.personalNet > 0 ? esc(ui('ему должны')) + ' ' + esc(money(r.personalNet)) : r.personalNet < 0 ? esc(ui('должен')) + ' ' + esc(money(-r.personalNet)) : esc(ui('в расчёте'))}</small></div>
               <div class="sx-mbar"><div style="width:${r.paid / mMax * 70}%;background:var(--s1)"></div>${esc(money(r.paid, 0))}</div>
               <div class="sx-mbar"><div style="width:${r.own / mMax * 70}%;background:var(--s2)"></div>${esc(money(r.own, 0))}</div></div>`).join('')}
-            ${treasury ? `<div class="st-muted" style="margin-top:10px">Из кассы оплачено ${esc(money(treasury))}.</div>` : ''}
+            ${treasury ? `<div class="st-muted" style="margin-top:10px">${esc(ui('Из кассы оплачено'))} ${esc(money(treasury))}.</div>` : ''}
             <div class="st-muted" style="margin-top:8px;font-size:.76rem">«Потратил на себя» включает траты из кассы. Долг — только по личным платежам, без учёта возвратов. Точные расчёты в «Балансах».</div>
           </div>
 
           <div class="sx-h"><i data-lucide="trophy"></i>Самые крупные расходы</div>
-          <div class="sx-card">${top.map((e, i) => `<div class="sx-top"><span class="n">${i + 1}</span><span>${esc(e.name || 'Расход')}<small>${esc(catOf(e).name)}${expDate(e) ? ' · ' + esc(dShort(expDate(e))) : ''}${e.paidBy && e.paidBy !== '_treasury' ? ' · ' + esc(e.paidBy) : ''}</small></span><b>${esc(money(e.amount))}</b></div>`).join('')}</div>
+          <div class="sx-card">${top.map((e, i) => `<div class="sx-top"><span class="n">${i + 1}</span><span>${esc(e.name || ui('Расход'))}<small>${esc(ui(catOf(e).name))}${expDate(e) ? ' · ' + esc(dShort(expDate(e))) : ''}${e.paidBy && e.paidBy !== '_treasury' ? ' · ' + esc(e.paidBy) : ''}</small></span><b>${esc(money(e.amount))}</b></div>`).join('')}</div>
 
           ${numsHtml}
         </div>`;

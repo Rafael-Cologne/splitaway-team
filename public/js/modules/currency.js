@@ -24,10 +24,10 @@
   const ccOf = c => (typeof CURRENCY_COUNTRIES !== 'undefined' && CURRENCY_COUNTRIES[c]) || '';
   const flag = c => { const cc = ccOf(c).toLowerCase();
     return `<span class="fx-fl" data-cc="${cc ? cc.toUpperCase() : c.slice(0, 2)}">${cc ? `<img src="https://flagcdn.com/w80/${cc}.png" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>`; };
-  const nameOf = c => { if (window.STCurrency) return STCurrency.name(c, 'ru'); try { const n = new Intl.DisplayNames(['ru'], { type: 'currency' }).of(c); return n ? n[0].toUpperCase() + n.slice(1) : c; } catch (_) { return c; } };
+  const nameOf = c => { if (window.STCurrency) return STCurrency.name(c); try { const n = new Intl.DisplayNames([window.STModuleUI?.locale() || 'ru-RU'], { type: 'currency' }).of(c); return n ? n[0].toUpperCase() + n.slice(1) : c; } catch (_) { return c; } };
   const minor = c => { try { return new Intl.NumberFormat('en', { style: 'currency', currency: c }).resolvedOptions().maximumFractionDigits; } catch (_) { return 2; } };
   const fmt = (v, d) => new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
-  const fmtDate = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : '';
+  const fmtDate = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? new Intl.DateTimeFormat(window.STModuleUI?.locale() || 'ru-RU').format(new Date(iso + 'T12:00:00')) : '';
   const parseNum = s => { const t = String(s || '').replace(/[\s ']/g, '').replace(',', '.'); return /^\d*\.?\d*$/.test(t) && t !== '' && t !== '.' ? +t : NaN; };
   const SORTS = {
     up: { name: 'Сильнее всего выросли', short: 'Рост', hint: 'Сверху — курс, который вырос сильнее всего', icon: 'trending-up' },
@@ -302,7 +302,7 @@
             <div class="fx-own-h" data-a="own"><span>Свой курс<small>Курс банка или обменника</small></span><div class="fx-sw"></div></div>
             <div class="fx-own-b">1 ${a} =<input id="fx-own" inputmode="decimal" autocomplete="off" maxlength="16" value="${esc(own.v)}" placeholder="0,00">${b}</div>
           </div>
-          <div class="fx-lh"><div><button class="fx-lb" type="button" data-pick="list">1 ${lb} сегодня<i data-lucide="chevron-down"></i></button><small id="fx-ldate"></small></div>
+          <div class="fx-lh"><div><button class="fx-lb" type="button" data-pick="list">1 ${lb} ${esc(window.STModuleUI.translate('сегодня'))}<i data-lucide="chevron-down"></i></button><small id="fx-ldate"></small></div>
             <button class="fx-tb" type="button" data-a="sort" aria-label="Сортировка"><i data-lucide="arrow-down-up"></i><span id="fx-sortl">${SORTS[sort].short}</span></button>
             <button class="fx-tb" type="button" data-a="filter" aria-label="Выбрать валюты"><i data-lucide="sliders-horizontal"></i>${sel.length}</button></div>
           <div class="fx-card fx-list" id="fx-list"><div class="fx-note" style="padding:16px">Загружаю…</div></div>

@@ -287,7 +287,8 @@
           const trSt = !st ? stHtml('no', '…') : s.trState === 'ok' ? stHtml('ok', 'Скачано') : s.trState === 'need' ? stHtml('need', 'Нужна загрузка') : stHtml('part', 'Частично');
           const rtSt = !trip ? stHtml('no', 'Нет поездки') : s.places ? stHtml('ok', 'Скачано') : stHtml('no', 'Нет точек');
           const syncSt = s.dirty ? stHtml('part', online() ? 'Отправляется' : 'Ждёт сети') : stHtml('ok', 'Всё отправлено');
-          const trSub = !st || !tr ? ui('Языковые пакеты') : `${tr.name(s.lang) || ui('Языковые пакеты')}: ` + ui(s.trState === 'ok' ? 'перевод, фразы и фото без сети' : s.trState === 'part' || s.trState === 'partial' ? 'фразы и фото офлайн, текст — онлайн' : 'нужно скачать');
+          let langName = ''; try { langName = s.lang ? new Intl.DisplayNames([window.STModuleUI?.locale() || 'ru-RU'], { type:'language' }).of(s.lang) : ''; } catch (_) {}
+          const trSub = !st || !tr ? ui('Языковые пакеты') : `${langName || ui('Языковые пакеты')}: ` + ui(s.trState === 'ok' ? 'перевод, фразы и фото без сети' : s.trState === 'part' || s.trState === 'partial' ? 'фразы и фото офлайн, текст — онлайн' : 'нужно скачать');
           const est = APP_EST + (trip ? tileList((s.map && s.map.lat) || 48, (s.map && s.map.lon) || 10, (s.map && s.map.km) || 5).length * TILE_EST : 0);
           const allOk = s.app === 'ok' && (!trip || s.map) && s.trState !== 'need';
           const used = (m.assets ? m.assets.bytes : 0) + Object.values(m.maps || {}).reduce((a, x) => a + (x.bytes || 0), 0);

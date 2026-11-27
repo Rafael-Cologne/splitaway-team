@@ -48,5 +48,23 @@
   },
   "Карты": {
     "en": "Maps", "de": "Karten", "fr": "Cartes", "it": "Mappe", "es": "Mapas", "pt": "Mapas", "pl": "Mapy", "el": "Χάρτες", "tr": "Haritalar"
+  },
+  "Бюджет": {
+    "en": "Budget", "de": "Budget", "fr": "Budget", "it": "Budget", "es": "Presupuesto", "pt": "Orçamento", "pl": "Budżet", "el": "Προϋπολογισμός", "tr": "Bütçe"
+  },
+  "самый дорогой день —": {
+    "en": "highest-spending day —", "de": "Tag mit den höchsten Ausgaben —", "fr": "journée la plus coûteuse —", "it": "giorno con più spese —", "es": "día de mayor gasto —", "pt": "dia com mais despesas —", "pl": "dzień z największymi wydatkami —", "el": "ημέρα με τις μεγαλύτερες δαπάνες —", "tr": "en çok harcama yapılan gün —"
+  },
+  "Из кассы оплачено": {
+    "en": "Paid from the shared fund", "de": "Aus der Gemeinschaftskasse bezahlt", "fr": "Payé par la caisse commune", "it": "Pagato dalla cassa comune", "es": "Pagado del fondo común", "pt": "Pago pelo fundo comum", "pl": "Zapłacono ze wspólnej kasy", "el": "Πληρώθηκε από το κοινό ταμείο", "tr": "Ortak kasadan ödendi"
+  },
+  "дни поездки": {
+    "en": "trip days", "de": "Reisetage", "fr": "jours de voyage", "it": "giorni di viaggio", "es": "días de viaje", "pt": "dias de viagem", "pl": "dni podróży", "el": "ημέρες ταξιδιού", "tr": "seyahat günü"
+  },
+  "места в Гиде": {
+    "en": "places in Guide", "de": "Orte im Reiseführer", "fr": "lieux dans le Guide", "it": "luoghi nella Guida", "es": "lugares en la Guía", "pt": "lugares no Guia", "pl": "miejsca w Przewodniku", "el": "μέρη στον Οδηγό", "tr": "Rehber'deki yerler"
+  },
+  "записи в дневнике": {
+    "en": "diary entries", "de": "Tagebucheinträge", "fr": "entrées du journal", "it": "voci del diario", "es": "entradas del diario", "pt": "registos no diário", "pl": "wpisy w dzienniku", "el": "καταχωρίσεις ημερολογίου", "tr": "günlük kaydı"
   }
 }
