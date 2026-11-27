@@ -43,6 +43,11 @@
 .hub-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .hub-pill{display:flex;align-items:center;gap:9px;padding:13px 12px;border-radius:16px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);font-size:.82rem;font-weight:600;text-align:left;line-height:1.2}
 .hub-pill svg{width:19px;height:19px;color:var(--accent);flex-shrink:0}
+/* Три кнопки под «Создать поездку» — в один ряд, компактно (главная без прокрутки) */
+.hub-row2.hub-row3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.hub-row3 + .hub-sec-hd{margin-top:14px}
+.hub-row3 .hub-pill{flex-direction:column;justify-content:center;gap:5px;padding:9px 6px;min-height:66px;font-size:.74rem;text-align:center;line-height:1.15;hyphens:auto;overflow-wrap:anywhere}
+.hub-row3 .hub-pill svg{width:20px;height:20px}
 
 /* Карточка активной поездки */
 .hub-trip{width:100%;display:flex;align-items:center;gap:13px;padding:16px;border:0;border-radius:22px;background:var(--hub-hero);color:#fff;text-align:left;box-shadow:0 10px 26px rgba(91,75,234,.28)}
