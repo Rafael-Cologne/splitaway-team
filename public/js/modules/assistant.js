@@ -649,7 +649,7 @@
             </div>
             <div class="ai-grid">${tiles.map(([k, ic, t, s]) => `<button class="ai-tile" type="button" data-k="${k}"><span class="ai-ic"><i data-lucide="${ic}"></i></span><b>${t}</b><small>${s}</small></button>`).join('')}</div>
             <div class="ai-ex-h">Примеры запросов:</div>
-            <div class="ai-ex">${EXAMPLES.map(([ic, t]) => `<button type="button" data-ex="${esc(t)}"><i data-lucide="${ic}"></i>«${esc(t)}»</button>`).join('')}</div>
+            <div class="ai-ex">${EXAMPLES.map(([ic, t]) => `<button type="button" data-ex="${esc(t)}"><i data-lucide="${ic}"></i>«${esc(window.STModuleUI?.translate(t) || t)}»</button>`).join('')}</div>
             ${inputBar('Напишите, что нужно сделать…')}`;
           icons(body);
           body.querySelector('[data-a="back"]').addEventListener('click', () => ctx.close());
