@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  // ---------- Тексты (ru / en / de, остальные языки → en) ----------
+  // ---------- Тексты главной страницы для всех языков первого запуска ----------
   const TXT = {
     ru: {
       brand: 'Useaway', tagline: 'Все инструменты для путешествий',
@@ -25,7 +25,7 @@
       on_device: 'Поездки на этом устройстве', no_trips: 'Здесь появятся ваши поездки',
       current: 'Открыта', current_trip: 'Текущая поездка', home: 'Главная', saved: 'Сохранённое', profile: 'Профиль',
       language: 'Язык', theme: 'Тема', light: 'Светлая', dark: 'Тёмная', back: 'Назад', close: 'Закрыть',
-      notifications: 'Уведомления',
+      notifications: 'Уведомления', settings:'Настройки', key_login:'Войти по личному ключу', key_login_sub:'Номер или QR с замком — ваши поездки с другого устройства',
       members: n => n + ' ' + plRu(n, 'участник', 'участника', 'участников')
     },
     en: {
@@ -40,7 +40,7 @@
       on_device: 'Trips on this device', no_trips: 'Your trips will appear here',
       current: 'Open', current_trip: 'Current trip', home: 'Home', saved: 'Saved', profile: 'Profile',
       language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', back: 'Back', close: 'Close',
-      notifications: 'Notifications',
+      notifications: 'Notifications', settings:'Settings', key_login:'Sign in with your personal key', key_login_sub:'Number or secure QR — your trips on another device',
       members: n => n + (n === 1 ? ' member' : ' members')
     },
     de: {
@@ -55,9 +55,16 @@
       on_device: 'Reisen auf diesem Gerät', no_trips: 'Hier erscheinen deine Reisen',
       current: 'Geöffnet', current_trip: 'Aktuelle Reise', home: 'Start', saved: 'Gespeichert', profile: 'Profil',
       language: 'Sprache', theme: 'Design', light: 'Hell', dark: 'Dunkel', back: 'Zurück', close: 'Schließen',
-      notifications: 'Benachrichtigungen',
+      notifications: 'Benachrichtigungen', settings:'Einstellungen', key_login:'Mit persönlichem Schlüssel anmelden', key_login_sub:'Nummer oder geschützter QR-Code — deine Reisen auf einem anderen Gerät',
       members: n => n + (n === 1 ? ' Mitglied' : ' Mitglieder')
-    }
+    },
+    fr: {create:'Créer un voyage',create_sub:'Planifiez, partagez et répartissez les dépenses',join_code:'Saisir un code d’invitation',my_trips:'Mes voyages',services:'Services',search:'Rechercher un service',nothing:'Aucun résultat',soon:'Bientôt disponible',need_trip:'Créez ou rejoignez d’abord un voyage',qa_expense:'Dépense',qa_invite:'Inviter',qa_members:'Participants',trips:'Voyages',new_trip:'Créer un voyage',new_trip_sub:'Nom, devise et participants',join:'Rejoindre avec un code',join_sub:'Saisissez le code ou scannez un QR code',on_device:'Voyages sur cet appareil',no_trips:'Vos voyages apparaîtront ici',current:'Ouvert',current_trip:'Voyage en cours',home:'Accueil',saved:'Enregistrés',profile:'Profil',language:'Langue',theme:'Thème',light:'Clair',dark:'Sombre',back:'Retour',close:'Fermer',notifications:'Notifications',settings:'Paramètres',key_login:'Se connecter avec une clé personnelle',key_login_sub:'Numéro ou QR code sécurisé — vos voyages sur un autre appareil',members:n=>n+(n===1?' participant':' participants')},
+    it: {create:'Crea un viaggio',create_sub:'Pianifica, condividi e dividi le spese',join_code:'Inserisci il codice di invito',my_trips:'I miei viaggi',services:'Servizi',search:'Cerca un servizio',nothing:'Nessun risultato',soon:'Prossimamente',need_trip:'Prima crea un viaggio o partecipa a uno esistente',qa_expense:'Spesa',qa_invite:'Invita',qa_members:'Partecipanti',trips:'Viaggi',new_trip:'Crea un nuovo viaggio',new_trip_sub:'Nome, valuta e partecipanti',join:'Partecipa con un codice',join_sub:'Inserisci il codice o scansiona un QR',on_device:'Viaggi su questo dispositivo',no_trips:'I tuoi viaggi appariranno qui',current:'Aperto',current_trip:'Viaggio attuale',home:'Home',saved:'Salvati',profile:'Profilo',language:'Lingua',theme:'Tema',light:'Chiaro',dark:'Scuro',back:'Indietro',close:'Chiudi',notifications:'Notifiche',settings:'Impostazioni',key_login:'Accedi con la chiave personale',key_login_sub:'Numero o QR protetto — i tuoi viaggi su un altro dispositivo',members:n=>n+(n===1?' partecipante':' partecipanti')},
+    es: {create:'Crear viaje',create_sub:'Planifica, comparte y divide los gastos',join_code:'Introducir código de invitación',my_trips:'Mis viajes',services:'Servicios',search:'Buscar servicio',nothing:'Sin resultados',soon:'Próximamente',need_trip:'Primero crea un viaje o únete a uno',qa_expense:'Gasto',qa_invite:'Invitar',qa_members:'Participantes',trips:'Viajes',new_trip:'Crear un viaje',new_trip_sub:'Nombre, moneda y participantes',join:'Unirse con un código',join_sub:'Introduce el código o escanea un QR',on_device:'Viajes en este dispositivo',no_trips:'Tus viajes aparecerán aquí',current:'Abierto',current_trip:'Viaje actual',home:'Inicio',saved:'Guardados',profile:'Perfil',language:'Idioma',theme:'Tema',light:'Claro',dark:'Oscuro',back:'Volver',close:'Cerrar',notifications:'Notificaciones',settings:'Ajustes',key_login:'Entrar con clave personal',key_login_sub:'Número o QR protegido: tus viajes en otro dispositivo',members:n=>n+(n===1?' participante':' participantes')},
+    pt: {create:'Criar viagem',create_sub:'Planeie, partilhe e divida as despesas',join_code:'Introduzir código de convite',my_trips:'As minhas viagens',services:'Serviços',search:'Pesquisar serviço',nothing:'Sem resultados',soon:'Em breve',need_trip:'Crie ou adira primeiro a uma viagem',qa_expense:'Despesa',qa_invite:'Convidar',qa_members:'Participantes',trips:'Viagens',new_trip:'Criar nova viagem',new_trip_sub:'Nome, moeda e participantes',join:'Aderir com código',join_sub:'Introduza o código ou leia um QR',on_device:'Viagens neste dispositivo',no_trips:'As suas viagens aparecerão aqui',current:'Aberta',current_trip:'Viagem atual',home:'Início',saved:'Guardados',profile:'Perfil',language:'Idioma',theme:'Tema',light:'Claro',dark:'Escuro',back:'Voltar',close:'Fechar',notifications:'Notificações',settings:'Definições',key_login:'Entrar com chave pessoal',key_login_sub:'Número ou QR protegido — viagens noutro dispositivo',members:n=>n+(n===1?' participante':' participantes')},
+    pl: {create:'Utwórz podróż',create_sub:'Planuj, udostępniaj i dziel koszty',join_code:'Wpisz kod zaproszenia',my_trips:'Moje podróże',services:'Usługi',search:'Szukaj usługi',nothing:'Brak wyników',soon:'Wkrótce',need_trip:'Najpierw utwórz podróż lub do niej dołącz',qa_expense:'Wydatek',qa_invite:'Zaproś',qa_members:'Uczestnicy',trips:'Podróże',new_trip:'Utwórz nową podróż',new_trip_sub:'Nazwa, waluta i uczestnicy',join:'Dołącz za pomocą kodu',join_sub:'Wpisz kod lub zeskanuj QR',on_device:'Podróże na tym urządzeniu',no_trips:'Tutaj pojawią się Twoje podróże',current:'Otwarta',current_trip:'Bieżąca podróż',home:'Główna',saved:'Zapisane',profile:'Profil',language:'Język',theme:'Motyw',light:'Jasny',dark:'Ciemny',back:'Wstecz',close:'Zamknij',notifications:'Powiadomienia',settings:'Ustawienia',key_login:'Zaloguj się kluczem osobistym',key_login_sub:'Numer lub zabezpieczony kod QR — podróże z innego urządzenia',members:n=>n+(n===1?' uczestnik':' uczestników')},
+    el: {create:'Δημιουργία ταξιδιού',create_sub:'Σχεδιάστε, μοιραστείτε και μοιράστε τα έξοδα',join_code:'Εισαγωγή κωδικού πρόσκλησης',my_trips:'Τα ταξίδια μου',services:'Υπηρεσίες',search:'Αναζήτηση υπηρεσίας',nothing:'Δεν βρέθηκαν αποτελέσματα',soon:'Σύντομα διαθέσιμο',need_trip:'Δημιουργήστε ή συμμετάσχετε πρώτα σε ταξίδι',qa_expense:'Έξοδο',qa_invite:'Πρόσκληση',qa_members:'Συμμετέχοντες',trips:'Ταξίδια',new_trip:'Νέο ταξίδι',new_trip_sub:'Όνομα, νόμισμα και συμμετέχοντες',join:'Συμμετοχή με κωδικό',join_sub:'Εισαγάγετε κωδικό ή σαρώστε QR',on_device:'Ταξίδια σε αυτή τη συσκευή',no_trips:'Τα ταξίδια σας θα εμφανιστούν εδώ',current:'Ανοιχτό',current_trip:'Τρέχον ταξίδι',home:'Αρχική',saved:'Αποθηκευμένα',profile:'Προφίλ',language:'Γλώσσα',theme:'Θέμα',light:'Φωτεινό',dark:'Σκοτεινό',back:'Πίσω',close:'Κλείσιμο',notifications:'Ειδοποιήσεις',settings:'Ρυθμίσεις',key_login:'Σύνδεση με προσωπικό κλειδί',key_login_sub:'Αριθμός ή ασφαλές QR — τα ταξίδια σας σε άλλη συσκευή',members:n=>n+' συμμετέχοντες'},
+    tr: {create:'Gezi oluştur',create_sub:'Birlikte planlayın, paylaşın ve masrafları bölüşün',join_code:'Davet kodunu girin',my_trips:'Gezilerim',services:'Hizmetler',search:'Hizmet ara',nothing:'Sonuç bulunamadı',soon:'Yakında',need_trip:'Önce bir gezi oluşturun veya katılın',qa_expense:'Harcama',qa_invite:'Davet et',qa_members:'Katılımcılar',trips:'Geziler',new_trip:'Yeni gezi oluştur',new_trip_sub:'Ad, para birimi ve katılımcılar',join:'Kodla katıl',join_sub:'Kodu girin veya QR tarayın',on_device:'Bu cihazdaki geziler',no_trips:'Gezileriniz burada görünecek',current:'Açık',current_trip:'Mevcut gezi',home:'Ana sayfa',saved:'Kaydedilenler',profile:'Profil',language:'Dil',theme:'Tema',light:'Açık',dark:'Koyu',back:'Geri',close:'Kapat',notifications:'Bildirimler',settings:'Ayarlar',key_login:'Kişisel anahtarla giriş',key_login_sub:'Numara veya güvenli QR — başka cihazdaki gezileriniz',members:n=>n+' katılımcı'}
   };
   function plRu(n, one, few, many) {
     const m10 = n % 10, m100 = n % 100;
@@ -67,6 +74,32 @@
   }
   const lang = () => { try { return (typeof getLang === 'function' ? getLang() : 'en').slice(0, 2); } catch (_) { return 'en'; } };
   const tx = key => (TXT[lang()] || TXT.en)[key] ?? TXT.en[key];
+  const SETTINGS_TEXT = {
+    ru:['Профиль и настройки','Язык и тема','Нижняя панель','Выбрать быстрые разделы','Сохранённое','Места и идеи — скоро','Все сервисы','Плитки на главной','Пригласить в поездку','QR для друзей','Мой ключ входа','Вернуть поездки на новом телефоне','Открыть кабинет на этом устройстве','Так выглядит ваша панель','Заменить быстрый раздел','Заменить','Вернуть стандартные кнопки','Выберите раздел для нижней панели'],
+    en:['Profile and settings','Language and theme','Bottom bar','Choose quick sections','Saved','Places and ideas — coming soon','All services','Home screen tiles','Invite to trip','QR code for friends','My sign-in key','Restore trips on a new phone','Open your account on this device','Your current bar','Replace a quick section','Replace','Restore default buttons','Choose a section for the bottom bar'],
+    de:['Profil und Einstellungen','Sprache und Design','Untere Leiste','Schnellzugriffe wählen','Gespeichert','Orte und Ideen — bald verfügbar','Alle Dienste','Kacheln auf der Startseite','Zur Reise einladen','QR-Code für Freunde','Mein Zugangsschlüssel','Reisen auf neuem Handy wiederherstellen','Konto auf diesem Gerät öffnen','Deine aktuelle Leiste','Schnellzugriff ersetzen','Ersetzen','Standardbuttons wiederherstellen','Bereich für die untere Leiste wählen'],
+    fr:['Profil et paramètres','Langue et thème','Barre inférieure','Choisir les raccourcis','Enregistrés','Lieux et idées — bientôt','Tous les services','Services sur l’accueil','Inviter au voyage','QR code pour les amis','Ma clé de connexion','Retrouver les voyages sur un nouveau téléphone','Ouvrir votre compte sur cet appareil','Votre barre actuelle','Remplacer un raccourci','Remplacer','Rétablir les boutons par défaut','Choisir une section pour la barre inférieure'],
+    it:['Profilo e impostazioni','Lingua e tema','Barra inferiore','Scegli le scorciatoie','Salvati','Luoghi e idee — prossimamente','Tutti i servizi','Servizi nella schermata iniziale','Invita al viaggio','QR per gli amici','La mia chiave di accesso','Ripristina i viaggi su un nuovo telefono','Apri il tuo account su questo dispositivo','La tua barra attuale','Sostituisci una scorciatoia','Sostituisci','Ripristina i pulsanti predefiniti','Scegli una sezione per la barra inferiore'],
+    es:['Perfil y ajustes','Idioma y tema','Barra inferior','Elegir accesos rápidos','Guardados','Lugares e ideas — próximamente','Todos los servicios','Servicios en inicio','Invitar al viaje','QR para amigos','Mi clave de acceso','Recuperar viajes en otro teléfono','Abrir tu cuenta en este dispositivo','Tu barra actual','Sustituir acceso rápido','Sustituir','Restaurar botones predeterminados','Elige una sección para la barra inferior'],
+    pt:['Perfil e definições','Idioma e tema','Barra inferior','Escolher atalhos','Guardados','Locais e ideias — em breve','Todos os serviços','Serviços no início','Convidar para a viagem','QR para amigos','A minha chave de acesso','Recuperar viagens num novo telemóvel','Abrir a sua conta neste dispositivo','A sua barra atual','Substituir atalho','Substituir','Repor botões predefinidos','Escolha uma secção para a barra inferior'],
+    pl:['Profil i ustawienia','Język i motyw','Dolny pasek','Wybierz skróty','Zapisane','Miejsca i pomysły — wkrótce','Wszystkie usługi','Usługi na stronie głównej','Zaproś do podróży','Kod QR dla znajomych','Mój klucz logowania','Przywróć podróże na nowym telefonie','Otwórz konto na tym urządzeniu','Twój obecny pasek','Zmień skrót','Zmień','Przywróć domyślne przyciski','Wybierz sekcję dolnego paska'],
+    el:['Προφίλ και ρυθμίσεις','Γλώσσα και θέμα','Κάτω γραμμή','Επιλογή συντομεύσεων','Αποθηκευμένα','Μέρη και ιδέες — σύντομα','Όλες οι υπηρεσίες','Υπηρεσίες στην αρχική','Πρόσκληση σε ταξίδι','QR για φίλους','Το κλειδί σύνδεσής μου','Επαναφορά ταξιδιών σε νέο τηλέφωνο','Άνοιγμα λογαριασμού σε αυτή τη συσκευή','Η τρέχουσα γραμμή σας','Αλλαγή συντόμευσης','Αλλαγή','Επαναφορά προεπιλογών','Επιλέξτε ενότητα για την κάτω γραμμή'],
+    tr:['Profil ve ayarlar','Dil ve tema','Alt çubuk','Kısayolları seçin','Kaydedilenler','Yerler ve fikirler — yakında','Tüm hizmetler','Ana sayfadaki hizmetler','Geziye davet et','Arkadaşlar için QR','Giriş anahtarım','Gezileri yeni telefonda geri yükle','Hesabınızı bu cihazda açın','Mevcut çubuğunuz','Kısayolu değiştir','Değiştir','Varsayılan düğmelere dön','Alt çubuk için bölüm seçin']
+  };
+  const st = index => (SETTINGS_TEXT[lang()] || SETTINGS_TEXT.en)[index];
+  const KEY_STATUS = {
+    ru:['Безопасность','Ключ ещё не создан','Ключ появится после входа в поездку','Ключ заменён на другом устройстве','Поездок в кабинете: '],
+    en:['Security','Key not created yet','The key appears after joining a trip','Key replaced on another device','Trips in your account: '],
+    de:['Sicherheit','Schlüssel noch nicht erstellt','Der Schlüssel erscheint nach dem Beitritt zu einer Reise','Schlüssel auf einem anderen Gerät ersetzt','Reisen im Konto: '],
+    fr:['Sécurité','Clé non créée','La clé apparaît après avoir rejoint un voyage','Clé remplacée sur un autre appareil','Voyages dans votre compte : '],
+    it:['Sicurezza','Chiave non ancora creata','La chiave appare dopo aver partecipato a un viaggio','Chiave sostituita su un altro dispositivo','Viaggi nel tuo account: '],
+    es:['Seguridad','Clave aún no creada','La clave aparece al unirse a un viaje','Clave sustituida en otro dispositivo','Viajes en tu cuenta: '],
+    pt:['Segurança','Chave ainda não criada','A chave aparece após aderir a uma viagem','Chave substituída noutro dispositivo','Viagens na sua conta: '],
+    pl:['Bezpieczeństwo','Klucz nie został jeszcze utworzony','Klucz pojawi się po dołączeniu do podróży','Klucz zmieniony na innym urządzeniu','Podróże na koncie: '],
+    el:['Ασφάλεια','Το κλειδί δεν έχει δημιουργηθεί','Το κλειδί εμφανίζεται μετά τη συμμετοχή σε ταξίδι','Το κλειδί αντικαταστάθηκε σε άλλη συσκευή','Ταξίδια στον λογαριασμό: '],
+    tr:['Güvenlik','Anahtar henüz oluşturulmadı','Anahtar bir geziye katıldıktan sonra görünür','Anahtar başka cihazda değiştirildi','Hesabınızdaki geziler: ']
+  };
+  const ks = index => (KEY_STATUS[lang()] || KEY_STATUS.en)[index];
   const svcTitle = s => s.title[lang()] || s.title.en || s.id;
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const say = msg => { if (typeof toast === 'function') toast(msg); };
@@ -302,20 +335,18 @@
   function keyRow() {
     if (!window.STKey) return '';
     const k = STKey.status();
-    const sub = !k.has ? (k.n ? 'Не создан — восстановить поездки на новом телефоне будет нельзя' : 'Появится, когда войдёте в поездку')
-      : k.srv === 'replaced' ? 'Ключ заменён на другом устройстве — войдите по новому'
-      : 'Кабинет: ' + k.n + ' ' + (k.n % 10 === 1 && k.n % 100 !== 11 ? 'поездка' : [2, 3, 4].includes(k.n % 10) && ![12, 13, 14].includes(k.n % 100) ? 'поездки' : 'поездок') + (k.fresh ? '' : ' · обновляется…');
-    return `<div class="hub-sheet-lbl">Безопасность</div>` +
+    const sub = !k.has ? ks(k.n ? 1 : 2) : k.srv === 'replaced' ? ks(3) : ks(4) + k.n;
+    return `<div class="hub-sheet-lbl">${esc(ks(0))}</div>` +
       `<button class="hub-row" type="button" data-hub="my-key" style="margin-top:4px"><i data-lucide="key-round" style="color:#d9962b"></i>` +
-      `<span style="flex:1;min-width:0;text-align:left"><b style="display:block">Мой ключ входа</b><small style="color:var(--t2)">${esc(sub)}</small></span><i data-lucide="chevron-right"></i></button>`;
+      `<span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(st(10))}</b><small style="color:var(--t2)">${esc(sub)}</small></span><i data-lucide="chevron-right"></i></button>`;
   }
 
   // Настройки и быстрые кнопки нижней панели.
   const NAV_DEFAULT = ['expenses', 'bookings', 'calendar'];
   const NAV_ICONS = { expenses:'wallet', trips:'plane', bookings:'bed-double', calendar:'calendar-days', route:'map', guide:'map-pinned', translator:'languages', currency:'coins', weather:'cloud-sun', checklist:'list-checks', transport:'car', nearby:'map-pin', stats:'chart-no-axes-column', emergency:'briefcase-medical', offline:'download', diary:'book-open', assistant:'sparkles' };
   function navOptions() {
-    return [{ id:'expenses', label:'Расходы' }, { id:'trips', label:'Поездки' },
-      ...(window.ST_SERVICES || []).filter(s => s.id !== 'expenses' && isActive(s)).map(s => ({ id:s.id, label:s.id === 'bookings' ? 'Брони' : s.title.ru || svcTitle(s) }))];
+    return [{ id:'expenses', label:svcTitle((window.ST_SERVICES||[]).find(s=>s.id==='expenses')||{title:{en:'Expenses'}}) }, { id:'trips', label:tx('trips') },
+      ...(window.ST_SERVICES || []).filter(s => s.id !== 'expenses' && isActive(s)).map(s => ({ id:s.id, label:svcTitle(s) }))];
   }
   function navSlots() {
     const allowed = new Set(navOptions().map(x => x.id));
@@ -338,19 +369,19 @@
     render(); openNavSettings();
   }
   function navIcon(id) { return `<i data-lucide="${esc(id === 'home' ? 'house' : id === 'more' ? 'settings' : NAV_ICONS[id] || 'circle')}"></i>`; }
-  function navLabel(id) { return id === 'home' ? 'Главная' : id === 'more' ? 'Настройки' : navOptions().find(o => o.id === id)?.label || id; }
+  function navLabel(id) { return id === 'home' ? tx('home') : id === 'more' ? tx('settings') : navOptions().find(o => o.id === id)?.label || id; }
   function navPreview(id) { return `<span class="hub-nav-preview-item">${navIcon(id)}<span>${esc(navLabel(id))}</span></span>`; }
   function openNavSettings() {
     let ov = $('m-hub-profile');
     if (!ov) { ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'm-hub-profile'; ov.innerHTML = '<div class="mdl hub-sheet"></div>'; document.body.appendChild(ov); }
     const slots = navSlots();
-    ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd"><div class="mdl-title">Нижняя панель</div>' +
+    ov.firstChild.innerHTML = `<div class="mdl-handle"></div><div class="hub-sheet-hd"><div class="mdl-title">${esc(st(2))}</div>` +
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
-      '<div class="hub-sheet-lbl">Так выглядит ваша панель</div>' +
+      `<div class="hub-sheet-lbl">${esc(st(13))}</div>` +
       `<div class="hub-nav-preview">${[slots[0], slots[1], 'home', slots[2], 'more'].map(navPreview).join('')}</div>` +
-      '<div class="hub-sheet-lbl">Заменить быстрый раздел</div>' +
-      slots.map((id, i) => `<div class="hub-nav-choice"><span class="hub-nav-choice-current">${navIcon(id)}<b>${esc(navLabel(id))}</b></span><button class="hub-nav-replace" type="button" data-hub="nav-pick" data-v="${i}" aria-label="Заменить ${esc(navLabel(id))}">Заменить <i data-lucide="chevron-right"></i></button></div>`).join('') +
-      '<button class="btn btn-g btn-fw" type="button" data-hub="nav-reset">Вернуть стандартные кнопки</button>';
+      `<div class="hub-sheet-lbl">${esc(st(14))}</div>` +
+      slots.map((id, i) => `<div class="hub-nav-choice"><span class="hub-nav-choice-current">${navIcon(id)}<b>${esc(navLabel(id))}</b></span><button class="hub-nav-replace" type="button" data-hub="nav-pick" data-v="${i}" aria-label="${esc(st(15))} ${esc(navLabel(id))}">${esc(st(15))} <i data-lucide="chevron-right"></i></button></div>`).join('') +
+      `<button class="btn btn-g btn-fw" type="button" data-hub="nav-reset">${esc(st(16))}</button>`;
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
     icons(ov);
   }
@@ -358,10 +389,10 @@
     const ov = $('m-hub-profile'), slots = navSlots(), options = navOptions();
     if (!ov || !Number.isInteger(index) || index < 0 || index > 2) return;
     ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd">' +
-      '<button class="hub-nav-picker-back" type="button" data-hub="nav-settings" aria-label="Назад"><i data-lucide="arrow-left"></i></button>' +
-      `<div class="mdl-title">Заменить ${esc(navLabel(slots[index]))}</div>` +
+      `<button class="hub-nav-picker-back" type="button" data-hub="nav-settings" aria-label="${esc(tx('back'))}"><i data-lucide="arrow-left"></i></button>` +
+      `<div class="mdl-title">${esc(st(15))} ${esc(navLabel(slots[index]))}</div>` +
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
-      '<div class="hub-sheet-lbl">Выберите раздел для нижней панели</div><div class="hub-nav-options">' +
+      `<div class="hub-sheet-lbl">${esc(st(17))}</div><div class="hub-nav-options">` +
       options.map(o => `<button class="hub-nav-option${o.id === slots[index] ? ' on' : ''}" type="button" data-hub="nav-select" data-v="${esc(o.id)}" data-slot="${index}">${navIcon(o.id)}<span>${esc(o.label)}</span>${o.id === slots[index] ? '<i data-lucide="check"></i>' : ''}</button>`).join('') + '</div>';
     icons(ov);
   }
@@ -376,17 +407,17 @@
       document.body.appendChild(ov);
     }
     const rows = [
-      ['profile', 'user', 'Профиль и настройки', 'Язык и тема'],
-      ['nav-settings', 'panel-bottom', 'Нижняя панель', 'Выбрать быстрые разделы'],
-      ['saved', 'bookmark', 'Сохранённое', 'Места и идеи — скоро'],
-      ['services', 'layout-grid', 'Все сервисы', 'Плитки на главной'],
-      hasTrip() ? ['invite', 'qr-code', 'Пригласить в поездку', 'QR для друзей'] : null,
-      window.STKey ? ['mykey', 'key-round', 'Мой ключ входа', 'Только для вас: вернуть поездки на новом телефоне'] : null,
-      window.STKey ? ['keylogin', 'log-in', 'Войти по личному ключу', 'Открыть свой кабинет на этом устройстве'] : null
+      ['profile', 'user', st(0), st(1)],
+      ['nav-settings', 'panel-bottom', st(2), st(3)],
+      ['saved', 'bookmark', st(4), st(5)],
+      ['services', 'layout-grid', st(6), st(7)],
+      hasTrip() ? ['invite', 'qr-code', st(8), st(9)] : null,
+      window.STKey ? ['mykey', 'key-round', st(10), st(11)] : null,
+      window.STKey ? ['keylogin', 'log-in', tx('key_login'), st(12)] : null
     ].filter(Boolean);
     ov.firstChild.innerHTML =
       '<div class="mdl-handle"></div>' +
-      `<div class="hub-sheet-hd"><div class="mdl-title">Настройки</div>` +
+      `<div class="hub-sheet-hd"><div class="mdl-title">${esc(tx('settings'))}</div>` +
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x" style="width:15px;height:15px"></i></button></div>` +
       rows.map(([v, ic, t, sub]) => rowHtml('more', v, ic, esc(t), sub)).join('');
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
@@ -480,7 +511,7 @@
         `<button class="hub-pill" type="button" data-hub="join"><i data-lucide="scan-line"></i><span>${esc(tx('join_code'))}</span></button>` +
         `<button class="hub-pill" type="button" data-hub="nav" data-v="trips"><i data-lucide="briefcase"></i><span>${esc(tx('my_trips'))}</span></button>` +
         '</div>' +
-        (window.STKey ? '<button class="hub-row" type="button" data-hub="key-login" style="margin-top:2px"><i data-lucide="key-round" style="color:#d9962b"></i><span style="flex:1;min-width:0;text-align:left"><b style="display:block">Войти по личному ключу</b><small style="color:var(--t2)">Номер или QR с замком — ваши поездки с другого устройства</small></span><i data-lucide="chevron-right"></i></button>' : '');
+        (window.STKey ? `<button class="hub-row" type="button" data-hub="key-login" style="margin-top:2px"><i data-lucide="key-round" style="color:#d9962b"></i><span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(tx('key_login'))}</b><small style="color:var(--t2)">${esc(tx('key_login_sub'))}</small></span><i data-lucide="chevron-right"></i></button>` : '');
     }
     const search = searchOpen
       ? `<label class="hub-search"><i data-lucide="search"></i><input id="hub-q" type="search" value="${esc(query)}" placeholder="${esc(tx('search'))}" autocomplete="off"></label>`
@@ -509,7 +540,7 @@
       `<h2>${esc(tx('trips'))}</h2><span class="hub-icbtn-sp"></span></div>` +
       rowHtml('create', null, 'plus', esc(tx('new_trip')), tx('new_trip_sub'), ' hub-row-accent') +
       rowHtml('join', null, 'qr-code', esc(tx('join')), tx('join_sub')) +
-      (window.STKey ? rowHtml('key-login', null, 'key-round', 'Войти по личному ключу', 'Номер или QR с замком — ваши поездки с другого устройства') : '') +
+      (window.STKey ? rowHtml('key-login', null, 'key-round', esc(tx('key_login')), tx('key_login_sub')) : '') +
       `<div class="hub-sec-hd">${esc(tx('on_device'))}</div>` + rows;
   }
 
@@ -517,7 +548,7 @@
   function navHtml() {
     const options = navOptions();
     const slots = navSlots();
-    const items = [slots[0], slots[1], 'home', slots[2], 'more'].map(id => [id, id === 'home' ? 'house' : id === 'more' ? 'settings' : NAV_ICONS[id] || 'circle', id === 'home' ? 'Главная' : id === 'more' ? 'Настройки' : options.find(o => o.id === id)?.label || id]);
+    const items = [slots[0], slots[1], 'home', slots[2], 'more'].map(id => [id, id === 'home' ? 'house' : id === 'more' ? 'settings' : NAV_ICONS[id] || 'circle', navLabel(id)]);
     const active = view === 'trips' ? 'trips' : 'home';
     return '<nav class="hub-nav"><div class="hub-nav-in">' +
       items.map(([v, ic, label]) => `<button class="hub-ni${v === active ? ' on' : ''}" type="button" data-hub="nav" data-v="${v}"><i data-lucide="${ic}"></i><span>${esc(label)}</span></button>`).join('') +
@@ -582,7 +613,7 @@
         if (typeof closeModal === 'function') closeModal('m-hub-profile');
         if (v === 'profile') setTimeout(openProfile, 60);
         else if (v === 'nav-settings') setTimeout(openNavSettings, 60);
-        else if (v === 'saved') say('Сохранённое — ' + tx('soon'));
+        else if (v === 'saved') say(st(4) + ' — ' + tx('soon'));
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
         else if (v === 'invite' && typeof openQR === 'function') openQR();
         else if (v === 'mykey' && window.STKey) setTimeout(() => STKey.openMyKey(), 60);
