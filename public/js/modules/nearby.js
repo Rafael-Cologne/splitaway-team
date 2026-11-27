@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (!window.STHub) return;
-
+ 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   STHub.addStyles('nearby', `
@@ -26,7 +26,7 @@
     if (window.NearbyAPI) return Promise.resolve(window.NearbyAPI);
     return new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = '/js/modules/nearby-api.js?v=2'; // ?v= — чтобы телефон не брал старую копию из кэша; при изменении nearby-api.js увеличить число
+      s.src = '/js/modules/nearby-api.js?v=7'; // ?v= — чтобы телефон не брал старую копию из кэша; при изменении nearby-api.js увеличить число
       s.onload = () => res(window.NearbyAPI);
       s.onerror = () => rej(new Error('Не найден nearby-api.js'));
       document.head.appendChild(s);
@@ -36,6 +36,7 @@
   STHub.registerService('nearby', ctx => {
     let lat = 52.5200, lon = 13.4050;
     let type = ctx.store.get('type', 'all'), radius = ctx.store.get('radius', 2000);
+    let pAccess = ctx.store.get('pAccess', 'all');
     let map, layer, uMark, circle, rLine;
 
     const locate = manual => {
@@ -57,18 +58,24 @@
             <button class="st-btn ${type === 'cafe' ? '' : 'st-btn-g'}" data-t="cafe">☕ Кафе</button>
             <button class="st-btn ${type === 'shop' ? '' : 'st-btn-g'}" data-t="shop">🛒 Магазины</button>
             <button class="st-btn ${type === 'fuel' ? '' : 'st-btn-g'}" data-t="fuel">⛽ Заправки</button>
-            <select class="st-input" id="nb-rad" style="width:auto;padding:6px 10px;margin:0;">
+            <select class="st-input" id="nb-rad" style="width:auto;padding:6px 10px;margin:0;margin-left:auto;">
               <option value="1000" ${radius === 1000 ? 'selected' : ''}>1 км</option>
               <option value="2000" ${radius === 2000 ? 'selected' : ''}>2 км</option>
               <option value="5000" ${radius === 5000 ? 'selected' : ''}>5 км</option>
               <option value="10000" ${radius === 10000 ? 'selected' : ''}>10 км</option>
+            </select>
+            <button class="st-btn ${type === 'ev' ? '' : 'st-btn-g'}" data-t="ev">🔌 Электрозаправки</button>
+            <button class="st-btn ${type === 'parking' ? '' : 'st-btn-g'}" data-t="parking">🅿️ Парковки</button>
+            <select class="st-input" id="nb-pacc" style="width:auto;padding:6px 10px;margin:0;display:${type === 'parking' ? 'inline-block' : 'none'};">
+              <option value="all" ${pAccess === 'all' ? 'selected' : ''}>Все парковки</option>
+              <option value="public" ${pAccess === 'public' ? 'selected' : ''}>Общественные</option>
+              <option value="private" ${pAccess === 'private' ? 'selected' : ''}>Частные</option>
             </select>
           </div>
           <div class="nb-route" id="nb-rbar"><span id="nb-rtxt"></span><button class="st-btn st-btn-g" id="nb-roff" style="padding:4px 8px;font-size:12px;">✖</button></div>
           <div class="nb-map-box"><div id="nb-map"></div></div>
           <div class="st-card-title" id="nb-ttl" style="margin-bottom:8px;">Места рядом</div>
           <div id="nb-list"></div>`;
-
         let api;
         try { api = await loadHelper(); await api.ensureLeaflet(); }
         catch (e) { body.querySelector('#nb-list').innerHTML = `<div class="st-empty"><div>${esc(e.message)}</div></div>`; return; }
@@ -103,18 +110,27 @@
           list.innerHTML = '<div class="st-empty"><div>Поиск мест...</div></div>';
           layer.clearLayers();
           try {
-            const places = await api.fetchPlaces(lat, lon, type, radius);
+            let places = await api.fetchPlaces(lat, lon, type, radius);
+            if (type === 'parking') {
+              const isPriv = p => /^(private|customers|permit|no)$/i.test(p.access);
+              if (pAccess === 'public') places = places.filter(p => !isPriv(p));
+              if (pAccess === 'private') places = places.filter(p => isPriv(p));
+            }
             body.querySelector('#nb-ttl').textContent = `Места рядом (${places.length})`;
             if (!places.length) { list.innerHTML = '<div class="st-empty"><div>Ничего не найдено</div></div>'; return; }
             list.innerHTML = '';
             places.forEach(p => {
-              const st = p.category === 'Кафе' ? { c: '#e67e22', e: '☕' } : p.category === 'Заправка' ? { c: '#2980b9', e: '⛽' } : { c: '#27ae60', e: '🛒' };
+              const st = p.category === 'Кафе' ? { c: '#e67e22', e: '☕' }
+                        : p.category === 'Заправка' ? { c: '#2980b9', e: '⛽' }
+                        : p.category === 'Электрозаправка' ? { c: '#16a085', e: '🔌' }
+                        : p.category === 'Парковка' ? { c: '#34495e', e: '🅿️' }
+                        : { c: '#27ae60', e: '🛒' };
+              const feeTxt = /^no$/i.test(p.fee) ? ' • Бесплатная' : /^(yes|conditional)$/i.test(p.fee) ? ' • Платная' : '';
               const icon = L.divIcon({ className: '', html: `<div class="nb-pin" style="background:${st.c}">${st.e}</div>`, iconSize: new Array(32, 32), iconAnchor: new Array(16, 16), popupAnchor: new Array(0, -16) });
-              const m = L.marker(new Array(p.lat, p.lon), { icon }).bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.category)} • ${api.fmtDist(p.distance)}<br>${esc(p.address)}`).addTo(layer);
-
+              const m = L.marker(new Array(p.lat, p.lon), { icon }).bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.category)}${feeTxt} • ${api.fmtDist(p.distance)}<br>${esc(p.address)}`).addTo(layer);
               const card = document.createElement('div');
               card.className = 'st-card'; card.style.cssText = 'cursor:pointer;margin-bottom:8px;';
-              card.innerHTML = `<div class="st-row" style="padding:0;"><span class="st-row-ic">${st.e}</span><span class="st-row-txt"><span class="st-row-ttl">${esc(p.name)} <span class="st-muted">(${api.fmtDist(p.distance)})</span></span><span class="st-muted" style="font-size:12px;">${esc(p.category)} • ${esc(p.address)}</span></span><button class="st-btn st-btn-g nb-go" style="padding:6px 10px;font-size:12px;">🧭 Маршрут</button></div>`;
+              card.innerHTML = `<div class="st-row" style="padding:0;"><span class="st-row-ic">${st.e}</span><span class="st-row-txt"><span class="st-row-ttl">${esc(p.name)} <span class="st-muted">(${api.fmtDist(p.distance)})</span></span><span class="st-muted" style="font-size:12px;">${esc(p.category)}${feeTxt} • ${esc(p.address)}</span></span><button class="st-btn st-btn-g nb-go" style="padding:6px 10px;font-size:12px;">🧭 Маршрут</button></div>`;
               card.onclick = () => { body.querySelectorAll('.st-card').forEach(x => x.classList.remove('nb-card-on')); card.classList.add('nb-card-on'); map.flyTo(new Array(p.lat, p.lon), 16, { duration: 0.7 }); m.openPopup(); };
               card.querySelector('.nb-go').onclick = e => { e.stopPropagation(); buildRoute(p); };
               list.appendChild(card);
@@ -126,8 +142,15 @@
         body.querySelectorAll('.nb-bar button[data-t]').forEach(b => b.onclick = () => {
           type = b.dataset.t; ctx.store.set('type', type);
           body.querySelectorAll('.nb-bar button[data-t]').forEach(x => x.classList.toggle('st-btn-g', x.dataset.t !== type));
+          body.querySelector('#nb-pacc').style.display = type === 'parking' ? 'inline-block' : 'none';
           loadPlaces();
         });
+        body.querySelector('#nb-pacc').onchange = e => {
+          pAccess = e.target.value; ctx.store.set('pAccess', pAccess);
+          loadPlaces();
+        };
+
+        
         body.querySelector('#nb-rad').onchange = e => { radius = +e.target.value; ctx.store.set('radius', radius); clearRoute(); updateCenter('Центр поиска', true); loadPlaces(); };
         body.querySelector('#nb-roff').onclick = clearRoute;
 

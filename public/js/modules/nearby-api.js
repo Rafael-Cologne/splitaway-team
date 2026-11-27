@@ -1,11 +1,11 @@
 (function () {
   'use strict';
-
+ 
   // Места рядом — OpenStreetMap, бесплатно и без ключа (правило команды: никаких ключей в коде).
   //  1) Nominatim — быстро (~0,3 с на запрос); его правило: не чаще 1 запроса в секунду;
   //  2) запасной вариант — Overpass (бывает перегружен и отвечает долго или не отвечает).
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
-  const NOMINATIM_Q = { cafe: ['cafe'], shop: ['supermarket', 'convenience store', 'mall'], fuel: ['fuel'] };
+  const NOMINATIM_Q = { cafe: ['cafe'], shop: ['supermarket', 'convenience store', 'mall'], fuel: ['fuel'], ev: ['charging station'], parking: ['parking'] };
 
   function ensureLeaflet() {
     if (window.L) return Promise.resolve();
@@ -58,20 +58,20 @@
   async function nominatimPlaces(lat, lon, type, radius) {
     const dLat = radius / 111320, dLon = radius / (111320 * Math.cos(lat * Math.PI / 180));
     const box = [lon - dLon, lat + dLat, lon + dLon, lat - dLat].map(v => v.toFixed(5)).join(',');
-    const kinds = type === 'all' ? ['cafe', 'shop', 'fuel'] : [type];
+    const kinds = type === 'all' ? ['cafe', 'shop', 'fuel', 'ev', 'parking'] : [type];
     const qs = []; kinds.forEach(k => (NOMINATIM_Q[k] || []).forEach(q => qs.push(q)));
     const out = []; let ok = 0;
     for (let i = 0; i < qs.length; i++) {
       if (i) await pause(1100); // правило Nominatim: не чаще 1 запроса в секунду
       try {
-        const list = await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&accept-language=ru&limit=40&bounded=1&viewbox=${box}&q=${encodeURIComponent(qs[i])}`, null, 10000);
+        const list = await getJSON(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&&extratags=1&accept-language=ru&limit=40&bounded=1&viewbox=${box}&q=${encodeURIComponent(qs[i])}`, null, 10000);
         ok++;
         list.forEach(p => {
           const cat = p.category, typ = p.type;
-          if (!((cat === 'amenity' && (typ === 'cafe' || typ === 'fuel')) || (cat === 'shop' && /^(supermarket|convenience|mall)$/.test(typ)))) return;
+          if (!((cat === 'amenity' && (typ === 'cafe' || typ === 'fuel' || typ === 'charging_station' || typ === 'parking')) || (cat === 'shop' && /^(supermarket|convenience|mall)$/.test(typ)))) return;
           const a = p.address || {};
           out.push({ id: (p.osm_type || 'n') + '-' + p.osm_id, lat: +p.lat, lon: +p.lon,
-            tags: { amenity: cat === 'amenity' ? typ : undefined, shop: cat === 'shop' ? typ : undefined, name: p.name, 'addr:street': a.road, 'addr:housenumber': a.house_number } });
+            tags: { amenity: cat === 'amenity' ? typ : undefined, shop: cat === 'shop' ? typ : undefined, access: p.extratags?.access, fee: p.extratags?.fee, name: p.name, 'addr:street': a.road, 'addr:housenumber': a.house_number } });
         });
       } catch (_) {}
     }
@@ -85,6 +85,8 @@
     if (type === 'all' || type === 'cafe') parts.push(`nwr["amenity"="cafe"]${around};`);
     if (type === 'all' || type === 'shop') parts.push(`nwr["shop"~"^(supermarket|convenience|mall)$"]${around};`);
     if (type === 'all' || type === 'fuel') parts.push(`nwr["amenity"="fuel"]${around};`);
+    if (type === 'all' || type === 'ev') parts.push(`nwr["amenity"="charging_station"]${around};`);
+    if (type === 'all' || type === 'parking') parts.push(`nwr["amenity"="parking"]${around};`);
     const query = `[out:json][timeout:20];(${parts.join('')});out center 200;`;
     const opts = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: 'data=' + encodeURIComponent(query) };
     const data = await Promise.any(OVERPASS.map(u => getJSON(u, opts, 30000)));
@@ -105,11 +107,17 @@
     const seen = new Set();
     const list = raw.map(p => {
       const t = p.tags || {};
-      const category = t.amenity === 'cafe' ? 'Кафе' : t.amenity === 'fuel' ? 'Заправка' : 'Магазин';
+      const category = t.amenity === 'cafe' ? 'Кафе' 
+      : t.amenity === 'fuel' ? 'Заправка' 
+      : t.amenity === 'charging_station' ? 'Электрозаправка' 
+      : t.amenity === 'parking' ? 'Парковка' 
+      : 'Магазин';
       return {
         id: p.id, lat: p.lat, lon: p.lon,
         name: t['name:ru'] || t.name || t.brand || category,
         category,
+        access: t.access || '',
+        fee: t.fee || '',
         address: t['addr:street'] ? `${t['addr:street']} ${t['addr:housenumber'] || ''}`.trim() : 'Адрес не указан',
         distance: distM(lat, lon, p.lat, p.lon)
       };
