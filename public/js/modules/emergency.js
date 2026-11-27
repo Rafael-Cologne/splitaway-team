@@ -19,6 +19,7 @@
   const ID = 'emergency';
   const IMG = '/img/emergency/';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const regionName = cc => { try { return new Intl.DisplayNames(['ru'], { type: 'region' }).of(cc.toUpperCase()); } catch (_) { return cc.toUpperCase(); } };
   const flagEmoji = cc => cc && cc.length === 2 ? String.fromCodePoint(...cc.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0))) : '';
@@ -350,9 +351,9 @@
               <button class="em-hero-btn" type="button" data-a="set" style="right:6px" aria-label="Настройки"><i data-lucide="settings"></i></button>
               <div class="em-hero-t"><h1>Экстренно</h1><p>Быстрая помощь в любой стране</p></div>
             </div>
-            <a class="em-sos" href="${tel(mainNum())}" aria-label="Экстренный вызов ${esc(mainNum())}"><span class="l1"><i data-lucide="phone"></i>SOS</span><span class="l2">Экстренный вызов · ${esc(mainNum())}</span></a>
+            <a class="em-sos" href="${tel(mainNum())}" aria-label="${esc(ui('Экстренный вызов'))} ${esc(mainNum())}"><span class="l1"><i data-lucide="phone"></i>SOS</span><span class="l2">${esc(ui('Экстренный вызов'))} · ${esc(mainNum())}</span></a>
             <div class="em-grid">${tiles.map(([k, img, l]) => `<button class="em-tile" type="button" data-go="${k}"><img src="${IMG}${img}.webp" alt=""><b>${l}</b></button>`).join('')}</div>
-            <button class="em-me" type="button" data-go="me"><img src="${IMG}idcard.webp" alt=""><span><b>Моя информация</b><small>${me.name ? esc(me.name) + ' · ' : ''}Паспорт, страховка, контакты</small></span><i data-lucide="chevron-right"></i></button>
+            <button class="em-me" type="button" data-go="me"><img src="${IMG}idcard.webp" alt=""><span><b>Моя информация</b><small>${me.name ? esc(me.name) + ' · ' : ''}${esc(ui('Паспорт, страховка, контакты'))}</small></span><i data-lucide="chevron-right"></i></button>
             ${!n && ccNow() ? `<div class="em-note">Для страны «${esc(regionName(ccNow()))}» номеров в приложении нет — SOS набирает 112, он работает с мобильного в большинстве стран.</div>` : ''}`;
           icons(body);
           body.querySelector('[data-a="back"]').addEventListener('click', () => ctx.close());

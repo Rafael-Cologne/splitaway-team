@@ -19,13 +19,17 @@
   const TILE = 'https://tile.openstreetmap.org/';
   const LEAFLET = 'https://' + ['unpkg', 'com'].join('.') + '/leaflet@1.9.4/dist/';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const online = () => navigator.onLine !== false;
   const hasCaches = () => 'caches' in window;
   const lsJSON = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { return null; } };
   const META = { get: () => lsJSON('st_offline_meta') || {}, set(m) { try { localStorage.setItem('st_offline_meta', JSON.stringify(m)); } catch (_) {} } };
   const VER = (() => { const s = document.querySelector('script[src*="/js/hub.js"]'); const m = s && /[?&]v=([^&]+)/.exec(s.getAttribute('src')); return m ? m[1] : ''; })();
-  const fmtMB = b => b >= 1073741824 ? (b / 1073741824).toFixed(1).replace('.', ',') + ' ГБ' : b >= 10485760 ? Math.round(b / 1048576) + ' МБ' : b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' МБ' : Math.max(1, Math.round((b || 0) / 1024)) + ' КБ';
+  const fmtMB = b => {
+    const format = n => new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { maximumFractionDigits:1, minimumFractionDigits:1 }).format(n);
+    return b >= 1073741824 ? format(b / 1073741824) + ' ' + ui('ГБ') : b >= 10485760 ? Math.round(b / 1048576) + ' ' + ui('МБ') : b >= 1048576 ? format(b / 1048576) + ' ' + ui('МБ') : Math.max(1, Math.round((b || 0) / 1024)) + ' ' + ui('КБ');
+  };
   const fmtTime = t => new Date(t).toLocaleString(window.STModuleUI?.locale() || 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   const placeKey = trip => [trip.dest || '', trip.name || ''].join('|').toLowerCase();
   const T = () => window.STTranslator || null;
@@ -283,7 +287,7 @@
           const trSt = !st ? stHtml('no', '…') : s.trState === 'ok' ? stHtml('ok', 'Скачано') : s.trState === 'need' ? stHtml('need', 'Нужна загрузка') : stHtml('part', 'Частично');
           const rtSt = !trip ? stHtml('no', 'Нет поездки') : s.places ? stHtml('ok', 'Скачано') : stHtml('no', 'Нет точек');
           const syncSt = s.dirty ? stHtml('part', online() ? 'Отправляется' : 'Ждёт сети') : stHtml('ok', 'Всё отправлено');
-          const trSub = !st || !tr ? 'Языковые пакеты' : `${tr.name(s.lang)}: ` + (s.trState === 'ok' ? 'перевод, фразы и фото без сети' : s.trState === 'part' || s.trState === 'partial' ? 'фразы и фото офлайн, текст — онлайн' : 'нужно скачать');
+          const trSub = !st || !tr ? ui('Языковые пакеты') : `${tr.name(s.lang) || ui('Языковые пакеты')}: ` + ui(s.trState === 'ok' ? 'перевод, фразы и фото без сети' : s.trState === 'part' || s.trState === 'partial' ? 'фразы и фото офлайн, текст — онлайн' : 'нужно скачать');
           const est = APP_EST + (trip ? tileList((s.map && s.map.lat) || 48, (s.map && s.map.lon) || 10, (s.map && s.map.km) || 5).length * TILE_EST : 0);
           const allOk = s.app === 'ok' && (!trip || s.map) && s.trState !== 'need';
           const used = (m.assets ? m.assets.bytes : 0) + Object.values(m.maps || {}).reduce((a, x) => a + (x.bytes || 0), 0);
@@ -301,7 +305,7 @@
             <div class="of-mem">
               <div class="of-mem-h"><i data-lucide="hard-drive" style="width:22px;height:22px;color:#5b4bd6"></i><b>Память</b>${used ? '<button type="button" data-a="clear">Очистить</button>' : ''}</div>
               ${s.est && s.est.quota ? `<div class="of-bar"><i style="width:${Math.min(100, Math.max(2, s.est.usage / s.est.quota * 100)).toFixed(1)}%"></i></div>` : ''}
-              <small>Офлайн-данные: ${used ? fmtMB(used) : 'пока ничего'}${s.est && s.est.quota ? ' · свободно ' + fmtMB(Math.max(0, s.est.quota - s.est.usage)) : ''}${s.persisted ? ' · защищено от автоудаления' : ''}<br>Личные данные (медкарта, документы, расходы) кнопка «Очистить» не трогает.</small>
+              <small>${esc(ui('Офлайн-данные:'))} ${used ? fmtMB(used) : esc(ui('пока ничего'))}${s.est && s.est.quota ? ' · ' + esc(ui('свободно')) + ' ' + fmtMB(Math.max(0, s.est.quota - s.est.usage)) : ''}${s.persisted ? ' · ' + esc(ui('защищено от автоудаления')) : ''}<br>Личные данные (медкарта, документы, расходы) кнопка «Очистить» не трогает.</small>
             </div>
             <button class="of-big" type="button" data-a="all" ${job.on ? 'disabled' : ''}>${job.on ? `<span class="p" style="width:${Math.round(job.pct * 100)}%"></span>` : ''}
               <i data-lucide="${job.on ? 'loader' : 'download'}"></i>${job.on ? 'Скачиваю… ' + Math.round(job.pct * 100) + '%' : allOk ? 'Обновить офлайн-пакет' : 'Скачать всё для офлайн'} ${job.on ? '' : `<em>(≈ ${fmtMB(est)})</em>`}</button>

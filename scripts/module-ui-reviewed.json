@@ -27,5 +27,23 @@
   },
   "Не забыть зарядку и паспорт": {
     "en": "Remember the charger and passport", "de": "Ladegerät und Reisepass nicht vergessen", "fr": "Ne pas oublier le chargeur et le passeport", "it": "Non dimenticare caricabatterie e passaporto", "es": "No olvidar el cargador ni el pasaporte", "pt": "Não esquecer o carregador nem o passaporte", "pl": "Nie zapomnieć ładowarki i paszportu", "el": "Να μην ξεχάσω τον φορτιστή και το διαβατήριο", "tr": "Şarj cihazını ve pasaportu unutma"
+  },
+  "Поиск и карта": {
+    "en": "Search and map", "de": "Suche und Karte", "fr": "Recherche et carte", "it": "Ricerca e mappa", "es": "Búsqueda y mapa", "pt": "Pesquisa e mapa", "pl": "Wyszukiwanie i mapa", "el": "Αναζήτηση και χάρτης", "tr": "Arama ve harita"
+  },
+  "Мой план": {
+    "en": "My plan", "de": "Mein Plan", "fr": "Mon programme", "it": "Il mio piano", "es": "Mi plan", "pt": "O meu plano", "pl": "Mój plan", "el": "Το πρόγραμμά μου", "tr": "Planım"
+  },
+  "Паспорт, страховка, контакты": {
+    "en": "Passport, insurance, contacts", "de": "Reisepass, Versicherung, Kontakte", "fr": "Passeport, assurance, contacts", "it": "Passaporto, assicurazione, contatti", "es": "Pasaporte, seguro, contactos", "pt": "Passaporte, seguro, contactos", "pl": "Paszport, ubezpieczenie, kontakty", "el": "Διαβατήριο, ασφάλιση, επαφές", "tr": "Pasaport, sigorta, kişiler"
+  },
+  "Офлайн-данные:": {
+    "en": "Offline data:", "de": "Offline-Daten:", "fr": "Données hors ligne :", "it": "Dati offline:", "es": "Datos sin conexión:", "pt": "Dados offline:", "pl": "Dane offline:", "el": "Δεδομένα εκτός σύνδεσης:", "tr": "Çevrimdışı veriler:"
+  },
+  "свободно": {
+    "en": "free", "de": "frei", "fr": "libres", "it": "liberi", "es": "libres", "pt": "livres", "pl": "wolne", "el": "ελεύθερα", "tr": "boş alan"
+  },
+  "защищено от автоудаления": {
+    "en": "protected from automatic deletion", "de": "vor automatischem Löschen geschützt", "fr": "protégé contre la suppression automatique", "it": "protetto dall’eliminazione automatica", "es": "protegido contra el borrado automático", "pt": "protegido contra eliminação automática", "pl": "chronione przed automatycznym usunięciem", "el": "προστατευμένα από αυτόματη διαγραφή", "tr": "otomatik silinmeye karşı korumalı"
   }
 }

@@ -9,6 +9,7 @@
 
   const ID = 'guide';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const safeUrl = url => (/^https?:\/\//i.test(String(url || '').trim()) ? String(url).trim() : '');
 
   const FILTERS = [
@@ -1405,7 +1406,7 @@
       const tabBtn = body.querySelector('[data-guide-tab="plan"]');
       if (tabBtn) {
         const count = getSaved().length;
-        tabBtn.innerHTML = `<i data-lucide="bookmark"></i>Мой план (${count})`;
+        tabBtn.innerHTML = `<i data-lucide="bookmark"></i>${esc(ui('Мой план'))} (${count})`;
         if (typeof initializeIcons === 'function') initializeIcons(tabBtn);
       }
     }
@@ -1497,10 +1498,10 @@
         const tabsHtml = `
           <div class="st-guide-tabs">
             <button class="st-guide-chip${state.tab === 'explore' ? ' on' : ''}" type="button" data-guide-tab="explore">
-              <i data-lucide="map"></i>Поиск и карта
+              <i data-lucide="map"></i>${esc(ui('Поиск и карта'))}
             </button>
             <button class="st-guide-chip${state.tab === 'plan' ? ' on' : ''}" type="button" data-guide-tab="plan">
-              <i data-lucide="bookmark"></i>Мой план (${saved.length})
+              <i data-lucide="bookmark"></i>${esc(ui('Мой план'))} (${saved.length})
             </button>
           </div>
         `;
