@@ -26,6 +26,8 @@ assert.equal(ui.translate('Паспорт, страховка, контакты'
 assert.equal(ui.translate('Офлайн-данные:'), 'Datos sin conexión:');
 assert.equal(ui.translate('Карты'), 'Mapas');
 assert.equal(ui.translate('изменение курса с прошлой публикации'), 'cambio respecto al tipo anterior');
+assert.equal(ui.translate('Получится'), 'Recibes');
+assert.equal(ui.translate('Свой курс'), 'Tipo de cambio personalizado');
 assert.equal(ui.count(4, 'participant'), '4 participantes');
 assert.equal(ui.progress(0, 22), '0 de 22 completados');
 for (const lang of ['en','de','fr','it','es','pt','pl','el','tr']) {

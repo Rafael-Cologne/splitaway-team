@@ -72,5 +72,14 @@
   },
   "нет курса": {
     "en": "rate unavailable", "de": "Kurs nicht verfügbar", "fr": "taux indisponible", "it": "tasso non disponibile", "es": "tipo no disponible", "pt": "taxa indisponível", "pl": "brak kursu", "el": "μη διαθέσιμη ισοτιμία", "tr": "kur mevcut değil"
+  },
+  "Получится": {
+    "en": "You receive", "de": "Sie erhalten", "fr": "Vous obtenez", "it": "Ricevi", "es": "Recibes", "pt": "Recebe", "pl": "Otrzymasz", "el": "Θα λάβετε", "tr": "Alacağınız tutar"
+  },
+  "Свой курс": {
+    "en": "Custom exchange rate", "de": "Eigener Wechselkurs", "fr": "Taux de change personnalisé", "it": "Tasso di cambio personalizzato", "es": "Tipo de cambio personalizado", "pt": "Taxa de câmbio personalizada", "pl": "Własny kurs wymiany", "el": "Προσαρμοσμένη ισοτιμία", "tr": "Özel döviz kuru"
+  },
+  "Курс банка или обменника": {
+    "en": "Bank or exchange office rate", "de": "Kurs der Bank oder Wechselstube", "fr": "Taux de la banque ou du bureau de change", "it": "Tasso della banca o del cambio", "es": "Tipo del banco o de la casa de cambio", "pt": "Taxa do banco ou da casa de câmbio", "pl": "Kurs banku lub kantoru", "el": "Ισοτιμία τράπεζας ή ανταλλακτηρίου", "tr": "Banka veya döviz bürosu kuru"
   }
 }
