@@ -18,7 +18,7 @@ const ui = context.window.STModuleUI;
 assert.equal(ui.translate('Добавить расход'), 'Agregar gasto');
 assert.equal(ui.translate('  Добавить расход  '), '  Agregar gasto  ');
 assert.equal(ui.translate('Название моей поездки'), 'Название моей поездки');
-assert.equal(ui.translate('Добавь расход: ужин 48 € на двоих'), 'Añadir gastos: cena 48€ para dos');
+assert.equal(ui.translate('Добавь расход: ужин 48 € на двоих'), 'Añade un gasto: cena para dos, 48 €');
 const assistant = fs.readFileSync(path.join(root, 'modules', 'assistant.js'), 'utf8');
 assert.match(assistant, /data-ex="\$\{esc\(t\)\}"[^\n]*STModuleUI\?\.translate\(t\)/);
 const indexHtml = fs.readFileSync(path.join(root, '..', 'index.html'), 'utf8');

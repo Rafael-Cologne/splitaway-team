@@ -15,5 +15,17 @@
     "pl": "Cześć! Napisz lub powiedz, co chcesz zrobić. Mogę dodać to do wydatków, kalendarza, trasy, mapy, listy kontrolnej lub dziennika. Przed dodaniem pokażę podgląd.",
     "el": "Γεια σας! Γράψτε ή πείτε τι θέλετε να κάνετε. Μπορώ να το προσθέσω στα έξοδα, στο ημερολόγιο, στη διαδρομή, στον χάρτη, στη λίστα ελέγχου ή στο ημερολόγιο ταξιδιού. Θα δείξω μια προεπισκόπηση πριν από την προσθήκη.",
     "tr": "Merhaba! Ne yapmak istediğinizi yazın veya söyleyin. Bunu harcamalara, takvime, rotaya, haritaya, kontrol listesine veya günlüğe ekleyebilirim. Eklemeden önce size önizleme göstereceğim."
+  },
+  "Добавь расход: ужин 48 € на двоих": {
+    "en": "Add an expense: dinner for two, €48", "de": "Ausgabe hinzufügen: Abendessen für zwei, 48 €", "fr": "Ajouter une dépense : dîner pour deux, 48 €", "it": "Aggiungi una spesa: cena per due, 48 €", "es": "Añade un gasto: cena para dos, 48 €", "pt": "Adicionar despesa: jantar para dois, 48 €", "pl": "Dodaj wydatek: kolacja dla dwojga, 48 €", "el": "Πρόσθεσε έξοδο: δείπνο για δύο, 48 €", "tr": "Harcama ekle: iki kişilik akşam yemeği, 48 €"
+  },
+  "Внеси в маршрут: Кёльн → Берлин, 20 ноября": {
+    "en": "Add to route: Cologne → Berlin, 20 November", "de": "Zur Route hinzufügen: Köln → Berlin, 20. November", "fr": "Ajouter à l’itinéraire : Cologne → Berlin, 20 novembre", "it": "Aggiungi all’itinerario: Colonia → Berlino, 20 novembre", "es": "Añade a la ruta: Colonia → Berlín, 20 de noviembre", "pt": "Adicionar ao percurso: Colónia → Berlim, 20 de novembro", "pl": "Dodaj do trasy: Kolonia → Berlin, 20 listopada", "el": "Πρόσθεσε στη διαδρομή: Κολωνία → Βερολίνο, 20 Νοεμβρίου", "tr": "Rotaya ekle: Köln → Berlin, 20 Kasım"
+  },
+  "Создай событие: экскурсия в 10:00": {
+    "en": "Create an event: guided tour at 10:00", "de": "Termin erstellen: Führung um 10:00 Uhr", "fr": "Créer un événement : visite guidée à 10 h", "it": "Crea un evento: visita guidata alle 10:00", "es": "Crea un evento: visita guiada a las 10:00", "pt": "Criar evento: visita guiada às 10:00", "pl": "Utwórz wydarzenie: zwiedzanie o 10:00", "el": "Δημιούργησε εκδήλωση: ξενάγηση στις 10:00", "tr": "Etkinlik oluştur: saat 10:00’da rehberli tur"
+  },
+  "Не забыть зарядку и паспорт": {
+    "en": "Remember the charger and passport", "de": "Ladegerät und Reisepass nicht vergessen", "fr": "Ne pas oublier le chargeur et le passeport", "it": "Non dimenticare caricabatterie e passaporto", "es": "No olvidar el cargador ni el pasaporte", "pt": "Não esquecer o carregador nem o passaporte", "pl": "Nie zapomnieć ładowarki i paszportu", "el": "Να μην ξεχάσω τον φορτιστή και το διαβατήριο", "tr": "Şarj cihazını ve pasaportu unutma"
   }
 }
