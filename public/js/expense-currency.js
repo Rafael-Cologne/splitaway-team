@@ -125,7 +125,7 @@
     states[prefix]=s;root.replaceChildren();
     const switcher=document.createElement('div');switcher.className='expense-currency-switch';
     const caption=document.createElement('div');caption.className='expense-currency-caption';
-    caption.textContent=({ru:'Валюта суммы',en:'Amount currency',de:'Währung des Betrags'})[typeof getLang==='function'?getLang():'ru']||'Amount currency';
+    caption.textContent=({ru:'Валюта суммы',en:'Amount currency',de:'Währung des Betrags',fr:'Devise du montant',it:'Valuta dell’importo',es:'Moneda del importe',pt:'Moeda do valor',pl:'Waluta kwoty',el:'Νόμισμα ποσού',tr:'Tutarın para birimi'})[typeof getLang==='function'?getLang():'ru']||'Amount currency';
     root.append(caption);
     for(const currency of [...new Set([base(),extra(),expense?.originalCurrency].filter(Boolean))]){
       const button=document.createElement('button');button.type='button';button.dataset.expCode=currency;
@@ -194,7 +194,7 @@
     }
     return Boolean(S.trip&&S.me&&getMemberKey());
   }
-  const accessError=()=>({ru:'Не удалось подтвердить доступ к поездке. Войдите по личному ключу и повторите.',en:'Trip access could not be confirmed. Sign in with your personal key and try again.',de:'Der Zugriff auf die Reise konnte nicht bestätigt werden. Melde dich mit deinem persönlichen Schlüssel an und versuche es erneut.'})[typeof getLang==='function'?getLang():'ru']||'Trip access could not be confirmed. Sign in with your personal key and try again.';
+  const accessError=()=>({ru:'Не удалось подтвердить доступ к поездке. Войдите по личному ключу и повторите.',en:'Trip access could not be confirmed. Sign in with your personal key and try again.',de:'Der Zugriff auf die Reise konnte nicht bestätigt werden. Melde dich mit deinem persönlichen Schlüssel an und versuche es erneut.',fr:'Impossible de confirmer l’accès au voyage. Connectez-vous avec votre clé personnelle et réessayez.',it:'Impossibile confermare l’accesso al viaggio. Accedi con la tua chiave personale e riprova.',es:'No se pudo confirmar el acceso al viaje. Entra con tu clave personal e inténtalo de nuevo.',pt:'Não foi possível confirmar o acesso à viagem. Entre com a sua chave pessoal e tente novamente.',pl:'Nie udało się potwierdzić dostępu do podróży. Zaloguj się kluczem osobistym i spróbuj ponownie.',el:'Δεν ήταν δυνατή η επιβεβαίωση πρόσβασης στο ταξίδι. Συνδεθείτε με το προσωπικό σας κλειδί και δοκιμάστε ξανά.',tr:'Seyahate erişim doğrulanamadı. Kişisel anahtarınızla giriş yapıp tekrar deneyin.'})[typeof getLang==='function'?getLang():'ru']||'Trip access could not be confirmed. Sign in with your personal key and try again.';
   // валюта, в которой сейчас вводится сумма (для «точных сумм по участникам»)
   const code=prefix=>states[prefix]?.code||base();
   window.SplitawayExpenseCurrency={open,resolve,words,backendReady,code,accessError};

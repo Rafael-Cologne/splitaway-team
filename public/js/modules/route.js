@@ -9,6 +9,20 @@
 
   const ID = 'route';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ROUTE_KEYS = ['mapLoad','offline','optimize','needThree','optimized','emptyStart','guide','emptyEnd','import','imported','walk','drive','stops','visited','distance','duration','google','fromPrevious','start','notVisited','done','up','down','remove','removed','m','km','min','h'];
+  const ROUTE_TEXT = {
+    ru:'Не удалось загрузить карту|Нет сети|Оптимизировать|Для оптимизации нужно минимум 3 точки|Порядок точек оптимизирован|В маршруте пока нет точек. Откройте|«Гид и места»|и добавьте понравившиеся места в «Мой план».|Загрузить сохранённые места|Места загружены в маршрут|Пешком|На авто|Точек|пройдено|Расстояние|В пути|Открыть маршрут в Google Картах|от предыдущей|Старт|Не пройдено|Пройдено|Выше|Ниже|Убрать|Убрано из маршрута|м|км|мин|ч',
+    en:'Could not load the map|Offline|Optimize|At least 3 stops are needed to optimize|Stop order optimized|No stops in this route yet. Open|Guide & places|and add places to My plan.|Load saved places|Places loaded into route|Walk|Drive|Stops|visited|Distance|Travel time|Open route in Google Maps|from previous|Start|Not visited|Visited|Move up|Move down|Remove|Removed from route|m|km|min|h',
+    de:'Karte konnte nicht geladen werden|Keine Verbindung|Optimieren|Zum Optimieren sind mindestens 3 Stopps nötig|Reihenfolge optimiert|Diese Route hat noch keine Stopps. Öffne|Reiseführer und Orte|und füge Orte zu „Mein Plan“ hinzu.|Gespeicherte Orte laden|Orte zur Route hinzugefügt|Zu Fuß|Mit dem Auto|Stopps|besucht|Entfernung|Fahrzeit|Route in Google Maps öffnen|vom vorherigen|Start|Nicht besucht|Besucht|Nach oben|Nach unten|Entfernen|Aus Route entfernt|m|km|Min.|Std.',
+    fr:'Impossible de charger la carte|Hors ligne|Optimiser|Il faut au moins 3 étapes pour optimiser|Ordre des étapes optimisé|Cet itinéraire ne contient aucune étape. Ouvrez|Guide et lieux|et ajoutez des lieux à Mon plan.|Charger les lieux enregistrés|Lieux ajoutés à l’itinéraire|À pied|En voiture|Étapes|visitées|Distance|Durée|Ouvrir l’itinéraire dans Google Maps|depuis la précédente|Départ|Non visité|Visité|Monter|Descendre|Supprimer|Retiré de l’itinéraire|m|km|min|h',
+    it:'Impossibile caricare la mappa|Nessuna connessione|Ottimizza|Servono almeno 3 tappe per ottimizzare|Ordine delle tappe ottimizzato|Questo itinerario non ha ancora tappe. Apri|Guida e luoghi|e aggiungi luoghi a Il mio piano.|Carica luoghi salvati|Luoghi aggiunti all’itinerario|A piedi|In auto|Tappe|visitate|Distanza|Durata|Apri itinerario in Google Maps|dalla precedente|Partenza|Non visitato|Visitato|Sposta su|Sposta giù|Rimuovi|Rimosso dall’itinerario|m|km|min|h',
+    es:'No se pudo cargar el mapa|Sin conexión|Optimizar|Se necesitan al menos 3 paradas para optimizar|Orden de paradas optimizado|Esta ruta aún no tiene paradas. Abre|Guía y lugares|y añade lugares a Mi plan.|Cargar lugares guardados|Lugares añadidos a la ruta|A pie|En coche|Paradas|visitadas|Distancia|Duración|Abrir ruta en Google Maps|desde la anterior|Inicio|No visitado|Visitado|Subir|Bajar|Quitar|Quitado de la ruta|m|km|min|h',
+    pt:'Não foi possível carregar o mapa|Sem ligação|Otimizar|São necessárias pelo menos 3 paragens para otimizar|Ordem das paragens otimizada|Este percurso ainda não tem paragens. Abra|Guia e locais|e adicione locais a O meu plano.|Carregar locais guardados|Locais adicionados ao percurso|A pé|De carro|Paragens|visitadas|Distância|Duração|Abrir percurso no Google Maps|desde a anterior|Início|Não visitado|Visitado|Subir|Descer|Remover|Removido do percurso|m|km|min|h',
+    pl:'Nie udało się załadować mapy|Brak sieci|Optymalizuj|Do optymalizacji potrzeba co najmniej 3 punktów|Kolejność punktów zoptymalizowana|Na trasie nie ma jeszcze punktów. Otwórz|Przewodnik i miejsca|i dodaj miejsca do Mojego planu.|Wczytaj zapisane miejsca|Miejsca dodano do trasy|Pieszo|Samochodem|Punkty|odwiedzone|Odległość|Czas podróży|Otwórz trasę w Mapach Google|od poprzedniego|Start|Nieodwiedzone|Odwiedzone|Wyżej|Niżej|Usuń|Usunięto z trasy|m|km|min|godz.',
+    el:'Δεν ήταν δυνατή η φόρτωση του χάρτη|Χωρίς σύνδεση|Βελτιστοποίηση|Χρειάζονται τουλάχιστον 3 στάσεις|Η σειρά των στάσεων βελτιστοποιήθηκε|Η διαδρομή δεν έχει ακόμη στάσεις. Ανοίξτε|Οδηγός και μέρη|και προσθέστε μέρη στο Πλάνο μου.|Φόρτωση αποθηκευμένων μερών|Τα μέρη προστέθηκαν στη διαδρομή|Με τα πόδια|Με αυτοκίνητο|Στάσεις|επισκέφθηκαν|Απόσταση|Διάρκεια|Άνοιγμα διαδρομής στο Google Maps|από το προηγούμενο|Αρχή|Δεν επισκέφθηκε|Επισκέφθηκε|Πάνω|Κάτω|Αφαίρεση|Αφαιρέθηκε από τη διαδρομή|μ.|χλμ.|λεπ.|ώ.',
+    tr:'Harita yüklenemedi|Çevrimdışı|Optimize et|Optimizasyon için en az 3 durak gerekli|Durak sırası optimize edildi|Bu rotada henüz durak yok. Açın:|Rehber ve yerler|ve beğendiğiniz yerleri Planıma ekleyin.|Kaydedilen yerleri yükle|Yerler rotaya eklendi|Yürüyerek|Arabayla|Durak|ziyaret edildi|Mesafe|Süre|Rotayı Google Haritalar’da aç|öncekinden|Başlangıç|Ziyaret edilmedi|Ziyaret edildi|Yukarı|Aşağı|Kaldır|Rotadan kaldırıldı|m|km|dk|sa'
+  };
+  const rtxt = key => (ROUTE_TEXT[typeof getLang === 'function' ? getLang() : 'ru'] || ROUTE_TEXT.en).split('|')[ROUTE_KEYS.indexOf(key)] || key;
 
   STHub.addStyles(ID, `
     .st-route-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
@@ -48,10 +62,10 @@
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.async = true;
-      script.onload = () => (window.L ? resolve(window.L) : reject(new Error('Leaflet не загрузился')));
+      script.onload = () => (window.L ? resolve(window.L) : reject(new Error(rtxt('mapLoad'))));
       script.onerror = () => {
         leafletPromise = null;
-        reject(new Error('Не удалось загрузить карту'));
+        reject(new Error(rtxt('mapLoad')));
       };
       document.head.appendChild(script);
     });
@@ -69,16 +83,16 @@
 
   function formatDist(km) {
     if (!Number.isFinite(km)) return '—';
-    return km < 1 ? `${Math.round(km * 1000)} м` : `${km.toFixed(1)} км`;
+    return km < 1 ? `${Math.round(km * 1000)} ${rtxt('m')}` : `${km.toFixed(1)} ${rtxt('km')}`;
   }
 
   function formatDuration(sec) {
     if (!Number.isFinite(sec) || sec <= 0) return '—';
     const min = Math.round(sec / 60);
-    if (min < 60) return `${min} мин`;
+    if (min < 60) return `${min} ${rtxt('min')}`;
     const h = Math.floor(min / 60);
     const m = min % 60;
-    return m ? `${h} ч ${m} м` : `${h} ч`;
+    return m ? `${h} ${rtxt('h')} ${m} ${rtxt('min')}` : `${h} ${rtxt('h')}`;
   }
 
   function googleRouteUrl(stops, mode) {
@@ -261,7 +275,7 @@
         }
       }).catch(() => {
         const distEl = body.querySelector('#st-route-dist');
-        if (distEl) distEl.textContent = 'Нет сети';
+        if (distEl) distEl.textContent = rtxt('offline');
       });
     }
 
@@ -269,15 +283,15 @@
       title: ctx.title,
       action: {
         icon: 'wand-sparkles',
-        label: 'Оптимизировать',
+        label: rtxt('optimize'),
         onClick: screen => {
           const stops = getOrderedStops();
           if (stops.length < 3) {
-            ctx.toast('Для оптимизации нужно минимум 3 точки');
+            ctx.toast(rtxt('needThree'));
             return;
           }
           saveOrder(optimizeStops(stops));
-          ctx.toast('Порядок точек оптимизирован');
+          ctx.toast(rtxt('optimized'));
           screen.refresh();
         }
       },
@@ -290,16 +304,16 @@
           body.innerHTML = `
             <div class="st-empty">
               <i data-lucide="route"></i>
-              <div>В маршруте пока нет точек.<br>Откройте модуль <strong>«Гид и места»</strong> и добавьте понравившиеся места в «Мой план».</div>
+              <div>${rtxt('emptyStart')}<br><strong>${rtxt('guide')}</strong> ${rtxt('emptyEnd')}</div>
             </div>
             ${draftStops.length
-              ? `<button class="st-btn st-btn-fw" type="button" id="st-route-import"><i data-lucide="download"></i>Загрузить сохранённые места (${draftStops.length})</button>`
+              ? `<button class="st-btn st-btn-fw" type="button" id="st-route-import"><i data-lucide="download"></i>${rtxt('import')} (${draftStops.length})</button>`
               : ''}
           `;
           body.querySelector('#st-route-import')?.addEventListener('click', () => {
             writeGuideList(draftStops);
             saveOrder(draftStops);
-            ctx.toast('Места загружены в маршрут');
+            ctx.toast(rtxt('imported'));
             screen.refresh();
           });
           return;
@@ -311,13 +325,13 @@
         body.innerHTML = `
           <div class="st-route-bar">
             <button class="st-route-chip${state.mode === 'foot' ? ' on' : ''}" type="button" data-route-mode="foot">
-              <i data-lucide="footprints"></i>Пешком
+              <i data-lucide="footprints"></i>${rtxt('walk')}
             </button>
             <button class="st-route-chip${state.mode === 'car' ? ' on' : ''}" type="button" data-route-mode="car">
-              <i data-lucide="car"></i>На авто
+              <i data-lucide="car"></i>${rtxt('drive')}
             </button>
             ${stops.length >= 3
-              ? `<button class="st-route-chip" type="button" id="st-route-opt"><i data-lucide="wand-sparkles"></i>Оптимизировать</button>`
+              ? `<button class="st-route-chip" type="button" id="st-route-opt"><i data-lucide="wand-sparkles"></i>${rtxt('optimize')}</button>`
               : ''}
           </div>
 
@@ -326,21 +340,21 @@
             <div class="st-route-stats">
               <div>
                 <div class="st-route-stat-v">${stops.length}</div>
-                <div class="st-route-stat-l">Точек (${visitedCount} пройдено)</div>
+                <div class="st-route-stat-l">${rtxt('stops')} (${visitedCount} ${rtxt('visited')})</div>
               </div>
               <div>
-                <div class="st-route-stat-v" id="st-route-dist">${stops.length >= 2 ? '…' : '0 м'}</div>
-                <div class="st-route-stat-l">Расстояние</div>
+                <div class="st-route-stat-v" id="st-route-dist">${stops.length >= 2 ? '…' : '0 ' + rtxt('m')}</div>
+                <div class="st-route-stat-l">${rtxt('distance')}</div>
               </div>
               <div>
-                <div class="st-route-stat-v" id="st-route-time">${stops.length >= 2 ? '…' : '0 мин'}</div>
-                <div class="st-route-stat-l">В пути</div>
+                <div class="st-route-stat-v" id="st-route-time">${stops.length >= 2 ? '…' : '0 ' + rtxt('min')}</div>
+                <div class="st-route-stat-l">${rtxt('duration')}</div>
               </div>
             </div>
           </div>
 
           <a class="st-btn st-btn-fw" href="${gUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
-            <i data-lucide="navigation"></i>Открыть маршрут в Google Картах
+            <i data-lucide="navigation"></i>${rtxt('google')}
           </a>
 
           ${stops.map((p, idx) => {
@@ -353,16 +367,16 @@
                   <div class="st-card-title">${esc(p.name)}</div>
                   <div class="st-route-sub">
                     ${p.typeLabel ? `<span>${esc(p.typeLabel)}</span>` : ''}
-                    ${segDist ? `<span>• +${esc(segDist)} от предыдущей</span>` : '<span>• Старт</span>'}
+                     ${segDist ? `<span>• +${esc(segDist)} ${rtxt('fromPrevious')}</span>` : `<span>• ${rtxt('start')}</span>`}
                     ${p.addr ? `<span>• ${esc(p.addr)}</span>` : ''}
                   </div>
                   <div class="st-route-ctrls">
                     <button class="st-btn ${p.visited ? 'st-btn-g' : ''}" type="button" data-stop-visit="${esc(p.id)}">
-                      <i data-lucide="${p.visited ? 'rotate-ccw' : 'check'}"></i>${p.visited ? 'Не пройдено' : 'Пройдено'}
+                       <i data-lucide="${p.visited ? 'rotate-ccw' : 'check'}"></i>${p.visited ? rtxt('notVisited') : rtxt('done')}
                     </button>
-                    ${idx > 0 ? `<button class="st-btn st-btn-g" type="button" data-stop-up="${idx}" aria-label="Выше"><i data-lucide="arrow-up"></i></button>` : ''}
-                    ${idx < stops.length - 1 ? `<button class="st-btn st-btn-g" type="button" data-stop-down="${idx}" aria-label="Ниже"><i data-lucide="arrow-down"></i></button>` : ''}
-                    <button class="st-btn st-btn-g" type="button" data-stop-del="${esc(p.id)}" aria-label="Убрать"><i data-lucide="trash-2"></i></button>
+                     ${idx > 0 ? `<button class="st-btn st-btn-g" type="button" data-stop-up="${idx}" aria-label="${rtxt('up')}"><i data-lucide="arrow-up"></i></button>` : ''}
+                     ${idx < stops.length - 1 ? `<button class="st-btn st-btn-g" type="button" data-stop-down="${idx}" aria-label="${rtxt('down')}"><i data-lucide="arrow-down"></i></button>` : ''}
+                     <button class="st-btn st-btn-g" type="button" data-stop-del="${esc(p.id)}" aria-label="${rtxt('remove')}"><i data-lucide="trash-2"></i></button>
                   </div>
                 </div>
               </div>
@@ -382,7 +396,7 @@
 
         body.querySelector('#st-route-opt')?.addEventListener('click', () => {
           saveOrder(optimizeStops(stops));
-          ctx.toast('Порядок точек оптимизирован');
+          ctx.toast(rtxt('optimized'));
           screen.refresh();
         });
 
@@ -423,7 +437,7 @@
             const list = readList(guideKey).filter(x => x.id !== id);
             writeGuideList(list);
             saveOrder(stops.filter(x => x.id !== id));
-            ctx.toast('Убрано из маршрута');
+            ctx.toast(rtxt('removed'));
             screen.refresh();
           });
         });

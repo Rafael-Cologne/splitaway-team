@@ -42,7 +42,7 @@
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
     return many;
   }
-  const money = (n, cur) => { try { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: cur || 'EUR' }).format(n); } catch (_) { return (+n).toFixed(2) + ' ' + cur; } };
+  const money = (n, cur) => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur || 'EUR' }).format(n); } catch (_) { return (+n).toFixed(2) + ' ' + cur; } };
   const initials = s => String(s || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const hueOf = s => { let h = 7; for (const c of String(s || '')) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
   const fileSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' МБ' : Math.max(1, Math.round(b / 1024)) + ' КБ';
@@ -342,7 +342,7 @@
         <img src="/img/trips/abstract.jpg" alt="">
         <div class="bk-trip-txt"><b>${esc(t.name || 'Поездка')}</b>
           <div class="bk-meta"><i data-lucide="calendar"></i>${d ? esc(rangeLabel(d.start, d.end) + yr) : 'Даты не указаны'}</div>
-          <div class="bk-meta"><i data-lucide="users"></i>${n} ${plural(n, 'участник', 'участника', 'участников')}</div>
+          <div class="bk-meta"><i data-lucide="users"></i>${esc(window.STModuleUI.count(n, 'participant'))}</div>
         </div><i data-lucide="chevron-down" class="bk-chev"></i></button>`;
     }
 
@@ -397,7 +397,7 @@
                 <div>${filter === 'all' ? 'Пока нет бронирований.<br>Добавьте билеты, жильё, машину или экскурсии — всё будет в одном месте.' : 'В этой категории пока пусто.'}</div>
                 <button class="st-btn" type="button" data-a="add"><i data-lucide="plus"></i>Добавить бронь</button></div>`}
             <div class="bk-card bk-sum"><span class="bk-ic"><i data-lucide="${filter === 'all' ? 'layers' : cat(filter).icon}"></i></span>
-              <div class="bk-sum-l"><b>${esc(fname)}</b><span>${list.length} ${plural(list.length, 'запись', 'записи', 'записей')}</span></div>
+              <div class="bk-sum-l"><b>${esc(fname)}</b><span>${esc(window.STModuleUI.count(list.length, 'entry'))}</span></div>
               <div class="bk-sum-r"><span>Итого</span><b>${esc(sum.main)}</b>${sum.rest.map(r => `<small>${esc(r)}</small>`).join('')}</div></div>
           `;
           body.querySelectorAll('[data-f]').forEach(x => x.addEventListener('click', () => { filter = x.dataset.f; screen.refresh(); }));

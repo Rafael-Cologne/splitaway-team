@@ -98,6 +98,8 @@
 .hub-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:999px;border:1px solid var(--b2);background:transparent;color:var(--text);font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
 .hub-chip svg{width:15px;height:15px}
 .hub-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.hub-lang-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.hub-lang-grid .lang-btn{min-width:0;width:100%;justify-content:center;padding:9px 3px;white-space:nowrap}
 .hub-nav-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:10px 2px;border:1px solid var(--b2);border-radius:16px;background:var(--hub-card)}
 .hub-nav-preview-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;color:var(--t2);font-size:.65rem;white-space:nowrap}
 .hub-nav-preview-item:nth-child(3){color:var(--accent);font-weight:700}

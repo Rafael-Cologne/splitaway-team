@@ -9,6 +9,7 @@
 
   const ID = 'guide';
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
   const safeUrl = url => (/^https?:\/\//i.test(String(url || '').trim()) ? String(url).trim() : '');
 
   const FILTERS = [
@@ -136,7 +137,8 @@
 
   function formatDist(km) {
     if (km == null || !Number.isFinite(km)) return '';
-    return km < 1 ? `${Math.round(km * 1000)} м` : `${km.toFixed(1)} км`;
+    const ru = typeof getLang !== 'function' || getLang() === 'ru';
+    return km < 1 ? `${Math.round(km * 1000)} ${ru ? 'м' : 'm'}` : `${km.toFixed(1)} ${ru ? 'км' : 'km'}`;
   }
 
   function classifyPlace(tags) {
@@ -747,8 +749,8 @@
     const voltList = [...new Set((b.volts?.value || '').split(',').map(s => s.trim()).filter(Boolean))];
     return {
       capital: b.capitals?.value || '',
-      population: Number.isFinite(popNum) && popNum > 0 ? popNum.toLocaleString('ru-RU') : '',
-      area: Number.isFinite(areaNum) && areaNum > 0 ? `${Math.round(areaNum).toLocaleString('ru-RU')} км²` : '',
+      population: Number.isFinite(popNum) && popNum > 0 ? popNum.toLocaleString(window.STModuleUI?.locale() || 'ru-RU') : '',
+      area: Number.isFinite(areaNum) && areaNum > 0 ? `${Math.round(areaNum).toLocaleString(window.STModuleUI?.locale() || 'ru-RU')} ${typeof getLang === 'function' && getLang() === 'ru' ? 'км²' : 'km²'}` : '',
       langs: b.langs?.value || '',
       currencies: b.currencies?.value || '',
       timezones: tzList.length ? [...new Set(tzList)].slice(0, 3).join(', ') : (b.timezones?.value || '').split(',').slice(0, 2).join(', '),
@@ -757,7 +759,7 @@
       plugTypes,
       plugsRaw: b.plugs?.value || '',
       volts: voltList.length ? `${voltList.join(' / ')} В` : '',
-      highest: b.highestName?.value ? `${b.highestName.value}${Number.isFinite(elevNum) && elevNum > 0 ? ` (${Math.round(elevNum).toLocaleString('ru-RU')} м)` : ''}` : '',
+      highest: b.highestName?.value ? `${b.highestName.value}${Number.isFinite(elevNum) && elevNum > 0 ? ` (${Math.round(elevNum).toLocaleString(window.STModuleUI?.locale() || 'ru-RU')} ${typeof getLang === 'function' && getLang() === 'ru' ? 'м' : 'm'})` : ''}` : '',
       unesco: Number.isFinite(unescoNum) && unescoNum > 0 ? String(unescoNum) : ''
     };
   }
@@ -1097,7 +1099,7 @@
       const gMap = googleMapsUrl(p, p.city || state.city);
       const web = safeUrl(p.website);
       const wikiLink = safeUrl(p.wikiUrl || (p.id && String(p.id).startsWith('wiki-') ? wikiUrlFromTag(p.wikiTag) : ''));
-      const distText = p.distKm != null ? `${formatDist(p.distKm)} от центра` : '';
+      const distText = p.distKm != null ? `${formatDist(p.distKm)} ${window.STModuleUI ? STModuleUI.translate('от центра') : 'от центра'}` : '';
       const snip = wikiSnippet(p.wikiExtract, 280);
 
       return `
@@ -1405,7 +1407,7 @@
       const tabBtn = body.querySelector('[data-guide-tab="plan"]');
       if (tabBtn) {
         const count = getSaved().length;
-        tabBtn.innerHTML = `<i data-lucide="bookmark"></i>Мой план (${count})`;
+        tabBtn.innerHTML = `<i data-lucide="bookmark"></i>${esc(ui('Мой план'))} (${count})`;
         if (typeof initializeIcons === 'function') initializeIcons(tabBtn);
       }
     }
@@ -1497,10 +1499,10 @@
         const tabsHtml = `
           <div class="st-guide-tabs">
             <button class="st-guide-chip${state.tab === 'explore' ? ' on' : ''}" type="button" data-guide-tab="explore">
-              <i data-lucide="map"></i>Поиск и карта
+              <i data-lucide="map"></i>${esc(ui('Поиск и карта'))}
             </button>
             <button class="st-guide-chip${state.tab === 'plan' ? ' on' : ''}" type="button" data-guide-tab="plan">
-              <i data-lucide="bookmark"></i>Мой план (${saved.length})
+              <i data-lucide="bookmark"></i>${esc(ui('Мой план'))} (${saved.length})
             </button>
           </div>
         `;
@@ -1632,7 +1634,7 @@
                 <div class="st-guide-city-hd">
                   <div>
                     <div class="st-card-title">${esc(state.data.displayName)}</div>
-                    <div class="st-muted">Найдено мест: ${state.data.places.length}</div>
+                    <div class="st-muted"><span>Найдено мест:</span> ${state.data.places.length}</div>
                   </div>
                   ${state.data.wiki?.url ? `<a class="st-btn st-btn-g" style="min-height:32px;padding:0 10px;font-size:.76rem;border-radius:10px;text-decoration:none" href="${esc(state.data.wiki.url)}" target="_blank" rel="noopener noreferrer"><i data-lucide="book-open"></i>Википедия</a>` : ''}
                 </div>

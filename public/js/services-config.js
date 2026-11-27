@@ -33,3 +33,16 @@ window.ST_SERVICES = [
   { id: 'diary',      title: { ru: 'Дневник',      en: 'Diary',       de: 'Tagebuch' },      icon: 'diary',      route: null,       status: 'coming_soon', requiresTrip: true  },
   { id: 'assistant',  title: { ru: 'KI Ассистент', en: 'AI assistant', de: 'KI-Assistent' }, icon: 'assistant',  route: null,       status: 'coming_soon', requiresTrip: false }
 ];
+// Подписи сервисов на всех языках первого запуска, в порядке каталога выше.
+const serviceNames = {
+  fr:['Dépenses','Itinéraire','Calendrier','Réservations','Guide','Traducteur','Devises','Météo','Liste de contrôle','Transport','À proximité','Statistiques','Urgence','Hors ligne','Journal','Assistant IA'],
+  it:['Spese','Itinerario','Calendario','Prenotazioni','Guida','Traduttore','Valute','Meteo','Lista di controllo','Trasporti','Nelle vicinanze','Statistiche','Emergenza','Offline','Diario','Assistente IA'],
+  es:['Gastos','Ruta','Calendario','Reservas','Guía','Traductor','Divisas','Tiempo','Lista de control','Transporte','Cerca de mí','Estadísticas','Emergencias','Sin conexión','Diario','Asistente de IA'],
+  pt:['Despesas','Rota','Calendário','Reservas','Guia','Tradutor','Moedas','Meteorologia','Lista de verificação','Transportes','Perto de mim','Estatísticas','Emergência','Offline','Diário','Assistente de IA'],
+  pl:['Wydatki','Trasa','Kalendarz','Rezerwacje','Przewodnik','Tłumacz','Waluty','Pogoda','Lista kontrolna','Transport','W pobliżu','Statystyki','Pomoc','Offline','Dziennik','Asystent AI'],
+  el:['Έξοδα','Διαδρομή','Ημερολόγιο','Κρατήσεις','Οδηγός','Μεταφραστής','Νομίσματα','Καιρός','Λίστα ελέγχου','Μεταφορές','Κοντά μου','Στατιστικά','Έκτακτη ανάγκη','Εκτός σύνδεσης','Ημερολόγιο ταξιδιού','Βοηθός AI'],
+  tr:['Harcamalar','Rota','Takvim','Rezervasyonlar','Rehber','Çevirmen','Para birimleri','Hava durumu','Kontrol listesi','Ulaşım','Yakınımda','İstatistikler','Acil durum','Çevrimdışı','Günlük','Yapay zekâ asistanı']
+};
+window.ST_SERVICES.forEach((service,index)=>{
+  for(const [locale,names] of Object.entries(serviceNames))service.title[locale]=names[index];
+});

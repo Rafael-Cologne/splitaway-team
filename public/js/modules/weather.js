@@ -25,11 +25,10 @@
   const today = () => iso(new Date());
   const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
   const diffDays = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
-  const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
-  const dayName = s => parse(s).getDate() + ' ' + MONTHS[parse(s).getMonth()];
-  const dayLong = s => WD[parse(s).getDay()] + ', ' + dayName(s);
-  const rangeLabel = (a, b) => { const A = parse(a), B = parse(b); return A.getMonth() === B.getMonth() ? A.getDate() + ' – ' + B.getDate() + ' ' + MONTHS[B.getMonth()] + ' ' + B.getFullYear() : dayName(a) + ' – ' + dayName(b) + ' ' + B.getFullYear(); };
+  const locale = () => window.STModuleUI?.locale() || 'ru-RU';
+  const dayName = s => parse(s).toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
+  const dayLong = s => parse(s).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'long' });
+  const rangeLabel = (a, b) => { const A = parse(a), B = parse(b); return A.getMonth() === B.getMonth() ? A.getDate() + ' – ' + B.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }) : dayName(a) + ' – ' + B.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }); };
   const hhmm = t => String(t || '').slice(11, 16);
   const ls = {
     get(k, f) { try { const v = localStorage.getItem(k); return v == null ? f : JSON.parse(v); } catch (_) { return f; } },
@@ -718,7 +717,7 @@
             <div class="wx-h2">Прогноз на 7 дней</div>
             <div class="wx-card wx-days">${D.time.slice(0, 7).map((_, i) => dayRow(i)).join('')}</div>
             <div class="wx-card wx-tip"><i data-lucide="shirt"></i><span><b>Что надеть сегодня</b><span>${esc(advice(f, 0))}</span></span></div>
-            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.) · воздух: CAMS (Copernicus)<br>Обновлено ${new Date(f.cachedAt || Date.now()).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}${f.offline ? ' · сейчас нет сети, показан сохранённый прогноз' : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
+            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.) · воздух: CAMS (Copernicus)<br>Обновлено ${new Date(f.cachedAt || Date.now()).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' })}${f.offline ? ' · сейчас нет сети, показан сохранённый прогноз' : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
             <div style="height:8px"></div>`;
           bindCommon(body, scr);
           // температура в чипах для мест без свежих данных
@@ -901,7 +900,7 @@
         const W = box.clientWidth || 340, scale = W / 300;
         const ox = (xf - x0) * 256, oy = (yf - y0) * 256;
         box.innerHTML = `<div class="wx-radar-in" style="transform:scale(${scale}) translate(${150 - ox}px,${150 - oy}px)">${tiles.join('')}</div><div class="wx-pin"></div>
-          <div class="wx-src" style="position:absolute;right:10px;bottom:8px;background:rgba(255,255,255,.85);border-radius:8px;padding:2px 6px;color:#333">${new Date(fr.time * 1000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>`;
+          <div class="wx-src" style="position:absolute;right:10px;bottom:8px;background:rgba(255,255,255,.85);border-radius:8px;padding:2px 6px;color:#333">${new Date(fr.time * 1000).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>`;
       } catch (_) {
         box.innerHTML = '<div class="wx-empty" style="position:absolute;inset:0;justify-content:center">Радар сейчас недоступен</div>';
       }

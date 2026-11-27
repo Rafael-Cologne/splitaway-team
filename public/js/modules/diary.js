@@ -25,8 +25,8 @@
   const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
   const MONL = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
   const WD = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-  const short = s => parse(s).getDate() + ' ' + MON[parse(s).getMonth()];
-  const long = s => parse(s).getDate() + ' ' + MONL[parse(s).getMonth()];
+  const short = s => new Intl.DateTimeFormat(window.STModuleUI?.locale() || 'ru-RU', { day:'numeric', month:'short' }).format(parse(s));
+  const long = s => new Intl.DateTimeFormat(window.STModuleUI?.locale() || 'ru-RU', { day:'numeric', month:'long' }).format(parse(s));
   const MOODS = [{ id: 'good', icon: 'smile', name: 'Отличное', em: '😊' }, { id: 'ok', icon: 'meh', name: 'Нормальное', em: '😐' }, { id: 'bad', icon: 'frown', name: 'Так себе', em: '☹️' }];
   const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c; };
 
@@ -258,7 +258,7 @@
       return out.sort();
     }
     const dayN = d => days().indexOf(d) + 1;
-    const dayLabel = d => { const n = dayN(d); return (n > 0 && d >= tripRange().start && d <= tripRange().end ? 'День ' + n + ' · ' : '') + short(d); };
+    const dayLabel = d => { const n = dayN(d); return (n > 0 && d >= tripRange().start && d <= tripRange().end ? window.STModuleUI.translate('День') + ' ' + n + ' · ' : '') + short(d); };
 
     // Погода дня — из модуля «Погода» (если он уже открывался)
     function weatherOf(d) {
@@ -270,7 +270,7 @@
     const allExpenses = () => (typeof S !== 'undefined' && Array.isArray(S.expenses) ? S.expenses : []);
     const expDate = e => { const v = String(e.date || ''); if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10); const t = new Date(v); return isNaN(t) ? '' : isoOf(t); };
     const cur = () => (typeof S !== 'undefined' && S.trip && S.trip.currency) || trip.currency || 'EUR';
-    const money = v => { try { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: cur() }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
+    const money = v => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur() }).format(v); } catch (_) { return (Math.round(v * 100) / 100) + ' ' + cur(); } };
     const linked = e => (e.expenses || []).map(id => allExpenses().find(x => x.id === id)).filter(Boolean);
     const expSum = list => list.reduce((s, x) => s + (Number(x.amount) || 0), 0);
     const tripPhoto = img => { if (window.STPlacePhoto && img) STPlacePhoto.tripImg(img, trip, { width: 900 }); };
