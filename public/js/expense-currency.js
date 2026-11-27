@@ -140,7 +140,7 @@
       return;
     }
     const panel=document.createElement('div');panel.dataset.expPanel='';panel.className='expense-currency-panel';
-    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-money-decimals="6" data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
+    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-money-decimals="16" data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
     root.append(panel);
     panel.querySelector('[data-exp-manual]').onchange=event=>{s.manual=event.target.checked;++s.request;
       const field=panel.querySelector('[data-exp-rate]');
