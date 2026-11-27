@@ -16,6 +16,8 @@
   if (!window.STHub) return;
 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ui = value => window.STModuleUI?.translate(value) || value;
+  const datePrefix = () => ({ ru:'на', en:'as of', de:'Stand', fr:'au', it:'al', es:'a', pt:'em', pl:'na', el:'στις', tr:'tarih:' })[typeof getLang === 'function' ? getLang() : 'ru'] || 'as of';
   const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (_) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} } };
   const HOUR = 3600000;
@@ -322,7 +324,7 @@
           if (cur) {
             line.textContent = cur.line;
             const when = cur.date ? ' · ' + fmtDate(cur.date) : '';
-            src.textContent = (cur.stale ? 'Нет связи — сохранённый курс. ' : '') + cur.src + when;
+            src.textContent = (cur.stale ? ui('Нет связи — сохранённый курс.') + ' ' : '') + ui(cur.src) + when;
             src.classList.toggle('warn', !!cur.stale);
           } else if (err) { line.textContent = 'Курс не получен'; src.textContent = 'Проверьте интернет или введите свой курс'; src.classList.add('warn'); }
           calc();
@@ -347,12 +349,12 @@
           if (!box.isConnected) return;
           const ok = rows; // все выбранные: базовая валюта и валюты без курса тоже видны
           const dates = ok.filter(x => x.p).map(x => x.p.date).filter(Boolean).sort();
-          body.querySelector('#fx-ldate').textContent = (dates.length ? 'на ' + fmtDate(dates[dates.length - 1]) : '') + (sort === 'up' || sort === 'down' ? ' · изменение курса с прошлой публикации' : '');
+          body.querySelector('#fx-ldate').textContent = (dates.length ? datePrefix() + ' ' + fmtDate(dates[dates.length - 1]) : '') + (sort === 'up' || sort === 'down' ? ' · ' + ui('изменение курса с прошлой публикации') : '');
           const ch = x => !x.p || x.p.chg == null ? null : x.p.chg;
           if (sort === 'up' || sort === 'down') ok.sort((m, n) => (ch(m) == null) - (ch(n) == null) || (sort === 'up' ? ch(n) - ch(m) : ch(m) - ch(n)));
           const chTxt = v => { if (v == null) return '<i class="fx-chg eq">—</i>'; const pc = v * 100, r = Math.round(pc * 100) / 100;
-            return r === 0 ? '<i class="fx-chg eq">0,00 %</i>' : `<i class="fx-chg ${r > 0 ? 'up' : 'dn'}">${r > 0 ? '▲' : '▼'} ${fmt(Math.abs(r), 2)} %</i>`; };
-          const right = x => x.c === lb ? `1 ${lb}<small>базовая валюта</small>` : x.p ? `${esc(x.p.per)}<small>${chTxt(ch(x))} · ${esc(x.p.bank)}</small>` : '—<small>нет курса</small>';
+            return r === 0 ? `<i class="fx-chg eq">${fmt(0, 2)} %</i>` : `<i class="fx-chg ${r > 0 ? 'up' : 'dn'}">${r > 0 ? '▲' : '▼'} ${fmt(Math.abs(r), 2)} %</i>`; };
+          const right = x => x.c === lb ? `1 ${lb}<small>${esc(ui('базовая валюта'))}</small>` : x.p ? `${esc(x.p.per)}<small>${chTxt(ch(x))} · ${esc(ui(x.p.bank))}</small>` : `—<small>${esc(ui('нет курса'))}</small>`;
           box.innerHTML = ok.map(x => `<button class="fx-li${x.c === b ? ' on' : ''}" type="button" data-c="${x.c}">${flag(x.c)}
               <span><b>${x.c}</b><small>${esc(nameOf(x.c))}</small></span><em>${right(x)}</em></button>`).join('');
         };

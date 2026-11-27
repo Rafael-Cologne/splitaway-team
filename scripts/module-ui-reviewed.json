@@ -66,5 +66,11 @@
   },
   "записи в дневнике": {
     "en": "diary entries", "de": "Tagebucheinträge", "fr": "entrées du journal", "it": "voci del diario", "es": "entradas del diario", "pt": "registos no diário", "pl": "wpisy w dzienniku", "el": "καταχωρίσεις ημερολογίου", "tr": "günlük kaydı"
+  },
+  "изменение курса с прошлой публикации": {
+    "en": "change since the previous rate", "de": "Änderung seit dem letzten Kurs", "fr": "variation depuis le taux précédent", "it": "variazione dal tasso precedente", "es": "cambio respecto al tipo anterior", "pt": "variação face à taxa anterior", "pl": "zmiana od poprzedniego kursu", "el": "μεταβολή από την προηγούμενη ισοτιμία", "tr": "önceki kura göre değişim"
+  },
+  "нет курса": {
+    "en": "rate unavailable", "de": "Kurs nicht verfügbar", "fr": "taux indisponible", "it": "tasso non disponibile", "es": "tipo no disponible", "pt": "taxa indisponível", "pl": "brak kursu", "el": "μη διαθέσιμη ισοτιμία", "tr": "kur mevcut değil"
   }
 }
