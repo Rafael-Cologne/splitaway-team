@@ -41,7 +41,7 @@ window.applyTranslations=function(){};
 </script>
 <!-- i18n — 7 languages + currency list -->
 <script src="/js/i18n.js?v=1.0.25-136-team"></script>
-<script src="/js/module-ui-locales.js?v=1.0.25-144-team"></script>
+<script src="/js/module-ui-locales.js?v=1.0.25-145-team"></script>
 <script src="/js/module-ui-i18n.js?v=1.0.25-140-team"></script>
 <script src="/js/trip-currency.js?v=1.0.25-112-team"></script>
 <script src="/js/currency-names.js?v=1.0.25-124-team"></script>
@@ -59,7 +59,7 @@ window.applyTranslations=function(){};
 <script src="/js/modules/calendar.js?v=1.0.25-135-team" defer></script>
 <script src="/js/modules/bookings.js?v=1.0.25-140-team" defer></script>
 <script src="/js/modules/currency.js?v=1.0.25-141-team" defer></script>
-<script src="/js/modules/guide.js?v=1.0.25-138-team" defer></script>
+<script src="/js/modules/guide.js?v=1.0.25-145-team" defer></script>
 <script src="/js/modules/translator.js?v=1.0.25-140-team" defer></script>
 <script src="/js/modules/weather.js?v=1.0.25-135-team" defer></script>
 <script src="/js/modules/checklist.js?v=1.0.25-140-team" defer></script>
@@ -1520,9 +1520,12 @@ function icNum(icon,n){return `<span class="ic-num"><i data-lucide="${icon}" sty
 // шапка «Расходов»: «1 расход», «4 участника» — с правильным окончанием для языка
 const DASH_WORDS={ru:{exp:{one:'расход',few:'расхода',many:'расходов'},mbr:{one:'участник',few:'участника',many:'участников'}},
   en:{exp:{one:'expense',other:'expenses'},mbr:{one:'member',other:'members'}},de:{exp:{one:'Ausgabe',other:'Ausgaben'},mbr:{one:'Teilnehmer',other:'Teilnehmer'}},
-  es:{exp:{one:'gasto',other:'gastos'},mbr:{one:'participante',other:'participantes'}},fr:{exp:{one:'dépense',other:'dépenses'},mbr:{one:'participant',other:'participants'}}};
+  es:{exp:{one:'gasto',other:'gastos'},mbr:{one:'participante',other:'participantes'}},fr:{exp:{one:'dépense',other:'dépenses'},mbr:{one:'participant',other:'participants'}},
+  it:{exp:{one:'spesa',other:'spese'},mbr:{one:'partecipante',other:'partecipanti'}},pt:{exp:{one:'despesa',other:'despesas'},mbr:{one:'participante',other:'participantes'}},
+  pl:{exp:{one:'wydatek',few:'wydatki',many:'wydatków',other:'wydatku'},mbr:{one:'uczestnik',few:'uczestników',many:'uczestników',other:'uczestnika'}},
+  el:{exp:{one:'δαπάνη',other:'δαπάνες'},mbr:{one:'συμμετέχων',other:'συμμετέχοντες'}},tr:{exp:{one:'harcama',other:'harcama'},mbr:{one:'katılımcı',other:'katılımcı'}}};
 function dashWord(kind,n){
-  const lang=(typeof getLang==='function'?getLang():'ru')||'ru';const d=(DASH_WORDS[lang]||DASH_WORDS.ru)[kind];
+  const lang=(typeof getLang==='function'?getLang():'ru')||'ru';const d=(DASH_WORDS[lang]||DASH_WORDS.en)[kind];
   let k='other';try{k=new Intl.PluralRules(lang).select(n)}catch{}
   return d[k]||d.other||d.many||d.one;
 }

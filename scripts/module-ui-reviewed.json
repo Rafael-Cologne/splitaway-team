@@ -280,5 +280,56 @@
   },
   "(открытые данные перевозчиков) · ©": {
     "en": "(open carrier data) · ©", "de": "(offene Trägerdaten) · ©", "fr": "(données ouvertes du transporteur) · ©", "it": "(apri i dati del corriere) · ©", "es": "(datos abiertos del operador) · ©", "pt": "(dados abertos da operadora) · ©", "pl": "(otwarte dane przewoźnika) · ©", "el": "(ανοικτά δεδομένα φορέα) · ©", "tr": "(taşıyıcıların açık verileri) · ©"
+  },
+  "от центра": {
+    "en": "from the centre", "de": "vom Zentrum", "fr": "du centre", "it": "dal centro", "es": "del centro", "pt": "do centro", "pl": "od centrum", "el": "από το κέντρο", "tr": "merkeze"
+  },
+  "Найдено мест:": {
+    "en": "Places found:", "de": "Gefundene Orte:", "fr": "Lieux trouvés :", "it": "Luoghi trovati:", "es": "Lugares encontrados:", "pt": "Locais encontrados:", "pl": "Znalezione miejsca:", "el": "Βρέθηκαν μέρη:", "tr": "Bulunan yerler:"
+  },
+  "На карте": {
+    "en": "On map", "de": "Auf der Karte", "fr": "Sur la carte", "it": "Sulla mappa", "es": "En el mapa", "pt": "No mapa", "pl": "Na mapie", "el": "Στον χάρτη", "tr": "Haritada"
+  },
+  "Добавьте первый расход в «Расходах» — здесь появятся итоги, графики по дням, категориям и участникам.": {
+    "en": "Add the first expense in “Expenses” — totals and charts by day, category and participant will appear here.", "de": "Füge die erste Ausgabe unter „Ausgaben“ hinzu – hier erscheinen Summen und Diagramme nach Tagen, Kategorien und Teilnehmern.", "fr": "Ajoutez la première dépense dans « Dépenses » — les totaux et graphiques par jour, catégorie et participant apparaîtront ici.", "it": "Aggiungi la prima spesa in «Spese»: qui compariranno totali e grafici per giorno, categoria e partecipante.", "es": "Añade el primer gasto en «Gastos»: aquí aparecerán los totales y gráficos por día, categoría y participante.", "pt": "Adicione a primeira despesa em «Despesas» — aqui aparecerão totais e gráficos por dia, categoria e participante.", "pl": "Dodaj pierwszy wydatek w „Wydatkach” — tutaj pojawią się podsumowania i wykresy według dni, kategorii i uczestników.", "el": "Προσθέστε την πρώτη δαπάνη στις «Δαπάνες» — εδώ θα εμφανιστούν σύνολα και γραφήματα ανά ημέρα, κατηγορία και συμμετέχοντα.", "tr": "İlk harcamayı «Harcamalar» bölümüne ekleyin — günlere, kategorilere ve katılımcılara göre toplamlar ve grafikler burada görünecek."
+  },
+  "Ваш личный кабинет создан": {
+    "en": "Your personal account is ready", "de": "Dein persönliches Konto ist bereit", "fr": "Votre espace personnel est créé", "it": "Il tuo account personale è pronto", "es": "Tu cuenta personal está lista", "pt": "A sua conta pessoal foi criada", "pl": "Twoje konto osobiste jest gotowe", "el": "Ο προσωπικός σας λογαριασμός δημιουργήθηκε", "tr": "Kişisel hesabınız oluşturuldu"
+  },
+  "Ваши поездки и личные события календаря сохраняются в личном кабинете. Чтобы открыть их на другом телефоне или компьютере, достаточно этого номера:": {
+    "en": "Your trips and personal calendar events are saved in your personal account. To open them on another phone or computer, this number is all you need:", "de": "Deine Reisen und persönlichen Kalendertermine werden in deinem persönlichen Konto gespeichert. Um sie auf einem anderen Handy oder Computer zu öffnen, reicht diese Nummer:", "fr": "Vos voyages et événements personnels du calendrier sont enregistrés dans votre espace personnel. Pour les ouvrir sur un autre téléphone ou ordinateur, ce numéro suffit :", "it": "I tuoi viaggi e gli eventi personali del calendario sono salvati nel tuo account personale. Per aprirli su un altro telefono o computer basta questo numero:", "es": "Tus viajes y eventos personales del calendario se guardan en tu cuenta personal. Para abrirlos en otro teléfono u ordenador, basta con este número:", "pt": "As suas viagens e eventos pessoais do calendário ficam guardados na sua conta pessoal. Para os abrir noutro telemóvel ou computador, basta este número:", "pl": "Twoje podróże i osobiste wydarzenia z kalendarza są zapisane na koncie osobistym. Aby otworzyć je na innym telefonie lub komputerze, wystarczy ten numer:", "el": "Τα ταξίδια και τα προσωπικά σας γεγονότα ημερολογίου αποθηκεύονται στον προσωπικό σας λογαριασμό. Για να τα ανοίξετε σε άλλο κινητό ή υπολογιστή, αρκεί αυτός ο αριθμός:", "tr": "Seyahatleriniz ve kişisel takvim etkinlikleriniz kişisel hesabınızda saklanır. Bunları başka bir telefonda veya bilgisayarda açmak için bu numara yeterli:"
+  },
+  "МОЙ ЛИЧНЫЙ НОМЕР": {
+    "en": "MY PERSONAL NUMBER", "de": "MEINE PERSÖNLICHE NUMMER", "fr": "MON NUMÉRO PERSONNEL", "it": "IL MIO NUMERO PERSONALE", "es": "MI NÚMERO PERSONAL", "pt": "O MEU NÚMERO PESSOAL", "pl": "MÓJ NUMER OSOBISTY", "el": "Ο ΠΡΟΣΩΠΙΚΟΣ ΜΟΥ ΑΡΙΘΜΟΣ", "tr": "KİŞİSEL NUMARAM"
+  },
+  "Вход на другом устройстве: «Войти по личному ключу» → номер": {
+    "en": "On another device: “Sign in with personal key” → number", "de": "Auf einem anderen Gerät: „Mit persönlichem Schlüssel anmelden“ → Nummer", "fr": "Sur un autre appareil : « Se connecter avec la clé personnelle » → numéro", "it": "Su un altro dispositivo: «Accedi con la chiave personale» → numero", "es": "En otro dispositivo: «Entrar con clave personal» → número", "pt": "Noutro dispositivo: «Entrar com chave pessoal» → número", "pl": "Na innym urządzeniu: „Zaloguj się kluczem osobistym” → numer", "el": "Σε άλλη συσκευή: «Σύνδεση με προσωπικό κλειδί» → αριθμός", "tr": "Başka bir cihazda: “Kişisel anahtarla giriş” → numara"
+  },
+  "Номер сохранится на сервере, как только появится связь": {
+    "en": "The number will be saved on the server once you are online", "de": "Die Nummer wird auf dem Server gespeichert, sobald eine Verbindung besteht", "fr": "Le numéro sera enregistré sur le serveur dès que la connexion reviendra", "it": "Il numero verrà salvato sul server appena torna la connessione", "es": "El número se guardará en el servidor en cuanto haya conexión", "pt": "O número será guardado no servidor assim que houver ligação", "pl": "Numer zostanie zapisany na serwerze, gdy tylko pojawi się połączenie", "el": "Ο αριθμός θα αποθηκευτεί στον διακομιστή μόλις υπάρξει σύνδεση", "tr": "Numara, bağlantı kurulur kurulmaz sunucuya kaydedilecek"
+  },
+  "Номер — как пароль: не отправляйте его в общие чаты. Друзей приглашайте QR-кодом «Пригласить» в поездке.": {
+    "en": "Treat the number like a password: don’t post it in group chats. Invite friends with the “Invite” QR code in the trip.", "de": "Die Nummer ist wie ein Passwort: Schick sie nicht in Gruppenchats. Freunde lädst du mit dem QR-Code „Einladen“ in der Reise ein.", "fr": "Le numéro est comme un mot de passe : ne l’envoyez pas dans des discussions de groupe. Invitez vos amis avec le QR code « Inviter » du voyage.", "it": "Il numero è come una password: non inviarlo nelle chat di gruppo. Invita gli amici con il codice QR «Invita» nel viaggio.", "es": "El número es como una contraseña: no lo envíes a chats de grupo. Invita a tus amigos con el código QR «Invitar» del viaje.", "pt": "O número é como uma palavra-passe: não o envie para conversas de grupo. Convide amigos com o código QR «Convidar» na viagem.", "pl": "Numer jest jak hasło: nie wysyłaj go na czaty grupowe. Znajomych zapraszaj kodem QR „Zaproś” w podróży.", "el": "Ο αριθμός είναι σαν κωδικός πρόσβασης: μην τον στέλνετε σε ομαδικές συνομιλίες. Προσκαλέστε φίλους με τον κωδικό QR «Πρόσκληση» στο ταξίδι.", "tr": "Numara bir şifre gibidir: grup sohbetlerine göndermeyin. Arkadaşlarınızı seyahatteki “Davet et” QR koduyla davet edin."
+  },
+  "Скопировать": {
+    "en": "Copy", "de": "Kopieren", "fr": "Copier", "it": "Copia", "es": "Copiar", "pt": "Copiar", "pl": "Kopiuj", "el": "Αντιγραφή", "tr": "Kopyala"
+  },
+  "QR и картинка": {
+    "en": "QR and image", "de": "QR und Bild", "fr": "QR et image", "it": "QR e immagine", "es": "QR e imagen", "pt": "QR e imagem", "pl": "QR i obraz", "el": "QR και εικόνα", "tr": "QR ve görsel"
+  },
+  "Добавить PIN-код": {
+    "en": "Add PIN", "de": "PIN hinzufügen", "fr": "Ajouter un code PIN", "it": "Aggiungi PIN", "es": "Añadir PIN", "pt": "Adicionar PIN", "pl": "Dodaj PIN", "el": "Προσθήκη PIN", "tr": "PIN ekle"
+  },
+  "У меня уже есть номер — войти": {
+    "en": "I already have a number — sign in", "de": "Ich habe schon eine Nummer – anmelden", "fr": "J’ai déjà un numéro — me connecter", "it": "Ho già un numero — accedi", "es": "Ya tengo un número — entrar", "pt": "Já tenho um número — entrar", "pl": "Mam już numer — zaloguj się", "el": "Έχω ήδη αριθμό — σύνδεση", "tr": "Zaten numaram var — giriş yap"
+  },
+  "Номер всегда можно посмотреть: «Ещё» → «Мой ключ входа». Там же можно выпустить ключ с PIN-кодом.": {
+    "en": "You can always see the number under “More” → “My sign-in key”. There you can also issue a key with a PIN.", "de": "Die Nummer findest du jederzeit unter „Mehr“ → „Mein Anmeldeschlüssel“. Dort kannst du auch einen Schlüssel mit PIN erstellen.", "fr": "Le numéro est toujours visible dans « Plus » → « Ma clé de connexion ». Vous pouvez aussi y créer une clé avec code PIN.", "it": "Il numero è sempre visibile in «Altro» → «La mia chiave di accesso». Lì puoi anche creare una chiave con PIN.", "es": "Siempre puedes ver el número en «Más» → «Mi clave de acceso». Allí también puedes crear una clave con PIN.", "pt": "Pode ver o número a qualquer momento em «Mais» → «A minha chave de acesso». Aí também pode criar uma chave com PIN.", "pl": "Numer zawsze znajdziesz w „Więcej” → „Mój klucz logowania”. Tam też możesz utworzyć klucz z PIN-em.", "el": "Μπορείτε πάντα να δείτε τον αριθμό στο «Περισσότερα» → «Το κλειδί σύνδεσής μου». Εκεί μπορείτε επίσης να δημιουργήσετε κλειδί με PIN.", "tr": "Numarayı her zaman “Daha fazla” → “Giriş anahtarım” bölümünde görebilirsiniz. Orada PIN’li bir anahtar da oluşturabilirsiniz."
+  },
+  "Номер скопирован — храните как пароль": {
+    "en": "Number copied — keep it like a password", "de": "Nummer kopiert – bewahre sie wie ein Passwort auf", "fr": "Numéro copié — gardez-le comme un mot de passe", "it": "Numero copiato — custodiscilo come una password", "es": "Número copiado — guárdalo como una contraseña", "pt": "Número copiado — guarde-o como uma palavra-passe", "pl": "Numer skopiowany — przechowuj go jak hasło", "el": "Ο αριθμός αντιγράφηκε — φυλάξτε τον σαν κωδικό", "tr": "Numara kopyalandı — şifre gibi saklayın"
+  },
+  "Не удалось скопировать": {
+    "en": "Could not copy", "de": "Kopieren fehlgeschlagen", "fr": "Impossible de copier", "it": "Impossibile copiare", "es": "No se pudo copiar", "pt": "Não foi possível copiar", "pl": "Nie udało się skopiować", "el": "Η αντιγραφή απέτυχε", "tr": "Kopyalanamadı"
   }
 }

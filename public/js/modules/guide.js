@@ -137,7 +137,8 @@
 
   function formatDist(km) {
     if (km == null || !Number.isFinite(km)) return '';
-    return km < 1 ? `${Math.round(km * 1000)} м` : `${km.toFixed(1)} км`;
+    const ru = typeof getLang !== 'function' || getLang() === 'ru';
+    return km < 1 ? `${Math.round(km * 1000)} ${ru ? 'м' : 'm'}` : `${km.toFixed(1)} ${ru ? 'км' : 'km'}`;
   }
 
   function classifyPlace(tags) {
@@ -1098,7 +1099,7 @@
       const gMap = googleMapsUrl(p, p.city || state.city);
       const web = safeUrl(p.website);
       const wikiLink = safeUrl(p.wikiUrl || (p.id && String(p.id).startsWith('wiki-') ? wikiUrlFromTag(p.wikiTag) : ''));
-      const distText = p.distKm != null ? `${formatDist(p.distKm)} от центра` : '';
+      const distText = p.distKm != null ? `${formatDist(p.distKm)} ${window.STModuleUI ? STModuleUI.translate('от центра') : 'от центра'}` : '';
       const snip = wikiSnippet(p.wikiExtract, 280);
 
       return `
@@ -1633,7 +1634,7 @@
                 <div class="st-guide-city-hd">
                   <div>
                     <div class="st-card-title">${esc(state.data.displayName)}</div>
-                    <div class="st-muted">Найдено мест: ${state.data.places.length}</div>
+                    <div class="st-muted"><span>Найдено мест:</span> ${state.data.places.length}</div>
                   </div>
                   ${state.data.wiki?.url ? `<a class="st-btn st-btn-g" style="min-height:32px;padding:0 10px;font-size:.76rem;border-radius:10px;text-decoration:none" href="${esc(state.data.wiki.url)}" target="_blank" rel="noopener noreferrer"><i data-lucide="book-open"></i>Википедия</a>` : ''}
                 </div>
