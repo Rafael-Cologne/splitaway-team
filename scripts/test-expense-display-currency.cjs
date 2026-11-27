@@ -40,6 +40,8 @@ vm.runInContext(html.match(/function fm\(n,currCode\)\{[\s\S]*?\n\}/)[0] + displ
   shown = vm.runInContext('expenseViewAmounts(18615.04,{originalCurrency:"EUR",originalAmount:50})', context);
   assert.match(shown.main, /50,00\s*€/);
   assert.match(shown.secondary, /18\.615,04\s*Ft/);
+  assert.match(vm.runInContext('expenseViewMarkup(-100)', context), /≈ -0,27\s*€/);
+  assert.match(vm.runInContext('expenseViewMarkup(100,null,true)', context), /≈ \+0,27\s*€/);
   assert.equal(stored.get('sw_exp_view_TEST-HUNGARY_Raf'), 'EUR');
   console.log('PASS: ledger stays HUF; secondary EUR and display preference switch correctly');
 })().catch(error => { console.error(error); process.exitCode = 1; });

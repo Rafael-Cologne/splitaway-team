@@ -1332,9 +1332,10 @@ function expenseViewAmounts(amount,expense){
   if(expenseViewCode()===extra&&rate)return {main:(original?'':'≈ ')+ (original||fm(amount*rate,extra)),secondary:fm(amount,base)};
   return {main:fm(amount,base),secondary:original||rate&&extra?`≈ ${fm(amount*rate,extra)}`:''};
 }
-function expenseViewMarkup(amount,expense){
+function expenseViewMarkup(amount,expense,showPlus=false){
   const shown=expenseViewAmounts(amount,expense);
-  return `<span>${shown.main}</span>${shown.secondary?`<small style="display:block;font-size:.72em;font-weight:400;color:var(--t2);margin-top:2px">${shown.secondary}</small>`:''}`;
+  const signed=text=>showPlus&&amount>=0?(text.startsWith('≈ ')?'≈ +'+text.slice(2):'+'+text):text;
+  return `<span>${signed(shown.main)}</span>${shown.secondary?`<small style="display:block;font-size:.72em;font-weight:400;color:var(--t2);margin-top:2px">${signed(shown.secondary)}</small>`:''}`;
 }
 async function onCurrencyChange(code){
   const picker=document.getElementById('currency-picker');
@@ -2286,7 +2287,7 @@ function renderDash(){
   const netBal=totalOwed-totalOwe;
   if(sumEl){
     if(!myOwe.length&&!myOwed.length){sumEl.textContent='✓ OK';sumEl.style.color='var(--green)';}
-    else{sumEl.innerHTML=(netBal>=0?'+':'')+expenseViewMarkup(netBal);sumEl.style.color=netBal>=0?'var(--green)':'var(--red)';}
+    else{sumEl.innerHTML=expenseViewMarkup(netBal,null,netBal>=0);sumEl.style.color=netBal>=0?'var(--green)':'var(--red)';}
   }
   // helper: render avatar for a debt side
   const dbAvatar=(info)=>info.isGroup
@@ -2306,14 +2307,14 @@ function renderDash(){
         <div style="flex:1;font-size:0.86rem">
           ${meChip()}${DIR_ARROW}${dbLabel(d.toInfo)}
         </div>
-        <div class="da neg">-${expenseViewMarkup(d.amount)}</div>
+        <div class="da neg">${expenseViewMarkup(-d.amount)}</div>
       </div>`),
       ...myOwed.map(d=>`<div class="dr">
         ${dbAvatar(d.fromInfo)}
         <div style="flex:1;font-size:0.86rem">
           ${dbLabel(d.fromInfo)}${DIR_ARROW}${meChip()}
         </div>
-        <div class="da pos">+${expenseViewMarkup(d.amount)}</div>
+        <div class="da pos">${expenseViewMarkup(d.amount,null,true)}</div>
       </div>`)
     ].join('')
   }
@@ -3750,7 +3751,7 @@ function renderBalances(){
         <div style="display:flex;align-items:center;gap:10px;width:100%">
           <div class="av av-md" style="background:${ac(m.name)};${avPhoto(m.name)}">${escHtml(m.name[0]||'?')}</div>
           <div style="flex:1;min-width:0"><div style="font-weight:600;color:${ac(m.name)}">${escHtml(m.name)}</div><div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('bal_share_label')}: ${expenseViewMarkup(shares[m.name]||0)}</div></div>
-          <div style="text-align:right;flex-shrink:0"><div class="da ${net>=0?'pos':'neg'}">${net>=0?'+':''}${expenseViewMarkup(net)}</div><div style="font-size:0.75rem;color:var(--t2);margin-top:2px">${t('bal_personal_net')}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div class="da ${net>=0?'pos':'neg'}">${expenseViewMarkup(net,null,net>=0)}</div><div style="font-size:0.75rem;color:var(--t2);margin-top:2px">${t('bal_personal_net')}</div></div>
         </div>
         <div class="pb" style="width:100%"><div class="pf" style="width:${Math.min(100,(shares[m.name]||0)/mx*100)}%;background:${net>=0?'var(--green)':'var(--red)'}"></div></div>
       </div>`;
@@ -3771,7 +3772,7 @@ function renderBalances(){
       html+=`<div style="border:1px solid ${bc};border-radius:var(--r);overflow:hidden;margin-bottom:8px">
         <div data-group-index="${groupIndex}" role="button" tabindex="0" style="padding:8px 13px;background:${hc};display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;cursor:pointer">
           <div style="font-size:0.7rem;font-weight:700;color:${lc}">${lbl}</div>
-          <div style="text-align:right"><div style="font-size:0.82rem;font-weight:700;color:${netColor}">${groupNet>=0?'+':''}${expenseViewMarkup(groupNet)}</div><div style="font-size:0.75rem;color:var(--t2)">${t('bal_group_net')}</div></div>
+          <div style="text-align:right"><div style="font-size:0.82rem;font-weight:700;color:${netColor}">${expenseViewMarkup(groupNet,null,groupNet>=0)}</div><div style="font-size:0.75rem;color:var(--t2)">${t('bal_group_net')}</div></div>
         </div>
         <div style="padding:3px 13px 5px;background:${hc}">
           <div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('dash_total_label')}: ${expenseViewMarkup(groupShareCents/100)}</div>
