@@ -325,28 +325,9 @@
       `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x" style="width:15px;height:15px"></i></button></div>` +
       `<div class="hub-sheet-lbl">${esc(tx('theme'))}</div><div class="hub-chips">` +
       ['light', 'dark'].map(m => `<button class="hub-chip${theme === m ? ' on' : ''}" type="button" data-hub="theme" data-v="${m}"><i data-lucide="${m === 'light' ? 'sun' : 'moon'}"></i>${esc(tx(m))}</button>`).join('') +
-      `</div><div class="hub-sheet-lbl">${esc(tx('language'))}</div><div class="hub-chips">` +
-      LANGS.map(([code, name]) => `<button class="hub-chip${cur === code ? ' on' : ''}" type="button" data-hub="lang" data-v="${code}">${esc(name)}</button>`).join('') +
+      `</div><div class="hub-sheet-lbl">${esc(tx('language'))}</div><div class="hub-lang-grid">` +
+      LANGS.map(([code, name]) => `<button class="btn btn-g btn-sm lang-btn${cur === code ? ' active' : ''}" type="button" data-hub="lang" data-v="${code}" data-lang="${code}" aria-pressed="${cur === code}" title="${esc(name)}">${LANG_FLAGS[code]} ${code.toUpperCase()}</button>`).join('') +
       '</div>' + keyRow();
-    if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
-    icons(ov);
-  }
-
-  function openLanguageSettings() {
-    let ov = $('m-hub-profile');
-    if (!ov) {
-      ov = document.createElement('div');
-      ov.className = 'ov'; ov.id = 'm-hub-profile';
-      ov.innerHTML = '<div class="mdl hub-sheet"></div>';
-      document.body.appendChild(ov);
-    }
-    ov.firstChild.innerHTML = '<div class="mdl-handle"></div><div class="hub-sheet-hd">' +
-      `<button class="hub-nav-picker-back" type="button" data-hub="more-open" aria-label="${esc(tx('back'))}"><i data-lucide="arrow-left"></i></button>` +
-      `<div class="mdl-title">${esc(tx('language'))}</div>` +
-      `<button class="btn btn-g btn-sm btn-ic" type="button" data-hub="close-profile" aria-label="${esc(tx('close'))}"><i data-lucide="x"></i></button></div>` +
-      '<div class="hub-lang-grid">' +
-      LANGS.map(([code]) => `<button class="btn btn-g btn-sm lang-btn${lang() === code ? ' active' : ''}" type="button" data-hub="settings-lang" data-v="${code}" aria-pressed="${lang() === code}">${LANG_FLAGS[code]} ${code.toUpperCase()}</button>`).join('') +
-      '</div>';
     if (!ov.classList.contains('open')) { if (typeof openModal === 'function') openModal('m-hub-profile'); else ov.classList.add('open'); }
     icons(ov);
   }
@@ -427,7 +408,6 @@
       document.body.appendChild(ov);
     }
     const rows = [
-      ['language-settings', 'languages', tx('language'), LANGS.find(([code]) => code === lang())?.[1] || ''],
       ['profile', 'user', st(0), st(1)],
       ['nav-settings', 'panel-bottom', st(2), st(3)],
       ['saved', 'bookmark', st(4), st(5)],
@@ -619,7 +599,6 @@
       case 'my-key': if (typeof closeModal === 'function') closeModal('m-hub-profile'); if (window.STKey) STKey.openMyKey(); break;
       case 'theme': if (typeof setTheme === 'function') setTheme(v); openProfile(); render(); break;
       case 'lang': if (typeof setLang === 'function') setLang(v); openProfile(); render(); break;
-      case 'settings-lang': if (typeof setLang === 'function') setLang(v); render(); openLanguageSettings(); break;
       case 'more-open': openMore(); break;
       case 'nav-reset': try { localStorage.removeItem('st_hub_nav_slots'); } catch (_) {} render(); openNavSettings(); break;
       case 'nav-settings': openNavSettings(); break;
@@ -635,7 +614,6 @@
       case 'more':
         if (typeof closeModal === 'function') closeModal('m-hub-profile');
         if (v === 'profile') setTimeout(openProfile, 60);
-        else if (v === 'language-settings') setTimeout(openLanguageSettings, 60);
         else if (v === 'nav-settings') setTimeout(openNavSettings, 60);
         else if (v === 'saved') say(st(4) + ' — ' + tx('soon'));
         else if (v === 'services') { view = 'home'; searchOpen = false; render(); setTimeout(() => $('hub-services')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
