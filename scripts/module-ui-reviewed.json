@@ -562,5 +562,11 @@
   },
   "Файл «": {
     "en": "File “", "de": "Datei „", "fr": "Fichier « ", "it": "File «", "es": "Archivo «", "pt": "Ficheiro «", "pl": "Plik „", "el": "Αρχείο «", "tr": "«"
+  },
+  "Нажмите, чтобы заменить": {
+    "en": "Tap to replace", "de": "Zum Ersetzen tippen", "fr": "Touchez pour remplacer", "it": "Tocca per sostituire", "es": "Toca para cambiar", "pt": "Toque para substituir", "pl": "Dotknij, aby zmienić", "el": "Πατήστε για αντικατάσταση", "tr": "Değiştirmek için dokunun"
+  },
+  "Нажмите, чтобы выбрать своё фото": {
+    "en": "Tap to choose your own photo", "de": "Tippen, um ein eigenes Foto zu wählen", "fr": "Touchez pour choisir votre photo", "it": "Tocca per scegliere una tua foto", "es": "Toca para elegir tu propia foto", "pt": "Toque para escolher a sua foto", "pl": "Dotknij, aby wybrać własne zdjęcie", "el": "Πατήστε για να επιλέξετε δική σας φωτογραφία", "tr": "Kendi fotoğrafınızı seçmek için dokunun"
   }
 }

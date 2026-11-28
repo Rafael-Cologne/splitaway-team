@@ -294,7 +294,7 @@
     .bk-cats::-webkit-scrollbar{display:none}
     .bk-cat{flex:1 0 76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:86px;padding:10px 2px;border-radius:18px;border:1px solid var(--hub-card-b);background:var(--hub-card);box-shadow:var(--hub-shadow);color:var(--text);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer}
     .bk-cat svg{width:25px;height:25px;color:var(--bk-ac);stroke-width:2.2}
-    .bk-cat span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+    .bk-cat span{max-width:100%;padding:0 2px;text-align:center;line-height:1.15;white-space:normal;hyphens:auto;overflow-wrap:anywhere}
     .bk-cat.on{background:var(--bk-grad);color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(106,77,244,.35)}
     .bk-cat.on svg{color:#fff}
     /* поездка */
@@ -581,7 +581,7 @@
       }
       if (!b.date) return '';
       const pt = (lbl, date, time) => `<div class="bk-pt"><small class="bk-lbl" translate="no">${lbl}</small>
-        <div class="bk-time d">${esc(dayName(date))}</div><div class="bk-date">${esc(wd(date))}${time ? ', ' + esc(time) : ''}</div></div>`;
+        <div class="bk-time d">${esc(fmtD(date, { day: 'numeric', month: 'short' }))}</div><div class="bk-date">${esc(wd(date))}${time ? ', ' + esc(time) : ''}</div></div>`;
       const end = endOf(b) !== b.date || b.endTime;
       return `<div class="bk-route">${pt(l1, b.date, b.time)}${end ? mid + pt(l2, endOf(b), b.endTime) : '<div></div><div></div>'}</div>`;
     }
@@ -668,7 +668,7 @@
             ? `<div class="bk-logo" data-al style="background:hsl(${hueOf(b.provider)},68%,46%)">${esc(initials(b.provider))}</div>`
             : `<div class="bk-logo" style="background:${c.bg};color:${c.color}"><i data-lucide="${c.icon}"></i></div>`;
           const title = b.cat === 'flight' && b.from && b.to && !b.title
-            ? `Рейс ${esc(b.from)} <i data-lucide="arrow-right"></i> ${esc(b.to)}` : esc(titleOf(b));
+            ? `${esc(tr('Рейс'))} ${esc(b.from)} <i data-lucide="arrow-right"></i> ${esc(b.to)}` : esc(titleOf(b));
           const sub = b.cat === 'flight' ? [b.provider, b.number].filter(Boolean).join(' · ') : [b.provider, b.cat === 'transport' ? '' : b.place].filter(Boolean).join(' · ');
           const rows = [];
           if (b.code || b.number) rows.push(`<div class="bk-r" data-copy="${esc(b.code || b.number)}"><i data-lucide="hash"></i><span class="bk-r-l">Номер брони</span><span class="bk-r-v">${esc(b.code || b.number)}</span><i data-lucide="copy" class="bk-copy"></i></div>`);
@@ -892,7 +892,7 @@
                 <label>Название документа</label><div class="bk-f"><i data-lucide="pencil"></i><input id="b-docname" maxlength="60" value="${esc(o.review.docTitle || docSuggest(draft.cat, o.review.kind))}"></div>` : `
               <label>Обложка</label>
               <button class="bk-card bk-cover" type="button" data-a="photo"><img src="${esc(draft.photo || IMG + c.hero)}" alt="">
-                <span>${draft.photo ? 'Своё фото' : 'Стандартная картинка'}<small>Нажмите, чтобы ${draft.photo ? 'заменить' : 'выбрать своё фото'}</small></span>
+                <span>${draft.photo ? 'Своё фото' : 'Стандартная картинка'}<small>${draft.photo ? 'Нажмите, чтобы заменить' : 'Нажмите, чтобы выбрать своё фото'}</small></span>
                 ${draft.photo ? '<i data-lucide="x" data-a="nophoto" style="width:20px;height:20px;color:var(--t3)"></i>' : '<i data-lucide="image-plus" style="width:20px;height:20px;color:var(--t3)"></i>'}</button>
               <input type="file" id="b-photo" accept="image/*" hidden>`}
               <button class="st-btn st-btn-fw" type="button" data-a="save" style="margin-top:8px">${o.review ? 'Всё верно — сохранить' : isNew ? 'Добавить бронь' : 'Сохранить'}</button>
