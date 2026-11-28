@@ -17,6 +17,13 @@
   const ID = 'translator';
   const IMG = '/img/translator/';
   const OCR = '/vendor/tesseract/';
+  // 13 моделей распознавания лежат в приложении; остальные (те же бесплатные модели tesseract.js)
+  // скачиваются с jsDelivr при первом выборе языка и потом работают офлайн (кэш Tesseract + кэш офлайна)
+  const OCR_LOCAL = ['eng', 'deu', 'fra', 'spa', 'ita', 'por', 'nld', 'pol', 'ces', 'hrv', 'tur', 'ell', 'rus'];
+  const OCR_CDN = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/';
+  const ocrBase = o => OCR_LOCAL.includes(o) ? OCR + 'lang' : OCR_CDN + o + '/4.0.0_best_int';
+  // сербский — кириллическая модель; сербскую латиницу читают и модели хорватского/боснийского
+  const ocrUrls = c => (L[c] && L[c].o ? L[c].o.split('+').map(o => ocrBase(o) + '/' + o + '.traineddata.gz') : []);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const online = () => navigator.onLine !== false;
@@ -28,31 +35,31 @@
 
   // ---------- Языки: n — название, cc — флаг, v — голос, o — файл распознавания текста ----------
   const L = {
-    ru: { n: 'Русский', cc: 'ru', v: 'ru-RU' }, en: { n: 'Английский', cc: 'gb', v: 'en-GB', o: 'eng' },
+    ru: { n: 'Русский', cc: 'ru', v: 'ru-RU', o: 'rus' }, en: { n: 'Английский', cc: 'gb', v: 'en-GB', o: 'eng' },
     de: { n: 'Немецкий', cc: 'de', v: 'de-DE', o: 'deu' }, fr: { n: 'Французский', cc: 'fr', v: 'fr-FR', o: 'fra' },
     es: { n: 'Испанский', cc: 'es', v: 'es-ES', o: 'spa' }, it: { n: 'Итальянский', cc: 'it', v: 'it-IT', o: 'ita' },
     pt: { n: 'Португальский', cc: 'pt', v: 'pt-PT', o: 'por' }, nl: { n: 'Нидерландский', cc: 'nl', v: 'nl-NL', o: 'nld' },
     pl: { n: 'Польский', cc: 'pl', v: 'pl-PL', o: 'pol' }, cs: { n: 'Чешский', cc: 'cz', v: 'cs-CZ', o: 'ces' },
     hr: { n: 'Хорватский', cc: 'hr', v: 'hr-HR', o: 'hrv' }, tr: { n: 'Турецкий', cc: 'tr', v: 'tl-TR', o: 'tur' },
-    el: { n: 'Греческий', cc: 'gr', v: 'el-GR', o: 'ell' }, uk: { n: 'Украинский', cc: 'ua', v: 'uk-UA' },
-    ka: { n: 'Грузинский', cc: 'ge', v: 'ka-GE' }, hy: { n: 'Армянский', cc: 'am', v: 'hy-AM' },
-    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA' },
-    sr: { n: 'Сербский', cc: 'rs', v: 'sr-RS' }, bs: { n: 'Боснийский', cc: 'ba', v: 'bs-BA' }, sl: { n: 'Словенский', cc: 'si', v: 'sl-SI' },
-    sk: { n: 'Словацкий', cc: 'sk', v: 'sk-SK' }, bg: { n: 'Болгарский', cc: 'bg', v: 'bg-BG' }, ro: { n: 'Румынский', cc: 'ro', v: 'ro-RO' },
-    hu: { n: 'Венгерский', cc: 'hu', v: 'hu-HU' }, da: { n: 'Датский', cc: 'dk', v: 'da-DK' }, sv: { n: 'Шведский', cc: 'se', v: 'sv-SE' },
-    no: { n: 'Норвежский', cc: 'no', v: 'nb-NO' }, fi: { n: 'Финский', cc: 'fi', v: 'fi-FI' }, is: { n: 'Исландский', cc: 'is', v: 'is-IS' },
-    et: { n: 'Эстонский', cc: 'ee', v: 'et-EE' }, lv: { n: 'Латышский', cc: 'lv', v: 'lv-LV' }, lt: { n: 'Литовский', cc: 'lt', v: 'lt-LT' },
-    sq: { n: 'Албанский', cc: 'al', v: 'sq-AL' }, mk: { n: 'Македонский', cc: 'mk', v: 'mk-MK' }, mt: { n: 'Мальтийский', cc: 'mt', v: 'mt-MT' },
-    he: { n: 'Иврит', cc: 'il', v: 'he-IL' }, fa: { n: 'Персидский', cc: 'ir', v: 'fa-IR' }, hi: { n: 'Хинди', cc: 'in', v: 'hi-IN' },
-    bn: { n: 'Бенгальский', cc: 'bd', v: 'bn-BD' }, ur: { n: 'Урду', cc: 'pk', v: 'ur-PK' }, ta: { n: 'Тамильский', cc: 'in', v: 'ta-IN' },
-    te: { n: 'Телугу', cc: 'in', v: 'te-IN' }, ml: { n: 'Малаялам', cc: 'in', v: 'ml-IN' }, mr: { n: 'Маратхи', cc: 'in', v: 'mr-IN' },
-    gu: { n: 'Гуджарати', cc: 'in', v: 'gu-IN' }, ne: { n: 'Непальский', cc: 'np', v: 'ne-NP' }, si: { n: 'Сингальский', cc: 'lk', v: 'si-LK' },
-    th: { n: 'Тайский', cc: 'th', v: 'th-TH' }, vi: { n: 'Вьетнамский', cc: 'vn', v: 'vi-VN' }, id: { n: 'Индонезийский', cc: 'id', v: 'id-ID' },
-    ms: { n: 'Малайский', cc: 'my', v: 'ms-MY' }, tl: { n: 'Филиппинский', cc: 'ph', v: 'fil-PH' }, ko: { n: 'Корейский', cc: 'kr', v: 'ko-KR' },
-    km: { n: 'Кхмерский', cc: 'kh', v: 'km-KH' }, lo: { n: 'Лаосский', cc: 'la', v: 'lo-LA' }, my: { n: 'Бирманский', cc: 'mm', v: 'my-MM' },
-    sw: { n: 'Суахили', cc: 'ke', v: 'sw-KE' }, am: { n: 'Амхарский', cc: 'et', v: 'am-ET' }, af: { n: 'Африкаанс', cc: 'za', v: 'af-ZA' },
-    zu: { n: 'Зулу', cc: 'za', v: 'zu-ZA' }, az: { n: 'Азербайджанский', cc: 'az', v: 'az-AZ' }, kk: { n: 'Казахский', cc: 'kz', v: 'kk-KZ' },
-    uz: { n: 'Узбекский', cc: 'uz', v: 'uz-UZ' }, ky: { n: 'Киргизский', cc: 'kg', v: 'ky-KG' }, mn: { n: 'Монгольский', cc: 'mn', v: 'mn-MN' }
+    el: { n: 'Греческий', cc: 'gr', v: 'el-GR', o: 'ell' }, uk: { n: 'Украинский', cc: 'ua', v: 'uk-UA', o: 'ukr' },
+    ka: { n: 'Грузинский', cc: 'ge', v: 'ka-GE', o: 'kat' }, hy: { n: 'Армянский', cc: 'am', v: 'hy-AM', o: 'hye' },
+    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP', o: 'jpn' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN', o: 'chi_sim' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA', o: 'ara' },
+    sr: { n: 'Сербский', cc: 'rs', v: 'sr-RS', o: 'srp' }, bs: { n: 'Боснийский', cc: 'ba', v: 'bs-BA', o: 'bos' }, sl: { n: 'Словенский', cc: 'si', v: 'sl-SI', o: 'slv' },
+    sk: { n: 'Словацкий', cc: 'sk', v: 'sk-SK', o: 'slk' }, bg: { n: 'Болгарский', cc: 'bg', v: 'bg-BG', o: 'bul' }, ro: { n: 'Румынский', cc: 'ro', v: 'ro-RO', o: 'ron' },
+    hu: { n: 'Венгерский', cc: 'hu', v: 'hu-HU', o: 'hun' }, da: { n: 'Датский', cc: 'dk', v: 'da-DK', o: 'dan' }, sv: { n: 'Шведский', cc: 'se', v: 'sv-SE', o: 'swe' },
+    no: { n: 'Норвежский', cc: 'no', v: 'nb-NO', o: 'nor' }, fi: { n: 'Финский', cc: 'fi', v: 'fi-FI', o: 'fin' }, is: { n: 'Исландский', cc: 'is', v: 'is-IS', o: 'isl' },
+    et: { n: 'Эстонский', cc: 'ee', v: 'et-EE', o: 'est' }, lv: { n: 'Латышский', cc: 'lv', v: 'lv-LV', o: 'lav' }, lt: { n: 'Литовский', cc: 'lt', v: 'lt-LT', o: 'lit' },
+    sq: { n: 'Албанский', cc: 'al', v: 'sq-AL', o: 'sqi' }, mk: { n: 'Македонский', cc: 'mk', v: 'mk-MK', o: 'mkd' }, mt: { n: 'Мальтийский', cc: 'mt', v: 'mt-MT', o: 'mlt' },
+    he: { n: 'Иврит', cc: 'il', v: 'he-IL', o: 'heb' }, fa: { n: 'Персидский', cc: 'ir', v: 'fa-IR', o: 'fas' }, hi: { n: 'Хинди', cc: 'in', v: 'hi-IN', o: 'hin' },
+    bn: { n: 'Бенгальский', cc: 'bd', v: 'bn-BD', o: 'ben' }, ur: { n: 'Урду', cc: 'pk', v: 'ur-PK', o: 'urd' }, ta: { n: 'Тамильский', cc: 'in', v: 'ta-IN', o: 'tam' },
+    te: { n: 'Телугу', cc: 'in', v: 'te-IN', o: 'tel' }, ml: { n: 'Малаялам', cc: 'in', v: 'ml-IN', o: 'mal' }, mr: { n: 'Маратхи', cc: 'in', v: 'mr-IN', o: 'mar' },
+    gu: { n: 'Гуджарати', cc: 'in', v: 'gu-IN', o: 'guj' }, ne: { n: 'Непальский', cc: 'np', v: 'ne-NP', o: 'nep' }, si: { n: 'Сингальский', cc: 'lk', v: 'si-LK', o: 'sin' },
+    th: { n: 'Тайский', cc: 'th', v: 'th-TH', o: 'tha' }, vi: { n: 'Вьетнамский', cc: 'vn', v: 'vi-VN', o: 'vie' }, id: { n: 'Индонезийский', cc: 'id', v: 'id-ID', o: 'ind' },
+    ms: { n: 'Малайский', cc: 'my', v: 'ms-MY', o: 'msa' }, tl: { n: 'Филиппинский', cc: 'ph', v: 'fil-PH', o: 'fil' }, ko: { n: 'Корейский', cc: 'kr', v: 'ko-KR', o: 'kor' },
+    km: { n: 'Кхмерский', cc: 'kh', v: 'km-KH', o: 'khm' }, lo: { n: 'Лаосский', cc: 'la', v: 'lo-LA', o: 'lao' }, my: { n: 'Бирманский', cc: 'mm', v: 'my-MM', o: 'mya' },
+    sw: { n: 'Суахили', cc: 'ke', v: 'sw-KE', o: 'swa' }, am: { n: 'Амхарский', cc: 'et', v: 'am-ET', o: 'amh' }, af: { n: 'Африкаанс', cc: 'za', v: 'af-ZA', o: 'afr' },
+    zu: { n: 'Зулу', cc: 'za', v: 'zu-ZA' }, az: { n: 'Азербайджанский', cc: 'az', v: 'az-AZ', o: 'aze' }, kk: { n: 'Казахский', cc: 'kz', v: 'kk-KZ', o: 'kaz' },
+    uz: { n: 'Узбекский', cc: 'uz', v: 'uz-UZ', o: 'uzb' }, ky: { n: 'Киргизский', cc: 'kg', v: 'ky-KG', o: 'kir' }, mn: { n: 'Монгольский', cc: 'mn', v: 'mn-MN', o: 'mon' }
   };
   const CODES = Object.keys(L);
   const CC_LANG = { DE:'de', AT:'de', CH:'de', LI:'de', FR:'fr', BE:'fr', LU:'fr', MC:'fr', MA:'ar', TN:'ar', DZ:'ar', ES:'es', AD:'es', MX:'es', AR:'es', CU:'es', DO:'es', CO:'es', CL:'es', PE:'es', VE:'es', UY:'es', PY:'es', BO:'es', EC:'es', GT:'es', CR:'es', PA:'es', HN:'es', NI:'es', SV:'es',
@@ -308,7 +315,7 @@
   }));
   async function readPhoto(file, c, onProgress) {
     const T = await loadTess();
-    const worker = await T.createWorker(L[c].o, 1, { workerPath: OCR + 'worker.min.js', corePath: OCR, langPath: OCR + 'lang', gzip: true, workerBlobURL: false,
+    const worker = await T.createWorker(L[c].o, 1, { workerPath: OCR + 'worker.min.js', corePath: OCR, langPath: ocrBase(L[c].o.split('+')[0]), gzip: true, workerBlobURL: false,
       logger: m => { if (onProgress && m && typeof m.progress === 'number') onProgress(m.status, m.progress); } });
     try {
       const url = URL.createObjectURL(file);
@@ -318,7 +325,11 @@
       const cv = document.createElement('canvas'); cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
       const { data } = await worker.recognize(cv);
-      return (data.text || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      ocrCached(c).then(ok => { if (!ok) cacheUrls(ocrUrls(c)); }); // скачанная модель — в кэш офлайна
+      let txt = (data.text || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      // японский/китайский: Tesseract ставит пробелы между иероглифами — убираем
+      if (c === 'ja' || c === 'zh') txt = txt.replace(/([\u3000-\u9fff\uff00-\uffef]) +(?=[\u3000-\u9fff\uff00-\uffef])/g, '$1');
+      return txt;
     } finally { try { await worker.terminate(); } catch (_) {} }
   }
 
@@ -330,8 +341,9 @@
     for (const u of urls) { try { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) await c.put(u, r.clone()); } catch (_) {} }
   }
   async function ocrCached(c) {
-    if (!L[c] || !L[c].o || !('caches' in window)) return false;
-    try { return !!(await caches.match(OCR + 'lang/' + L[c].o + '.traineddata.gz')); } catch (_) { return false; }
+    const urls = ocrUrls(c);
+    if (!urls.length || !('caches' in window)) return false;
+    try { for (const u of urls) if (!(await caches.match(u))) return false; return true; } catch (_) { return false; }
   }
   async function langStatus(c, my) {
     my = my || myLang();
@@ -371,7 +383,7 @@
       }
     }
     // 3) распознавание текста с фото
-    if (L[c] && L[c].o) { say('Текст с фото: ' + nm(c) + '…'); await cacheUrls([OCR + 'lang/' + L[c].o + '.traineddata.gz', OCR + 'tesseract.min.js', OCR + 'worker.min.js', OCR + coreFile()]); res.ocr = (await ocrCached(c)) ? 'ok' : 'fail'; }
+    if (L[c] && L[c].o) { say('Текст с фото: ' + nm(c) + '…'); await cacheUrls([...ocrUrls(c), OCR + 'tesseract.min.js', OCR + 'worker.min.js', OCR + coreFile()]); res.ocr = (await ocrCached(c)) ? 'ok' : 'fail'; }
     return res;
   }
   // какой файл ядра Tesseract выберет этот браузер (та же проверка, что в worker.min.js)
@@ -957,7 +969,7 @@
     name: nm, flag, myLang, tripLang, tripCC, detectTripCC,
     status: (c, my) => langStatus(c, my),
     download: (c, my, onStep) => downloadLang(c, my, onStep),
-    ocrFile: c => (L[c] && L[c].o ? OCR + 'lang/' + L[c].o + '.traineddata.gz' : null),
+    ocrFile: c => ocrUrls(c)[0] || null,
     coreFile: () => OCR + coreFile(),
     open(view) { pendingView = view || null; STHub.openService(ID); }
   };
