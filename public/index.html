@@ -612,7 +612,8 @@ button.er,button.dr{color:var(--text);font:inherit;text-align:left}
           <span class="dh-cover" id="dh-cover" aria-hidden="true"></span>
           <div class="dh-lbl"><i data-lucide="wallet"></i><span data-i18n="dash_total_label">Общие расходы</span></div>
           <div class="hero-amt dh-amt" id="d-total">0,00</div>
-          <button type="button" class="dh-cur" onclick="goPage('pg-set')"><span id="d-currency-label">EUR</span><i data-lucide="chevron-down"></i></button>
+          <div id="d-total-secondary" style="font-size:.85rem;color:#fff!important;opacity:.92;text-shadow:0 1px 4px rgba(0,0,0,.7);margin:-4px 0 9px" hidden></div>
+          <button type="button" class="dh-cur" id="d-display-currency" onclick="toggleExpenseDisplayCurrency()"><span id="d-currency-label">EUR</span><i data-lucide="arrow-left-right"></i></button>
         </div>
       </div>
       <div style="padding:0 18px"><div class="g2 dh-stats">
@@ -1284,6 +1285,57 @@ function fm(n,currCode){
   const sym=getCurrencySymbol(currCode);
   const val=(Math.round(n*100)/100).toLocaleString(fmtLocale(),{minimumFractionDigits:2,maximumFractionDigits:2});
   return val+' '+sym;
+}
+// The trip ledger stays in its base currency. This quote changes presentation only.
+let expenseViewQuote=null,expenseViewPending=null,expenseViewFailure=null;
+function expenseViewKey(){return 'sw_exp_view_'+(S.trip?.id||'')+'_'+(S.me||'')}
+function expenseViewPair(){return (S.trip?.currency||getCurrency())+'_'+(S.trip?.secondaryCurrency||'')}
+function expenseViewRate(){return expenseViewQuote?.pair===expenseViewPair()&&Date.now()-expenseViewQuote.savedAt<86400000?expenseViewQuote.rate:null}
+function expenseViewCode(){
+  const base=S.trip?.currency||getCurrency(),extra=S.trip?.secondaryCurrency;
+  try{return extra&&expenseViewRate()&&localStorage.getItem(expenseViewKey())===extra?extra:base}catch{return base}
+}
+async function loadExpenseViewRate(){
+  const base=S.trip?.currency||getCurrency(),extra=S.trip?.secondaryCurrency,pair=expenseViewPair();
+  if(!S.trip||!extra||extra===base||!window.SplitawayFx)return null;
+  if(expenseViewRate())return expenseViewRate();
+  if(expenseViewPending?.pair===pair)return expenseViewPending.promise;
+  if(expenseViewFailure?.pair===pair&&Date.now()-expenseViewFailure.at<60000)return null;
+  try{
+    const cached=JSON.parse(localStorage.getItem('sw_exp_view_rate_'+pair)||'null');
+    if(cached?.rate>0&&Date.now()-cached.savedAt<86400000){expenseViewQuote={...cached,pair};return cached.rate}
+  }catch{}
+  const promise=(async()=>{
+    try{
+      const quote=await window.SplitawayFx.requestLatestRate(base,extra,new AbortController().signal);
+      if(!(quote?.rate>0))return null;
+      const saved={pair,rate:quote.rate,asOf:quote.asOf,savedAt:Date.now()};
+      try{localStorage.setItem('sw_exp_view_rate_'+pair,JSON.stringify(saved))}catch{}
+      if(S.trip&&expenseViewPair()===pair){expenseViewQuote=saved;renderDash();renderExpenses();renderBalances()}
+      return quote.rate;
+    }catch{expenseViewFailure={pair,at:Date.now()};return null}
+    finally{if(expenseViewPending?.pair===pair)expenseViewPending=null}
+  })();
+  expenseViewPending={pair,promise};return promise;
+}
+async function toggleExpenseDisplayCurrency(){
+  const base=S.trip?.currency||getCurrency(),extra=S.trip?.secondaryCurrency;
+  if(!extra||extra===base){goPage('pg-set');return}
+  if(!expenseViewRate()&&!await loadExpenseViewRate()){toast(t('currency_change_no_rate'));return}
+  const next=expenseViewCode()===base?extra:base;
+  try{localStorage.setItem(expenseViewKey(),next)}catch{}
+  renderDash();renderExpenses();renderBalances();
+}
+function expenseViewAmounts(amount,expense){
+  const base=S.trip?.currency||getCurrency(),extra=S.trip?.secondaryCurrency,rate=expenseViewRate();
+  const original=expense?.originalCurrency===extra&&expense.originalAmount!=null&&Number.isFinite(Number(expense.originalAmount))?fm(expense.originalAmount,extra):null;
+  if(expenseViewCode()===extra&&rate)return {main:(original||amount===0?'':'≈ ')+ (original||fm(amount*rate,extra)),secondary:fm(amount,base)};
+  return {main:fm(amount,base),secondary:original||rate&&extra?`${amount===0?'':'≈ '}${fm(amount*rate,extra)}`:''};
+}
+function expenseViewMarkup(amount,expense,showPlus=false){
+  const shown=expenseViewAmounts(amount,expense);
+  const signed=text=>showPlus&&amount>=0?(text.startsWith('≈ ')?'≈ +'+text.slice(2):'+'+text):text;
+  return `<span>${signed(shown.main)}</span>${shown.secondary?`<small style="display:block;font-size:.72em;font-weight:400;color:var(--t2);margin-top:2px">${signed(shown.secondary)}</small>`:''}`;
 }
 async function onCurrencyChange(code){
   const picker=document.getElementById('currency-picker');
@@ -2241,9 +2293,13 @@ function renderAll(){
 // DASHBOARD
 // =======================================================
 function renderDash(){
+  void loadExpenseViewRate();
   const total=S.expenses.reduce((s,e)=>s+e.amount,0);
-  document.getElementById('d-total').textContent=fm(total);
-  {const cl=document.getElementById('d-currency-label');if(cl)cl.textContent=S.trip?.currency||getCurrency();}
+  const totalShown=expenseViewAmounts(total);
+  document.getElementById('d-total').textContent=totalShown.main;
+  {const secondary=document.getElementById('d-total-secondary');if(secondary){secondary.textContent=totalShown.secondary;secondary.hidden=!totalShown.secondary;secondary.title=expenseViewQuote?.asOf||''}}
+  {const cl=document.getElementById('d-currency-label');if(cl)cl.textContent=expenseViewCode();}
+  {const button=document.getElementById('d-display-currency');if(button){button.title=[S.trip?.currency,S.trip?.secondaryCurrency].filter(Boolean).join(' / ');button.setAttribute('aria-label',button.title)}}
   document.getElementById('d-cnt').textContent=S.expenses.length;
   document.getElementById('d-mbr').textContent=S.members.length;
   {const a=document.getElementById('d-cnt-l'),b=document.getElementById('d-mbr-l');if(a)a.textContent=dashWord('exp',S.expenses.length);if(b)b.textContent=dashWord('mbr',S.members.length);}
@@ -2277,8 +2333,7 @@ function renderDash(){
   const netBal=totalOwed-totalOwe;
   if(sumEl){
     if(!myOwe.length&&!myOwed.length){sumEl.textContent='✓ OK';sumEl.style.color='var(--green)';}
-    else if(netBal>=0){sumEl.textContent='+'+fm(netBal);sumEl.style.color='var(--green)';}
-    else{sumEl.textContent=fm(netBal);sumEl.style.color='var(--red)';}
+    else{sumEl.innerHTML=expenseViewMarkup(netBal,null,netBal>=0);sumEl.style.color=netBal>=0?'var(--green)':'var(--red)';}
   }
   // helper: render avatar for a debt side
   const dbAvatar=(info)=>info.isGroup
@@ -2298,14 +2353,14 @@ function renderDash(){
         <div style="flex:1;font-size:0.86rem">
           ${meChip()}${DIR_ARROW}${dbLabel(d.toInfo)}
         </div>
-        <div class="da neg">-${fm(d.amount)}</div>
+        <div class="da neg">${expenseViewMarkup(-d.amount)}</div>
       </div>`),
       ...myOwed.map(d=>`<div class="dr">
         ${dbAvatar(d.fromInfo)}
         <div style="flex:1;font-size:0.86rem">
           ${dbLabel(d.fromInfo)}${DIR_ARROW}${meChip()}
         </div>
-        <div class="da pos">+${fm(d.amount)}</div>
+        <div class="da pos">${expenseViewMarkup(d.amount,null,true)}</div>
       </div>`)
     ].join('')
   }
@@ -2367,7 +2422,7 @@ function renderMembersList(){
         <div data-group-index="${groupIndex}" role="button" tabindex="0" style="padding:10px 13px;background:${headBg};border-bottom:1px solid ${bc};display:flex;align-items:center;gap:7px;cursor:pointer;flex-wrap:wrap">
           <span style="font-size:0.76rem;color:${headC};font-weight:700">${lbl}</span>
           ${isMe?`<span style="font-size:0.62rem;background:var(--aglow);color:var(--ac2);padding:2px 6px;border-radius:4px;font-weight:600">${t('badge_you')||'вы'}</span>`:''}
-          <div style="margin-left:auto;font-size:0.78rem;color:var(--t2);text-align:right;min-width:0">${t('dash_total_label')}: <span style="color:var(--text);font-weight:700;font-family:var(--mono)">${fm(totalShareCents/100)}</span></div>
+          <div style="margin-left:auto;font-size:0.78rem;color:var(--t2);text-align:right;min-width:0">${t('dash_total_label')}: <span style="color:var(--text);font-weight:700;font-family:var(--mono)">${expenseViewMarkup(totalShareCents/100)}</span></div>
         </div>
         ${vm.map((n,idx)=>{
           const last=memberLastAction(n);
@@ -2381,7 +2436,7 @@ function renderMembersList(){
               <div style="margin-top:2px">${lastHtml}</div>
             </div>
             <div style="text-align:right;flex-shrink:0">
-              <div style="font-family:var(--mono);font-weight:700;font-size:0.86rem">${fm(shares[n]||0)}</div>
+              <div style="font-family:var(--mono);font-weight:700;font-size:0.86rem">${expenseViewMarkup(shares[n]||0)}</div>
               <div style="font-size:0.68rem;color:var(--t3)">${t('bal_share_label')}</div>
             </div>
           </div>`;
@@ -2403,7 +2458,7 @@ function renderMembersList(){
           <div style="margin-top:3px">${lastHtml}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:var(--mono);font-weight:700;font-size:0.88rem">${fm(shares[m.name]||0)}</div>
+          <div style="font-family:var(--mono);font-weight:700;font-size:0.88rem">${expenseViewMarkup(shares[m.name]||0)}</div>
           <div style="font-size:0.68rem;color:var(--t3)">${t('bal_share_label')}</div>
         </div>
       </div>`);
@@ -2568,8 +2623,7 @@ function expRow(e){
     </div>
     <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
       <div style="text-align:right">
-        <div style="font-family:var(--mono);font-weight:700;font-size:0.95rem">${e.originalCurrency&&e.originalCurrency!==(S.trip?.currency||'EUR')?fm(e.originalAmount,e.originalCurrency):fm(e.amount)}</div>
-        ${e.originalCurrency&&e.originalCurrency!==(S.trip?.currency||'EUR')?`<div style="font-size:0.68rem;color:var(--t2)">≈ ${fm(e.amount)}</div>`:''}
+        <div style="font-family:var(--mono);font-weight:700;font-size:0.95rem">${expenseViewMarkup(e.amount,e)}</div>
       </div>
       <i data-lucide="chevron-right" style="width:14px;height:14px;color:var(--t3)"></i>
     </div>
@@ -2632,7 +2686,7 @@ function renderExpenses(){
     html+=`<div role="button" tabindex="0" data-exp-date="${date}" aria-expanded="${!closed}" aria-controls="${gid}" style="cursor:pointer;padding:10px 14px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rsm);display:flex;align-items:center;justify-content:space-between;user-select:none">
       <div style="font-weight:700;font-size:0.9rem">${fdate(date)}</div>
       <div style="display:flex;align-items:center;gap:9px">
-        <span style="font-family:var(--mono);font-weight:700;font-size:0.9rem">${fm(dayTotal)}</span>
+        <span style="font-family:var(--mono);font-weight:700;font-size:0.9rem;text-align:right">${expenseViewMarkup(dayTotal)}</span>
         <i data-lucide="chevron-down" id="chev-${gid}" style="width:14px;height:14px;color:var(--t2);transition:transform 0.2s${closed?';transform:rotate(-90deg)':''}"></i>
       </div>
     </div>
@@ -2677,7 +2731,7 @@ function showExpDetail(id){
       </div>
     </div>
     <div class="hero" style="padding:18px;text-align:left;margin-bottom:14px">
-      <div style="font-size:1.9rem;font-weight:700;font-family:var(--mono)">${e.originalCurrency&&e.originalCurrency!==(S.trip?.currency||'EUR')?fm(e.originalAmount,e.originalCurrency):fm(e.amount)}</div>
+      <div style="font-size:1.9rem;font-weight:700;font-family:var(--mono)">${expenseViewMarkup(e.amount,e)}</div>
       ${e.originalCurrency&&e.originalCurrency!==(S.trip?.currency||'EUR')?`<div style="font-size:.84rem;color:var(--t2);margin-top:4px">${escHtml(fxLine(e))}</div>`:''}
       <div style="margin-top:7px;display:flex;gap:7px;flex-wrap:wrap">
         ${e.fromTreasury?`<span class="bdg bdg-am">${t('modal_exp_detail_from_treasury_badge')}</span>`:''}
@@ -2786,7 +2840,7 @@ async function saveExpEdit(id){
   if(!money){toast(window.SplitawayExpenseCurrency?.words().bad||t('toast_enter_amount'));return}
   if((money.metadata?.originalCurrency||e.originalCurrency)&&
      !await window.SplitawayExpenseCurrency.backendReady()){
-    toast(t('currency_schema_required'));return;
+    toast(window.SplitawayExpenseCurrency.accessError());return;
   }
   const amount=money.amount;
   const comment=document.getElementById('ed-comment').value.trim();
@@ -3110,7 +3164,9 @@ function updateExactStatus(){
   if(!st.total){el.style.color='var(--t2)';el.textContent=t('exact_need_amount');return}
   if(diff===0){el.style.color='var(--green)';el.textContent=t('exact_ok');return}
   el.style.color='var(--red)';
-  el.textContent=diff>0?t('exact_left').replace('{amount}',fm(diff/100)):t('exact_over').replace('{amount}',fm(-diff/100));
+  // суммы участников вводятся в той же валюте, что и сумма расхода (например, EUR при поездке в HUF)
+  const cur=window.SplitawayExpenseCurrency?.code?.('ae');
+  el.textContent=diff>0?t('exact_left').replace('{amount}',fm(diff/100,cur)):t('exact_over').replace('{amount}',fm(-diff/100,cur));
 }
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='ae-exact-toggle'){_aeExactOn=e.target.checked;renderExactSplit();}});
 document.addEventListener('input',e=>{
@@ -3134,7 +3190,7 @@ async function saveExp(){
   const money=window.SplitawayExpenseCurrency?.resolve('ae',null);
   if(!money){toast(window.SplitawayExpenseCurrency?.words().bad||t('toast_enter_amount'));return}
   if(money.metadata?.originalCurrency&&!await window.SplitawayExpenseCurrency.backendReady()){
-    toast(t('currency_schema_required'));return;
+    toast(window.SplitawayExpenseCurrency.accessError());return;
   }
   const amt=money.amount;
   const comment=document.getElementById('ae-comment').value.trim();
@@ -3173,7 +3229,7 @@ async function saveExp(){
   let exactSplits=null;
   if(_aeExactOn){
     const st=exactState();
-    if(st.sum!==st.total){toast(t('exact_mismatch_toast').replace('{sum}',fm(st.sum/100)).replace('{total}',fm(st.total/100)));return}
+    if(st.sum!==st.total){const cur=window.SplitawayExpenseCurrency?.code?.('ae');toast(t('exact_mismatch_toast').replace('{sum}',fm(st.sum/100,cur)).replace('{total}',fm(st.total/100,cur)));return}
     const keep=st.names.filter(n=>st.cents[n]>0);
     if(!keep.length){toast(t('toast_select_participants'));return}
     // сумма расхода в основной валюте может отличаться от введённой (расход в другой валюте) — пересчёт с точной копейкой
@@ -3387,7 +3443,7 @@ function renderGroupedDebtRow(gd,numbered){
     ?`<button class="btn btn-green btn-sm" data-action="settle-debt" data-debt-id="${debtId}" style="padding:8px 10px;display:inline-flex;align-items:center;gap:5px"><i data-lucide="check" style="width:13px;height:13px"></i>${t('archive_24')}</button>`
     :'';
 
-  return `<div class="dr" style="cursor:pointer;flex-wrap:wrap;row-gap:8px" data-action="${rowAction}" data-debt-id="${debtId}">${numBadge}${fromAv}<div style="flex:1 1 calc(100% - 60px);font-size:0.86rem;min-width:0;overflow-wrap:anywhere">${fromLbl}${DIR_ARROW}${toLbl}</div><div style="display:flex;align-items:center;gap:7px;margin-left:auto"><div class="da neg">${fm(amount)}</div>${settleBtn}</div></div>`;
+  return `<div class="dr" style="cursor:pointer;flex-wrap:wrap;row-gap:8px" data-action="${rowAction}" data-debt-id="${debtId}">${numBadge}${fromAv}<div style="flex:1 1 calc(100% - 60px);font-size:0.86rem;min-width:0;overflow-wrap:anywhere">${fromLbl}${DIR_ARROW}${toLbl}</div><div style="display:flex;align-items:center;gap:7px;margin-left:auto"><div class="da neg">${expenseViewMarkup(amount)}</div>${settleBtn}</div></div>`;
 }
 function settleGroupedDebt(fromMembers,toMembers,totalAmount,fromLabel,toLabel){
   if(!S.settledDebts)S.settledDebts=[];
@@ -3740,8 +3796,8 @@ function renderBalances(){
       return `<div class="dr" style="flex-direction:column;align-items:flex-start;gap:7px;cursor:pointer${noBorder?';border-radius:0;border-left:none;border-right:none;border-bottom:none':''}" data-name="${escHtml(m.name)}" onclick="showPersonDetail(this.dataset.name)">
         <div style="display:flex;align-items:center;gap:10px;width:100%">
           <div class="av av-md" style="background:${ac(m.name)};${avPhoto(m.name)}">${escHtml(m.name[0]||'?')}</div>
-          <div style="flex:1;min-width:0"><div style="font-weight:600;color:${ac(m.name)}">${escHtml(m.name)}</div><div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('bal_share_label')}: ${fm(shares[m.name]||0)}</div></div>
-          <div style="text-align:right;flex-shrink:0"><div class="da ${net>=0?'pos':'neg'}">${net>=0?'+':''}${fm(net)}</div><div style="font-size:0.75rem;color:var(--t2);margin-top:2px">${t('bal_personal_net')}</div></div>
+          <div style="flex:1;min-width:0"><div style="font-weight:600;color:${ac(m.name)}">${escHtml(m.name)}</div><div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('bal_share_label')}: ${expenseViewMarkup(shares[m.name]||0)}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div class="da ${net>=0?'pos':'neg'}">${expenseViewMarkup(net,null,net>=0)}</div><div style="font-size:0.75rem;color:var(--t2);margin-top:2px">${t('bal_personal_net')}</div></div>
         </div>
         <div class="pb" style="width:100%"><div class="pf" style="width:${Math.min(100,(shares[m.name]||0)/mx*100)}%;background:${net>=0?'var(--green)':'var(--red)'}"></div></div>
       </div>`;
@@ -3762,10 +3818,10 @@ function renderBalances(){
       html+=`<div style="border:1px solid ${bc};border-radius:var(--r);overflow:hidden;margin-bottom:8px">
         <div data-group-index="${groupIndex}" role="button" tabindex="0" style="padding:8px 13px;background:${hc};display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;cursor:pointer">
           <div style="font-size:0.7rem;font-weight:700;color:${lc}">${lbl}</div>
-          <div style="text-align:right"><div style="font-size:0.82rem;font-weight:700;color:${netColor}">${groupNet>=0?'+':''}${fm(groupNet)}</div><div style="font-size:0.75rem;color:var(--t2)">${t('bal_group_net')}</div></div>
+          <div style="text-align:right"><div style="font-size:0.82rem;font-weight:700;color:${netColor}">${expenseViewMarkup(groupNet,null,groupNet>=0)}</div><div style="font-size:0.75rem;color:var(--t2)">${t('bal_group_net')}</div></div>
         </div>
         <div style="padding:3px 13px 5px;background:${hc}">
-          <div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('dash_total_label')}: ${fm(groupShareCents/100)}</div>
+          <div style="font-size:0.75rem;color:var(--t2);line-height:1.5">${t('dash_total_label')}: ${expenseViewMarkup(groupShareCents/100)}</div>
         </div>
         ${gm.map((m,i)=>{placed.add(m.name);return personCard(m,i>0);}).join('')}
       </div>`;
@@ -7362,7 +7418,7 @@ function pickGender(hiddenId,btn,val){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <script src="js/receipt-ocr.js?v=1.0.25-112-team" defer></script>
-<script src="js/expense-currency.js?v=1.0.25-112-team" defer></script>
+<script src="js/expense-currency.js?v=1.0.25-147-team" defer></script>
 <script src="js/splitaway-update.js?v=1.0.25-112-team" defer></script>
 </body>
 </html>
