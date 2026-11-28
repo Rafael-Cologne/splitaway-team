@@ -497,8 +497,10 @@
     .tl-sheet>div{width:100%;max-width:560px;max-height:82vh;overflow:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
     .tl-sheet h3{margin:0 0 12px;font-size:1.15rem;font-weight:800;text-align:center}
     .tl-opt{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:16px;background:none;font:inherit;font-size:1rem;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
-    .tl-lang-search{position:sticky;top:-18px;z-index:1;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid var(--hub-card-b);border-radius:14px;background:var(--hub-card);font:inherit;color:var(--text)}
+    .tl-lang-search{position:sticky;top:-18px;z-index:2;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid var(--b1,rgba(30,30,80,.1));border-radius:14px;background:var(--bg3,#fff);box-shadow:0 -10px 0 8px var(--bg);font:inherit;color:var(--text)}
     .tl-opt.on{background:rgba(106,77,244,.1)}
+    [data-theme=light] .tl-lang-search{background:#fff}
+    .tl-sheet .tl-lh{margin:12px 12px 4px}
     .tl-opt>span:not(.tl-oc){flex:1}
     .tl-oc{font-size:.8rem;color:var(--t2);font-weight:700}
   `);
@@ -524,15 +526,28 @@
     if (bind) bind(el.firstChild, close);
     return close;
   }
+  // Выбор языка: сверху — часто используемые (по счётчику выборов) и текущий, ниже — все по алфавиту
+  // на языке приложения. Поиск ищет и по переведённому названию, и по коду.
+  const langUse = () => LS.get('langUse', {}) || {};
+  const bumpLang = c => { const u = langUse(); u[c] = (u[c] || 0) + 1; LS.set('langUse', u); };
+  const shownName = c => { try { return window.STModuleUI ? window.STModuleUI.translate(nm(c)) : nm(c); } catch (_) { return nm(c); } };
   function pickLang(title, cur, onPick, filter) {
-    const list = CODES.filter(c => !filter || filter(c));
-    sheet(title, `<input class="tl-lang-search" type="search" placeholder="Найти язык" aria-label="Найти язык">` + list.map(c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`).join(''),
+    const ok = c => !filter || filter(c);
+    const use = langUse(), ui = myLang();
+    const top = [...new Set([cur, ...Object.keys(use).sort((a, b) => use[b] - use[a]), ui])].filter(c => c && L[c] && ok(c)).slice(0, 6);
+    let loc = 'ru'; try { loc = window.STModuleUI ? window.STModuleUI.locale() : (document.documentElement.lang || 'ru'); } catch (_) {}
+    const rest = CODES.filter(c => ok(c) && !top.includes(c)).sort((a, b) => shownName(a).localeCompare(shownName(b), loc));
+    const opt = c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`;
+    sheet(title, `<input class="tl-lang-search" type="search" placeholder="Найти язык" aria-label="Найти язык">`
+      + (top.length ? `<div class="tl-sec tl-lh">Часто используемые</div>${top.map(opt).join('')}<div class="tl-sec tl-lh">Все языки</div>` : '')
+      + rest.map(opt).join(''),
       (root, close) => {
         root.querySelector('.tl-lang-search').addEventListener('input', e => {
           const q = e.target.value.trim().toLocaleLowerCase();
-          root.querySelectorAll('[data-c]').forEach(b => { b.style.display = !q || nm(b.dataset.c).toLocaleLowerCase().includes(q) || b.dataset.c.includes(q) ? '' : 'none'; });
+          root.querySelectorAll('.tl-lh').forEach(h => { h.style.display = q ? 'none' : ''; });
+          root.querySelectorAll('[data-c]').forEach(b => { const c = b.dataset.c; b.style.display = !q || b.textContent.toLocaleLowerCase().includes(q) || nm(c).toLocaleLowerCase().includes(q) || c.includes(q) ? '' : 'none'; });
         });
-        root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); onPick(b.dataset.c); }));
+        root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); bumpLang(b.dataset.c); onPick(b.dataset.c); }));
       });
   }
   function bigView(text, c, sub) {
@@ -864,18 +879,19 @@
         const draw = () => {
           body.innerHTML = `
             <div class="tl-sec" style="margin-top:4px">Что хотите сказать</div>
-            <textarea class="tl-ta" id="ow-src" translate="no" placeholder="Например: у меня аллергия на орехи" style="min-height:90px">${esc(st.src)}</textarea>
+            <textarea class="tl-ta" id="ow-src" placeholder="Например: у меня аллергия на орехи" style="min-height:90px"></textarea>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px">
               <span style="font-weight:700;color:var(--t2)">Язык перевода</span>
               <button class="tl-chip" type="button" data-a="lang">${flag(st.to)}${esc(nm(st.to))}<i data-lucide="chevron-down"></i></button></div>
             <button class="tl-btn lite" type="button" data-a="tr" style="margin-top:12px"${st.busy ? ' disabled' : ''}><i data-lucide="languages"></i>${st.busy ? 'Перевожу…' : 'Перевести'}</button>
             <div class="tl-sec">Перевод — можно исправить или написать свой</div>
-            <textarea class="tl-ta" id="ow-tr" translate="no" style="min-height:90px">${esc(st.tr)}</textarea>
+            <textarea class="tl-ta" id="ow-tr" style="min-height:90px"></textarea>
             ${st.msg ? `<div class="tl-note">${esc(st.msg)}</div>` : st.from && st.tr ? `<div class="tl-note"><span>Определён язык:</span> <span>${esc(nm(st.from))}</span></div>` : ''}
             <button class="tl-btn" type="button" data-a="save" style="margin-top:14px"><i data-lucide="star"></i>Сохранить в избранное</button>
             <div class="tl-note">Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.</div>`;
           icons(body);
           const src = body.querySelector('#ow-src'), tr = body.querySelector('#ow-tr');
+          src.value = st.src; tr.value = st.tr;
           src.addEventListener('input', () => { st.src = src.value; st.from = ''; });
           tr.addEventListener('input', () => { st.tr = tr.value; });
           body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык перевода', st.to, x => { st.to = S.ownLang = x; st.msg = ''; draw(); }));
