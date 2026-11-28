@@ -404,6 +404,12 @@
     .tl-chip svg{width:16px;height:16px}
     .tl-chip.on{background:linear-gradient(135deg,#5b4bd6,#7b6bf0);color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(91,75,214,.28)}
     .tl-chip .tl-flag{width:20px;height:20px}
+    /* Категории фраз: 4 одинаковые плитки в ряд, иконка сверху, подпись до 2 строк (длинные слова на el/pl/pt не вылезают) */
+    .tl-cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;gap:6px;overflow:visible;padding:2px 0 6px}
+    .tl-cats .tl-chip{flex-direction:column;justify-content:center;gap:5px;min-width:0;min-height:68px;padding:8px 3px;border-radius:16px;font-size:.74rem;line-height:1.15;letter-spacing:-.01em;text-align:center;white-space:normal}
+    .tl-cats .tl-chip svg{width:18px;height:18px;flex-shrink:0}
+    .tl-cats .tl-chip span{display:block;max-width:100%;overflow-wrap:anywhere;hyphens:auto}
+    @media (max-width:350px){.tl-cats{gap:5px}.tl-cats .tl-chip{font-size:.66rem;padding:8px 2px;letter-spacing:-.02em}}
     .tl-ph{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:20px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:var(--hub-shadow);cursor:pointer}
     .tl-ph>span{flex:1;min-width:0}
     .tl-ph b{display:block;font-size:1.05rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
@@ -759,7 +765,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
             <span style="font-weight:700;color:var(--t2)">Язык</span>
             <button class="tl-chip" type="button" data-a="lang">${flag(c)}${esc(nm(c))}<i data-lucide="chevron-down"></i></button></div>
-          <div class="tl-chips">${CATS.map(([k, t, ic]) => `<button class="tl-chip${S.cat === k ? ' on' : ''}" type="button" data-cat="${k}"><i data-lucide="${ic}"></i>${t}</button>`).join('')}</div>
+          <div class="tl-chips tl-cats">${CATS.map(([k, t, ic]) => `<button class="tl-chip${S.cat === k ? ' on' : ''}" type="button" data-cat="${k}"><i data-lucide="${ic}"></i><span>${t}</span></button>`).join('')}</div>
           ${list ? `<div class="tl-list" style="margin-top:8px">${PH.map((p, i) => p[0] !== S.cat ? '' : `
             <div class="tl-ph" data-i="${i}"><span><b translate="no">${esc(list[i])}</b>${mean(i) === list[i] ? '' : `<small${mean(i) === p[1] ? '' : ' translate="no"'}>${esc(mean(i))}</small>`}</span>
               <button class="tl-act" type="button" data-say="${i}" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
