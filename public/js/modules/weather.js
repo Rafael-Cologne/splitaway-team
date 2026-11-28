@@ -26,6 +26,18 @@
   const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
   const diffDays = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
   const locale = () => window.STModuleUI?.locale() || 'ru-RU';
+  // Перевод фраз с числами и названиями: шаблон на русском = ключ, языки — в порядке LANGS.
+  // Готовые фразы без чисел переводит общий словарь (module-ui-i18n.js).
+  const LANGS = ['en', 'de', 'fr', 'it', 'es', 'pt', 'pl', 'el', 'tr'];
+  const L_DICT = {"Сейчас, {d}, {t}": ["Now, {d}, {t}", "Jetzt, {d}, {t}", "Maintenant, {d}, {t}", "Adesso, {d}, {t}", "Ahora, {d}, {t}", "Agora, {d}, {t}", "Teraz, {d}, {t}", "Τώρα, {d}, {t}", "Şimdi, {d}, {t}"], " · нет сети": [" · offline", " · offline", " · hors ligne", " · offline", " · sin conexión", " · sem rede", " · offline", " · εκτός σύνδεσης", " · çevrimdışı"], "Ветер {dir}до {v} км/ч": ["Wind {dir}up to {v} km/h", "Wind {dir}bis {v} km/h", "Vent {dir}jusqu’à {v} km/h", "Vento {dir}fino a {v} km/h", "Viento {dir}hasta {v} km/h", "Vento {dir}até {v} km/h", "Wiatr {dir}do {v} km/h", "Άνεμος {dir}έως {v} km/h", "Rüzgâr {dir}en fazla {v} km/sa"], "Давление {v} гПа": ["Pressure {v} hPa", "Luftdruck {v} hPa", "Pression {v} hPa", "Pressione {v} hPa", "Presión {v} hPa", "Pressão {v} hPa", "Ciśnienie {v} hPa", "Πίεση {v} hPa", "Basınç {v} hPa"], "Осадки {v} мм": ["Precipitation {v} mm", "Niederschlag {v} mm", "Précipitations {v} mm", "Precipitazioni {v} mm", "Precipitación {v} mm", "Precipitação {v} mm", "Opady {v} mm", "Υετός {v} mm", "Yağış {v} mm"], "{v} км/ч": ["{v} km/h", "{v} km/h", "{v} km/h", "{v} km/h", "{v} km/h", "{v} km/h", "{v} km/h", "{v} km/h", "{v} km/sa"], "{v} гПа": ["{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa", "{v} hPa"], "{v} км": ["{v} km", "{v} km", "{v} km", "{v} km", "{v} km", "{v} km", "{v} km", "{v} km", "{v} km"], "днём до {v}": ["up to {v} at midday", "mittags bis {v}", "jusqu’à {v} à midi", "fino a {v} a mezzogiorno", "hasta {v} al mediodía", "até {v} ao meio-dia", "w południe do {v}", "έως {v} το μεσημέρι", "öğlen {v} değerine kadar"], "Возможна гроза": ["Thunderstorm possible", "Gewitter möglich", "Orage possible", "Possibile temporale", "Posible tormenta", "Possível trovoada", "Możliwa burza", "Πιθανή καταιγίδα", "Gök gürültülü fırtına olası"], "Возможна гроза с градом": ["Thunderstorm with hail possible", "Gewitter mit Hagel möglich", "Orage avec grêle possible", "Possibile temporale con grandine", "Posible tormenta con granizo", "Possível trovoada com granizo", "Możliwa burza z gradem", "Πιθανή καταιγίδα με χαλάζι", "Dolu ile gök gürültülü fırtına olası"], "До {v} мм осадков": ["Up to {v} mm of rain", "Bis {v} mm Niederschlag", "Jusqu’à {v} mm de pluie", "Fino a {v} mm di pioggia", "Hasta {v} mm de lluvia", "Até {v} mm de chuva", "Do {v} mm opadów", "Έως {v} mm βροχής", "{v} mm’ye kadar yağış"], "До {t} — пейте воду, избегайте солнца днём": ["Up to {t} — drink water, avoid the midday sun", "Bis {t} – viel trinken, Mittagssonne meiden", "Jusqu’à {t} — buvez de l’eau, évitez le soleil de midi", "Fino a {t} — bevete acqua, evitate il sole di mezzogiorno", "Hasta {t}: bebe agua y evita el sol del mediodía", "Até {t} — beba água, evite o sol do meio-dia", "Do {t} — pij wodę, unikaj słońca w południe", "Έως {t} — πίνετε νερό, αποφύγετε τον μεσημεριανό ήλιο", "{t} değerine kadar — su için, öğle güneşinden kaçının"], "До {t}": ["Down to {t}", "Bis {t}", "Jusqu’à {t}", "Fino a {t}", "Hasta {t}", "Até {t}", "Do {t}", "Έως {t}", "{t} değerine kadar"], "Порывы до {v} км/ч": ["Gusts up to {v} km/h", "Böen bis {v} km/h", "Rafales jusqu’à {v} km/h", "Raffiche fino a {v} km/h", "Rachas de hasta {v} km/h", "Rajadas até {v} km/h", "Porywy do {v} km/h", "Ριπές έως {v} km/h", "{v} km/sa hızına varan hamleler"], "УФ-индекс {v} — нужен крем SPF 50": ["UV index {v} — use SPF 50 sunscreen", "UV-Index {v} – Sonnencreme LSF 50", "Indice UV {v} — crème SPF 50 nécessaire", "Indice UV {v} — serve crema SPF 50", "Índice UV {v}: usa protector SPF 50", "Índice UV {v} — use protetor SPF 50", "Indeks UV {v} — potrzebny krem SPF 50", "Δείκτης UV {v} — χρειάζεται αντηλιακό SPF 50", "UV indeksi {v} — SPF 50 güneş kremi gerekli"], "Лёгкая одежда, головной убор и солнцезащитный крем.": ["Light clothes, a hat and sunscreen.", "Leichte Kleidung, Kopfbedeckung und Sonnencreme.", "Vêtements légers, chapeau et crème solaire.", "Abiti leggeri, cappello e crema solare.", "Ropa ligera, gorra y protector solar.", "Roupa leve, chapéu e protetor solar.", "Lekkie ubranie, nakrycie głowy i krem z filtrem.", "Ελαφριά ρούχα, καπέλο και αντηλιακό.", "Hafif kıyafet, şapka ve güneş kremi."], "Футболка днём, лёгкая кофта на вечер.": ["T-shirt by day, a light sweater for the evening.", "Tagsüber T-Shirt, abends eine leichte Jacke.", "T-shirt la journée, petit pull pour le soir.", "Maglietta di giorno, una felpa leggera per la sera.", "Camiseta de día, una chaqueta ligera para la noche.", "T-shirt de dia, casaco leve para a noite.", "W dzień T-shirt, wieczorem lekka bluza.", "Κοντομάνικο τη μέρα, ελαφριά ζακέτα για το βράδυ.", "Gündüz tişört, akşam için ince bir hırka."], "Куртка или свитер, удобная обувь.": ["A jacket or sweater, comfortable shoes.", "Jacke oder Pullover, bequeme Schuhe.", "Veste ou pull, chaussures confortables.", "Giacca o maglione, scarpe comode.", "Chaqueta o jersey, calzado cómodo.", "Casaco ou camisola, calçado confortável.", "Kurtka lub sweter, wygodne buty.", "Μπουφάν ή πουλόβερ, άνετα παπούτσια.", "Ceket veya kazak, rahat ayakkabı."], "Тёплая куртка, шарф.": ["A warm jacket and a scarf.", "Warme Jacke, Schal.", "Veste chaude, écharpe.", "Giacca pesante, sciarpa.", "Abrigo y bufanda.", "Casaco quente, cachecol.", "Ciepła kurtka, szalik.", "Ζεστό μπουφάν, κασκόλ.", "Kalın mont, atkı."], "Зимняя одежда, шапка и перчатки.": ["Winter clothes, a hat and gloves.", "Winterkleidung, Mütze und Handschuhe.", "Vêtements d’hiver, bonnet et gants.", "Abiti invernali, berretto e guanti.", "Ropa de invierno, gorro y guantes.", "Roupa de inverno, gorro e luvas.", "Zimowe ubranie, czapka i rękawiczki.", "Χειμωνιάτικα ρούχα, σκούφος και γάντια.", "Kışlık kıyafet, bere ve eldiven."], "возьмите зонт — вероятность дождя {p}%": ["take an umbrella — {p}% chance of rain", "Regenschirm mitnehmen – Regenwahrscheinlichkeit {p} %", "prenez un parapluie — {p} % de risque de pluie", "prendete l’ombrello — probabilità di pioggia {p}%", "lleva paraguas: {p}% de probabilidad de lluvia", "leve guarda-chuva — {p}% de probabilidade de chuva", "weź parasol — szansa na deszcz {p}%", "πάρτε ομπρέλα — πιθανότητα βροχής {p}%", "şemsiye alın — yağmur olasılığı %{p}"], "УФ высокий: SPF 30+ и тень в полдень": ["high UV: SPF 30+ and shade at midday", "hoher UV-Wert: LSF 30+ und mittags Schatten", "UV élevés : SPF 30+ et ombre à midi", "UV alto: SPF 30+ e ombra a mezzogiorno", "UV alto: SPF 30+ y sombra al mediodía", "UV elevado: SPF 30+ e sombra ao meio-dia", "wysokie UV: SPF 30+ i cień w południe", "υψηλή UV: SPF 30+ και σκιά το μεσημέρι", "UV yüksek: SPF 30+ ve öğlen gölge"], "ветрено — на пляже и в горах будет прохладнее": ["windy — it will feel cooler on the beach and in the mountains", "windig – am Strand und in den Bergen kühler", "venteux — plus frais à la plage et en montagne", "ventoso — più fresco in spiaggia e in montagna", "viento: más fresco en la playa y en la montaña", "ventoso — mais fresco na praia e na montanha", "wietrznie — na plaży i w górach będzie chłodniej", "θα φυσάει — πιο δροσερά στην παραλία και στο βουνό", "rüzgârlı — plajda ve dağda daha serin olacak"], "Ещё: {list}.": ["Also: {list}.", "Außerdem: {list}.", "Aussi : {list}.", "Inoltre: {list}.", "Además: {list}.", "Além disso: {list}.", "Poza tym: {list}.", "Επίσης: {list}.", "Ayrıca: {list}."], "Хороший день для музеев и кафе.": ["A good day for museums and cafés.", "Ein guter Tag für Museen und Cafés.", "Bonne journée pour les musées et les cafés.", "Buona giornata per musei e caffè.", "Buen día para museos y cafés.", "Bom dia para museus e cafés.", "Dobry dzień na muzea i kawiarnie.", "Καλή μέρα για μουσεία και καφέ.", "Müzeler ve kafeler için iyi bir gün."], "Отличный день для пляжа и прогулок у моря.": ["A great day for the beach and seaside walks.", "Ein toller Tag für Strand und Spaziergänge am Meer.", "Superbe journée pour la plage et les balades au bord de la mer.", "Ottima giornata per spiaggia e passeggiate al mare.", "Día perfecto para la playa y paseos junto al mar.", "Ótimo dia para praia e passeios à beira-mar.", "Świetny dzień na plażę i spacery nad morzem.", "Υπέροχη μέρα για παραλία και βόλτες δίπλα στη θάλασσα.", "Plaj ve deniz kenarında yürüyüş için harika bir gün."], "Подходит для прогулок и экскурсий.": ["Good for walks and sightseeing.", "Gut für Spaziergänge und Ausflüge.", "Idéal pour les balades et les visites.", "Adatto a passeggiate ed escursioni.", "Ideal para paseos y excursiones.", "Bom para passeios e visitas.", "Dobry na spacery i zwiedzanie.", "Κατάλληλο για βόλτες και εκδρομές.", "Yürüyüş ve gezi için uygun."], "Вечером заметно прохладнее ({t}).": ["Noticeably cooler in the evening ({t}).", "Abends deutlich kühler ({t}).", "Nettement plus frais le soir ({t}).", "La sera fa decisamente più fresco ({t}).", "Por la noche refresca bastante ({t}).", "À noite fica bem mais fresco ({t}).", "Wieczorem wyraźnie chłodniej ({t}).", "Το βράδυ αισθητά πιο δροσερά ({t}).", "Akşam belirgin şekilde serin ({t})."], "Фото: {a}": ["Photo: {a}", "Foto: {a}", "Photo : {a}", "Foto: {a}", "Foto: {a}", "Foto: {a}", "Zdjęcie: {a}", "Φωτογραφία: {a}", "Fotoğraf: {a}"], "{t}. По данным прогноза.": ["{t}. Based on the forecast.", "{t}. Laut Vorhersage.", "{t}. Selon les prévisions.", "{t}. Secondo le previsioni.", "{t}. Según el pronóstico.", "{t}. Segundo a previsão.", "{t}. Według prognozy.", "{t}. Σύμφωνα με την πρόγνωση.", "{t}. Tahmine göre."], "{r} — дни поездки отмечены в прогнозе": ["{r} — trip days are marked in the forecast", "{r} – Reisetage sind in der Vorhersage markiert", "{r} — les jours du voyage sont signalés dans les prévisions", "{r} — i giorni del viaggio sono evidenziati nelle previsioni", "{r}: los días del viaje están marcados en el pronóstico", "{r} — os dias da viagem estão marcados na previsão", "{r} — dni podróży są zaznaczone w prognozie", "{r} — οι ημέρες του ταξιδιού επισημαίνονται στην πρόγνωση", "{r} — seyahat günleri tahminde işaretli"], "Обновлено {t}": ["Updated {t}", "Aktualisiert {t}", "Mis à jour à {t}", "Aggiornato alle {t}", "Actualizado a las {t}", "Atualizado às {t}", "Zaktualizowano {t}", "Ενημερώθηκε {t}", "Güncellendi {t}"], "{r}: обычно {mn} / {mx}, дождливых дней ≈ {d} из {n}. Это климатические средние за {y} прошлых года, а не прогноз — он появится за 16 дней до поездки.": ["{r}: usually {mn} / {mx}, rainy days ≈ {d} of {n}. These are climate averages for the past {y} years, not a forecast — it appears 16 days before the trip.", "{r}: meist {mn} / {mx}, Regentage ≈ {d} von {n}. Das sind Klimamittelwerte der letzten {y} Jahre, keine Vorhersage – diese erscheint 16 Tage vor der Reise.", "{r} : généralement {mn} / {mx}, jours de pluie ≈ {d} sur {n}. Ce sont des moyennes climatiques des {y} dernières années, pas une prévision — elle apparaîtra 16 jours avant le voyage.", "{r}: di solito {mn} / {mx}, giorni di pioggia ≈ {d} su {n}. Sono medie climatiche degli ultimi {y} anni, non una previsione: arriverà 16 giorni prima del viaggio.", "{r}: normalmente {mn} / {mx}, días de lluvia ≈ {d} de {n}. Son promedios climáticos de los últimos {y} años, no un pronóstico; aparecerá 16 días antes del viaje.", "{r}: normalmente {mn} / {mx}, dias de chuva ≈ {d} de {n}. São médias climáticas dos últimos {y} anos, não uma previsão — esta aparece 16 dias antes da viagem.", "{r}: zwykle {mn} / {mx}, dni deszczowe ≈ {d} z {n}. To średnie klimatyczne z ostatnich {y} lat, a nie prognoza — pojawi się 16 dni przed podróżą.", "{r}: συνήθως {mn} / {mx}, βροχερές ημέρες ≈ {d} από {n}. Πρόκειται για κλιματικούς μέσους όρους των τελευταίων {y} ετών, όχι πρόγνωση — θα εμφανιστεί 16 ημέρες πριν από το ταξίδι.", "{r}: genellikle {mn} / {mx}, yağışlı gün ≈ {d}/{n}. Bunlar son {y} yılın iklim ortalamalarıdır, tahmin değildir — tahmin seyahatten 16 gün önce görünür."], "Европейский индекс EAQI, мкг/м³. Данные CAMS (Copernicus) через Open-Meteo на {t} — модельная оценка для сетки ~{k} км, а не замер датчика у вас на улице.": ["European EAQI index, µg/m³. CAMS (Copernicus) data via Open-Meteo at {t} — a model estimate for a ~{k} km grid, not a sensor reading on your street.", "Europäischer Index EAQI, µg/m³. CAMS-Daten (Copernicus) über Open-Meteo um {t} – Modellschätzung für ein Raster von ~{k} km, keine Sensormessung vor Ort.", "Indice européen EAQI, µg/m³. Données CAMS (Copernicus) via Open-Meteo à {t} — estimation de modèle sur une grille d’environ {k} km, pas une mesure de capteur dans votre rue.", "Indice europeo EAQI, µg/m³. Dati CAMS (Copernicus) tramite Open-Meteo alle {t} — stima di modello su una griglia di ~{k} km, non la misura di un sensore nella tua strada.", "Índice europeo EAQI, µg/m³. Datos CAMS (Copernicus) vía Open-Meteo a las {t}: estimación de modelo para una cuadrícula de ~{k} km, no la medición de un sensor en tu calle.", "Índice europeu EAQI, µg/m³. Dados CAMS (Copernicus) via Open-Meteo às {t} — estimativa de modelo para uma grelha de ~{k} km, não a medição de um sensor na sua rua.", "Europejski indeks EAQI, µg/m³. Dane CAMS (Copernicus) przez Open-Meteo o {t} — szacunek modelu dla siatki ~{k} km, a nie pomiar czujnika na Twojej ulicy.", "Ευρωπαϊκός δείκτης EAQI, µg/m³. Δεδομένα CAMS (Copernicus) μέσω Open-Meteo στις {t} — εκτίμηση μοντέλου για πλέγμα ~{k} km, όχι μέτρηση αισθητήρα στον δρόμο σας.", "Avrupa EAQI endeksi, µg/m³. Open-Meteo üzerinden CAMS (Copernicus) verileri, saat {t} — ~{k} km’lik ızgara için model tahmini, sokağınızdaki bir sensör ölçümü değil."], "Осадки за день: <b>{p} мм</b> · ветер до <b>{w} км/ч</b>{g}": ["Precipitation for the day: <b>{p} mm</b> · wind up to <b>{w} km/h</b>{g}", "Niederschlag am Tag: <b>{p} mm</b> · Wind bis <b>{w} km/h</b>{g}", "Précipitations du jour : <b>{p} mm</b> · vent jusqu’à <b>{w} km/h</b>{g}", "Precipitazioni del giorno: <b>{p} mm</b> · vento fino a <b>{w} km/h</b>{g}", "Precipitación del día: <b>{p} mm</b> · viento hasta <b>{w} km/h</b>{g}", "Precipitação do dia: <b>{p} mm</b> · vento até <b>{w} km/h</b>{g}", "Opady w ciągu dnia: <b>{p} mm</b> · wiatr do <b>{w} km/h</b>{g}", "Υετός ημέρας: <b>{p} mm</b> · άνεμος έως <b>{w} km/h</b>{g}", "Günlük yağış: <b>{p} mm</b> · rüzgâr en fazla <b>{w} km/sa</b>{g}"], ", порывы {v}": [", gusts {v}", ", Böen {v}", ", rafales {v}", ", raffiche {v}", ", rachas {v}", ", rajadas {v}", ", porywy {v}", ", ριπές {v}", ", hamleler {v}"], "УФ-индекс: {v} – {t}": ["UV index: {v} – {t}", "UV-Index: {v} – {t}", "Indice UV : {v} – {t}", "Indice UV: {v} – {t}", "Índice UV: {v} – {t}", "Índice UV: {v} – {t}", "Indeks UV: {v} – {t}", "Δείκτης UV: {v} – {t}", "UV indeksi: {v} – {t}"], "Опасная погода по прогнозу Open-Meteo на {n} дней. Это не официальные предупреждения метеослужбы.": ["Severe weather in the Open-Meteo forecast for {n} days. These are not official weather service warnings.", "Unwetter laut Open-Meteo-Vorhersage für {n} Tage. Keine offiziellen Warnungen des Wetterdienstes.", "Météo dangereuse selon les prévisions Open-Meteo sur {n} jours. Ce ne sont pas des alertes officielles.", "Maltempo secondo le previsioni Open-Meteo per {n} giorni. Non sono allerte ufficiali del servizio meteo.", "Tiempo peligroso según el pronóstico de Open-Meteo para {n} días. No son avisos oficiales del servicio meteorológico.", "Tempo perigoso segundo a previsão Open-Meteo para {n} dias. Não são avisos oficiais do serviço meteorológico.", "Niebezpieczna pogoda według prognozy Open-Meteo na {n} dni. To nie są oficjalne ostrzeżenia służby meteorologicznej.", "Επικίνδυνος καιρός κατά την πρόγνωση Open-Meteo για {n} ημέρες. Δεν είναι επίσημες προειδοποιήσεις της μετεωρολογικής υπηρεσίας.", "{n} günlük Open-Meteo tahminine göre tehlikeli hava. Bunlar resmî meteoroloji uyarıları değildir."], "{n} · определяется автоматически": ["{n} · detected automatically", "{n} · automatisch erkannt", "{n} · détecté automatiquement", "{n} · rilevato automaticamente", "{n} · detectado automáticamente", "{n} · detetado automaticamente", "{n} · wykrywane automatycznie", "{n} · εντοπίζεται αυτόματα", "{n} · otomatik algılanır"], "с {d}": ["from {d}", "ab {d}", "à partir du {d}", "dal {d}", "desde el {d}", "a partir de {d}", "od {d}", "από {d}", "{d} itibarıyla"], "Добавлено: {n}": ["Added: {n}", "Hinzugefügt: {n}", "Ajouté : {n}", "Aggiunto: {n}", "Añadido: {n}", "Adicionado: {n}", "Dodano: {n}", "Προστέθηκε: {n}", "Eklendi: {n}"], "Убрано: {n}": ["Removed: {n}", "Entfernt: {n}", "Supprimé : {n}", "Rimosso: {n}", "Eliminado: {n}", "Removido: {n}", "Usunięto: {n}", "Αφαιρέθηκε: {n}", "Kaldırıldı: {n}"], "«{n}» не найден": ["“{n}” not found", "„{n}“ nicht gefunden", "« {n} » introuvable", "«{n}» non trovato", "«{n}» no encontrado", "«{n}» não encontrado", "„{n}” nie znaleziono", "«{n}» δεν βρέθηκε", "“{n}” bulunamadı"], "«{n}» — это страна или регион. Найдите город через поиск": ["“{n}” is a country or region. Search for a city", "„{n}“ ist ein Land oder eine Region. Suchen Sie nach einer Stadt", "« {n} » est un pays ou une région. Cherchez une ville", "«{n}» è un paese o una regione. Cerca una città", "«{n}» es un país o una región. Busca una ciudad", "«{n}» é um país ou região. Procure uma cidade", "„{n}” to kraj lub region. Wyszukaj miasto", "«{n}» είναι χώρα ή περιοχή. Αναζητήστε πόλη", "“{n}” bir ülke veya bölge. Bir şehir arayın"], "{n} — добавлено в «Мои места»": ["{n} — added to “My places”", "{n} – zu „Meine Orte“ hinzugefügt", "{n} — ajouté à « Mes lieux »", "{n} — aggiunto a «I miei luoghi»", "{n}: añadido a «Mis lugares»", "{n} — adicionado a «Os meus locais»", "{n} — dodano do „Moich miejsc”", "{n} — προστέθηκε στα «Τα μέρη μου»", "{n} — “Yerlerim”e eklendi"], "{n} убрано из «Моих мест»": ["{n} removed from “My places”", "{n} aus „Meine Orte“ entfernt", "{n} retiré de « Mes lieux »", "{n} rimosso da «I miei luoghi»", "{n} eliminado de «Mis lugares»", "{n} removido de «Os meus locais»", "{n} usunięto z „Moich miejsc”", "{n} αφαιρέθηκε από «Τα μέρη μου»", "{n} “Yerlerim”den kaldırıldı"], "Рядом с {a}": ["Near {a}", "In der Nähe von {a}", "Près de {a}", "Vicino a {a}", "Cerca de {a}", "Perto de {a}", "W pobliżu {a}", "Κοντά σε {a}", "{a} yakını"], " · сейчас нет сети, показан сохранённый прогноз": [" · offline, showing the saved forecast", " · offline, gespeicherte Vorhersage", " · hors ligne, prévisions enregistrées", " · offline, previsioni salvate", " · sin conexión, pronóstico guardado", " · sem rede, previsão guardada", " · offline, zapisana prognoza", " · εκτός σύνδεσης, αποθηκευμένη πρόγνωση", " · çevrimdışı, kayıtlı tahmin"], "Очень высокий": ["Very high", "Sehr hoch", "Très élevé", "Molto alto", "Muy alto", "Muito alto", "Bardzo wysoki", "Πολύ υψηλός", "Çok yüksek"], "поездка": ["trip", "Reise", "voyage", "viaggio", "viaje", "viagem", "podróż", "ταξίδι", "seyahat"], "В этом районе сейчас нет осадков": ["No precipitation in this area right now", "Derzeit kein Niederschlag in dieser Gegend", "Pas de précipitations dans cette zone pour le moment", "Nessuna precipitazione in questa zona al momento", "Ahora no hay precipitaciones en esta zona", "Sem precipitação nesta zona neste momento", "Obecnie brak opadów w tym rejonie", "Δεν υπάρχει υετός στην περιοχή αυτή τη στιγμή", "Şu anda bu bölgede yağış yok"], "слабые": ["light", "schwach", "faibles", "deboli", "débiles", "fracas", "słabe", "ασθενής", "hafif"], "сильные": ["heavy", "stark", "fortes", "forti", "fuertes", "fortes", "silne", "ισχυρός", "şiddetli"], "Пауза": ["Pause", "Pause", "Pause", "Pausa", "Pausa", "Pausa", "Pauza", "Παύση", "Duraklat"], "Воспроизвести": ["Play", "Abspielen", "Lire", "Riproduci", "Reproducir", "Reproduzir", "Odtwórz", "Αναπαραγωγή", "Oynat"]};
+  const lang = () => (typeof getLang === 'function' ? getLang() : 'ru');
+  const L = (ru, vars) => {
+    const i = LANGS.indexOf(lang()), row = L_DICT[ru];
+    let out = i >= 0 && row && row[i] ? row[i] : (row || !window.STModuleUI ? ru : window.STModuleUI.translate(ru));
+    if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => vars[k] == null ? '' : String(vars[k]));
+    return out;
+  };
+  const geoLang = () => (['ru', 'en', 'de', 'fr', 'it', 'es', 'pt', 'pl', 'el', 'tr'].includes(lang()) ? lang() : 'en');
   const dayName = s => parse(s).toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
   const dayLong = s => parse(s).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'long' });
   const rangeLabel = (a, b) => { const A = parse(a), B = parse(b); return A.getMonth() === B.getMonth() ? A.getDate() + ' – ' + B.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }) : dayName(a) + ' – ' + B.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' }); };
@@ -249,7 +261,10 @@
     .wx-day-n small{font-size:.7rem;color:var(--wx-ac);font-weight:700}
     .wx-day-n{min-width:0}
     .wx-day-n small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .wx-day-n small.wx-day-details{white-space:normal;overflow:visible;line-height:1.3;color:var(--t2);font-weight:500}
+    .wx-day-n small.wx-day-details{white-space:normal;overflow:visible;line-height:1.3;color:var(--t2);font-weight:500;display:flex;flex-wrap:wrap;gap:2px 10px}
+    .wx-dd{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+    .wx-dd svg{width:13px;height:13px;opacity:.75}
+    .wx-dir{display:inline-block;font-size:.8rem;line-height:1;color:var(--wx-ac)}
     .wx-day-ic{display:flex;flex-direction:column;align-items:center}
     .wx-day-ic{gap:2px;padding:5px 0}
     .wx-day-ic small{font-size:.68rem;line-height:1;color:#2F86E8;font-weight:800;margin-top:0;letter-spacing:.01em}
@@ -290,6 +305,19 @@
     .wx-skel{border-radius:24px;background:linear-gradient(90deg,var(--hub-card),var(--wx-soft),var(--hub-card));background-size:200% 100%;animation:wxsk 1.2s infinite linear}
     @keyframes wxsk{to{background-position:-200% 0}}
     .wx-radar{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:1/1;background:#dfe7ef}
+    .wx-radar-in .rad{transition:opacity .25s}
+    /* Радар: экран ровно по высоте окна, карта занимает всё свободное место — без прокрутки страницы */
+    #pg-module:has(#wx-radar){height:100dvh;min-height:0;overflow:hidden}
+    #pg-module:has(#wx-radar) .hub-wrap{height:100%;display:flex;flex-direction:column}
+    #pg-module:has(#wx-radar) .mod-body{flex:1 1 auto;min-height:0}
+    #pg-module:has(#wx-radar) .wx-radar{flex:1 1 auto;min-height:160px;aspect-ratio:auto}
+    .wx-rbar{position:absolute;left:10px;right:10px;bottom:8px;display:flex;align-items:center;gap:8px;z-index:3}
+    .wx-rbar button{width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#333;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
+    .wx-rbar button svg{width:16px;height:16px}
+    .wx-rtime{background:rgba(255,255,255,.92);border-radius:8px;padding:2px 7px;font-size:.75rem;font-weight:700;color:#333}
+    .wx-rleg{margin-left:auto;display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.92);border-radius:8px;padding:2px 7px;font-size:.68rem;color:#333}
+    .wx-rleg i{display:block;width:54px;height:7px;border-radius:4px;background:linear-gradient(90deg,#88ddee,#0099cc,#0077aa,#005588,#ffee00,#ff9900,#ff4400,#c10000)}
+    .wx-rnone{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:3;background:rgba(255,255,255,.94);color:#333;border-radius:10px;padding:5px 10px;font-size:.8rem;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2);white-space:nowrap}
     .wx-radar-in{position:absolute;width:768px;height:768px;transform-origin:0 0}
     .wx-radar-in img{position:absolute;width:256px;height:256px}
     .wx-radar-in img.rad{opacity:.75}
@@ -358,7 +386,7 @@
     : v <= 80 ? ['Плохое', '#F07A00', 'Сократите долгие прогулки и спорт на улице, особенно детям и людям с астмой.']
     : v <= 100 ? ['Очень плохое', '#E0442D', 'Лучше оставаться в помещении; на улице — меньше нагрузки.'] : ['Крайне плохое', '#8E24AA', 'Избегайте нахождения на улице.'];
   async function searchCity(q) {
-    const j = await getJSON(GEO + '?count=8&language=ru&format=json&name=' + encodeURIComponent(q), 8000);
+    const j = await getJSON(GEO + '?count=8&language=' + geoLang() + '&format=json&name=' + encodeURIComponent(q), 8000);
     return (j.results || []).map(r => ({ name: r.name, region: [r.admin1, r.country].filter(Boolean).join(', '), country: r.country || '', lat: r.latitude, lon: r.longitude, fc: r.feature_code || '' }));
   }
   // Климат: средние за те же даты трёх прошлых лет (это не прогноз!)
@@ -384,14 +412,14 @@
   async function placeName(lat, lon) {
     try {
       // zoom 14 — видны деревни и хутора; погода всё равно по координатам, название — только подпись
-      const j = await getJSON('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=ru&lat=' + lat + '&lon=' + lon, 7000);
+      const j = await getJSON('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=' + geoLang() + '&lat=' + lat + '&lon=' + lon, 7000);
       const a = j.address || {}, region = [a.state, a.country].filter(Boolean).join(', ');
       const own = a.city || a.town || a.village || a.hamlet || a.isolated_dwelling;
       if (own) return { name: own, region, country: a.country || '' };
       // населённого пункта нет (поле, горы, трасса) — явно пишем, что это окрестности
       const area = a.municipality || a.county || a.state_district || a.state;
-      return area ? { name: 'Рядом с ' + area, region, country: a.country || '', near: true } : { name: 'Моё местоположение', region, country: a.country || '', near: true };
-    } catch (_) { return { name: 'Моё местоположение', region: '', country: '' }; }
+      return area ? { name: L('Рядом с {a}', { a: area }), region, country: a.country || '', near: true } : { name: L('Моё местоположение'), region, country: a.country || '', near: true };
+    } catch (_) { return { name: L('Моё местоположение'), region: '', country: '' }; }
   }
 
   // ---------- Разбор прогноза ----------
@@ -414,25 +442,25 @@
       if (d < from || d > to) return;
       const D = f.daily, c = D.weather_code[i];
       const add = (icon, title, text) => out.push({ date: d, i, icon, title, text });
-      if (c >= 95) add('cloud-lightning', 'Гроза', 'Возможна гроза' + (c >= 96 ? ' с градом' : ''));
-      if (D.precipitation_sum[i] >= 20) add('cloud-rain', 'Сильный дождь', 'До ' + Math.round(D.precipitation_sum[i]) + ' мм осадков');
-      if (D.temperature_2m_max[i] >= 35) add('thermometer-sun', 'Жара', 'До ' + deg(D.temperature_2m_max[i]) + ' — пейте воду, избегайте солнца днём');
-      if (D.temperature_2m_min[i] <= -10) add('snowflake', 'Сильный мороз', 'До ' + deg(D.temperature_2m_min[i]));
-      if ((D.wind_gusts_10m_max || [])[i] >= 65) add('wind', 'Сильный ветер', 'Порывы до ' + Math.round(D.wind_gusts_10m_max[i]) + ' км/ч');
-      if ((D.uv_index_max || [])[i] >= 8) add('sun', 'Очень высокий УФ', 'УФ-индекс ' + Math.round(D.uv_index_max[i]) + ' — нужен крем SPF 50');
+      if (c >= 95) add('cloud-lightning', L('Гроза'), L(c >= 96 ? 'Возможна гроза с градом' : 'Возможна гроза'));
+      if (D.precipitation_sum[i] >= 20) add('cloud-rain', L('Сильный дождь'), L('До {v} мм осадков', { v: Math.round(D.precipitation_sum[i]) }));
+      if (D.temperature_2m_max[i] >= 35) add('thermometer-sun', L('Жара'), L('До {t} — пейте воду, избегайте солнца днём', { t: deg(D.temperature_2m_max[i]) }));
+      if (D.temperature_2m_min[i] <= -10) add('snowflake', L('Сильный мороз'), L('До {t}', { t: deg(D.temperature_2m_min[i]) }));
+      if ((D.wind_gusts_10m_max || [])[i] >= 65) add('wind', L('Сильный ветер'), L('Порывы до {v} км/ч', { v: Math.round(D.wind_gusts_10m_max[i]) }));
+      if ((D.uv_index_max || [])[i] >= 8) add('sun', L('Очень высокий УФ'), L('УФ-индекс {v} — нужен крем SPF 50', { v: Math.round(D.uv_index_max[i]) }));
     });
     return out;
   }
   // Короткий совет: одежда и занятия
   function advice(f, i) {
     const D = f.daily, mx = D.temperature_2m_max[i], mn = D.temperature_2m_min[i], p = (D.precipitation_probability_max || [])[i] || 0, uv = (D.uv_index_max || [])[i] || 0, w = D.wind_speed_10m_max[i];
-    const wear = mx >= 28 ? 'Лёгкая одежда, головной убор и солнцезащитный крем.' : mx >= 20 ? 'Футболка днём, лёгкая кофта на вечер.' : mx >= 12 ? 'Куртка или свитер, удобная обувь.' : mx >= 3 ? 'Тёплая куртка, шарф.' : 'Зимняя одежда, шапка и перчатки.';
+    const wear = L(mx >= 28 ? 'Лёгкая одежда, головной убор и солнцезащитный крем.' : mx >= 20 ? 'Футболка днём, лёгкая кофта на вечер.' : mx >= 12 ? 'Куртка или свитер, удобная обувь.' : mx >= 3 ? 'Тёплая куртка, шарф.' : 'Зимняя одежда, шапка и перчатки.');
     const extra = [];
-    if (p >= 50) extra.push('возьмите зонт — вероятность дождя ' + p + '%');
-    if (uv >= 6) extra.push('УФ высокий: SPF 30+ и тень в полдень');
-    if (w >= 35) extra.push('ветрено — на пляже и в горах будет прохладнее');
-    const act = p >= 60 ? 'Хороший день для музеев и кафе.' : mx >= 24 && p < 30 ? 'Отличный день для пляжа и прогулок у моря.' : 'Подходит для прогулок и экскурсий.';
-    return wear + (extra.length ? ' Ещё: ' + extra.join('; ') + '.' : '') + ' ' + act + (mn < mx - 10 ? ' Вечером заметно прохладнее (' + deg(mn) + ').' : '');
+    if (p >= 50) extra.push(L('возьмите зонт — вероятность дождя {p}%', { p }));
+    if (uv >= 6) extra.push(L('УФ высокий: SPF 30+ и тень в полдень'));
+    if (w >= 35) extra.push(L('ветрено — на пляже и в горах будет прохладнее'));
+    const act = L(p >= 60 ? 'Хороший день для музеев и кафе.' : mx >= 24 && p < 30 ? 'Отличный день для пляжа и прогулок у моря.' : 'Подходит для прогулок и экскурсий.');
+    return wear + (extra.length ? ' ' + L('Ещё: {list}.', { list: extra.join('; ') }) : '') + ' ' + act + (mn < mx - 10 ? ' ' + L('Вечером заметно прохладнее ({t}).', { t: deg(mn) }) : '');
   }
 
   // Окно снизу (внутри экрана модуля, чтобы работали стили)
@@ -504,9 +532,10 @@
         if (!navigator.geolocation) { geoState = 'unavailable'; return res(null); }
         navigator.geolocation.getCurrentPosition(async p => {
           const lat = +p.coords.latitude.toFixed(3), lon = +p.coords.longitude.toFixed(3);
-          const same = here && here.name && Math.abs(here.lat - lat) + Math.abs(here.lon - lon) < 0.03;
+          // то же место и тот же язык — название не запрашиваем заново (при смене языка — новое название)
+          const same = here && here.name && here.lang === geoLang() && Math.abs(here.lat - lat) + Math.abs(here.lon - lon) < 0.03;
           const nm = same ? { name: here.name, region: here.region, country: here.country, near: here.near } : await placeName(lat, lon);
-          here = Object.assign({ lat, lon, t: Date.now() }, nm);
+          here = Object.assign({ lat, lon, t: Date.now(), lang: geoLang() }, nm);
           ls.set('st_wx_here', here); geoState = 'ok'; res(here);
         }, e => { geoState = e && e.code === 1 ? 'denied' : 'unavailable'; res(null); },
         { enableHighAccuracy: false, timeout: 12000, maximumAge: 5 * 60000 });
@@ -611,7 +640,7 @@
         if (!name || !window.STPlacePhoto) { generic(); return; }
         // узнаваемое фото места со свободной лицензией (place-photo.js → scenic): автор и лицензия — в подписи
         const o = { lat: +img.dataset.lat, lon: +img.dataset.lon };
-        const credit = r => { const a = hero.querySelector('.wx-credit'); if (!a || !r) return; a.href = r.page; a.textContent = 'Фото: ' + (r.author ? r.author + ', ' : '') + r.license; a.hidden = false; };
+        const credit = r => { const a = hero.querySelector('.wx-credit'); if (!a || !r) return; a.href = r.page; a.textContent = L('Фото: {a}', { a: (r.author ? r.author + ', ' : '') + r.license }); a.hidden = false; };
         const put = r => { if (r && r.url) { show(r.url, true); credit(r); } else generic(); };
         if (!STPlacePhoto.scenic) { generic(); return; }
         const pk = STPlacePhoto.peekScenic(name, o);
@@ -626,7 +655,7 @@
       const code = isNow ? f.current.weather_code : D.weather_code[i];
       const day = isNow ? !!f.current.is_day : true;
       const temp = isNow ? f.current.temperature_2m : D.temperature_2m_max[i];
-      const sub = isNow ? 'Сейчас, ' + dayLong(d) + ', ' + hhmm(f.current.time) : dayLong(d);
+      const sub = isNow ? L('Сейчас, {d}, {t}', { d: dayLong(d), t: hhmm(f.current.time) }) : dayLong(d);
       const kind = heroImg(code, day);
       const sil = silOf(loc.name), dark = !day && kind !== 'night';
       setTimeout(() => loadHeroBg(), 0);
@@ -637,7 +666,7 @@
         <a class="wx-credit" target="_blank" rel="noopener" hidden></a>
         <div class="wx-hero-in">
           <div class="wx-city"><i data-lucide="${loc.here ? 'navigation' : 'map-pin'}"></i>${esc(loc.name)}${loc.near ? '<small class="wx-here">по координатам</small>' : loc.here ? '<small class="wx-here">вы здесь</small>' : ''}</div>
-          <div class="wx-now">${esc(sub)}${f.offline ? ' · нет сети' : ''}</div>
+          <div class="wx-now">${esc(sub)}${f.offline ? esc(L(' · нет сети')) : ''}</div>
           <div class="wx-big">${wxIcon(code, day, 64)}<div class="wx-temp">${T(temp)}<sup>°${UNIT}</sup></div></div>
           <div class="wx-desc">${esc(wText(code))}</div>
           <div class="wx-mm"><span>↑ ${deg(D.temperature_2m_max[i])}</span><span>↓ ${deg(D.temperature_2m_min[i])}</span></div>
@@ -649,14 +678,15 @@
       const iconCode = isCurrentDay ? f.current.weather_code : D.weather_code[i];
       const iconDay = isCurrentDay ? !!f.current.is_day : true;
       const direction = (D.wind_direction_10m_dominant || [])[i];
-      const compass = direction == null ? '' : ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'][Math.round(((direction % 360) + 360) % 360 / 45) % 8];
       const wind = (D.wind_speed_10m_max || [])[i];
       const pressure = (D.pressure_msl_mean || [])[i];
-      const details = [wind == null ? '' : `Ветер ${compass ? compass + ' ' : ''}до ${Math.round(wind)} км/ч`, pressure == null ? '' : `Давление ${Math.round(pressure)} гПа`].filter(Boolean);
+      // значки вместо слов: ветер (стрелка — куда дует) и давление
+      const details = [wind == null ? '' : `<span class="wx-dd" title="${esc(L('Ветер'))}"><i data-lucide="wind"></i>${direction == null ? '' : `<b class="wx-dir" style="transform:rotate(${Math.round(direction)}deg)">↓</b>`}${esc(L('{v} км/ч', { v: Math.round(wind) }))}</span>`,
+        pressure == null ? '' : `<span class="wx-dd" title="${esc(L('Давление'))}"><i data-lucide="gauge"></i>${esc(L('{v} гПа', { v: Math.round(pressure) }))}</span>`].filter(Boolean);
       return `<button class="wx-day${inTrip(d) ? ' trip' : ''}" type="button" data-day="${i}"${extra && i >= 7 ? ' style="opacity:.8"' : ''}>
-        <span class="wx-day-n">${esc(i === 0 ? 'Сегодня' : dayLong(d).replace(/^(\S)/, c => c.toUpperCase()))}${inTrip(d) ? '<small>поездка</small>' : ''}
-          ${details.length ? `<small class="wx-day-details">${details.map(esc).join('<br>')}</small>` : ''}
-          ${extra && D.precipitation_sum[i] > 0 ? `<small style="color:var(--t2);font-weight:500">Осадки ${D.precipitation_sum[i].toFixed(1).replace('.', ',')} мм</small>` : ''}</span>
+        <span class="wx-day-n">${esc(i === 0 ? 'Сегодня' : dayLong(d).replace(/^(\S)/, c => c.toUpperCase()))}${inTrip(d) ? '<small>' + esc(L('поездка')) + '</small>' : ''}
+          ${details.length ? `<small class="wx-day-details">${details.join('')}</small>` : ''}
+          ${extra && D.precipitation_sum[i] > 0 ? `<small style="color:var(--t2);font-weight:500">${esc(L('Осадки {v} мм', { v: D.precipitation_sum[i].toFixed(1).replace('.', ',') }))}</small>` : ''}</span>
         <span class="wx-day-ic">${wxIcon(iconCode, iconDay, 42)}${pp >= 20 ? `<small>${pp}%</small>` : ''}</span>
         <span class="wx-day-t"><span>${deg(D.temperature_2m_min[i])}</span> / ${deg(D.temperature_2m_max[i])}</span>
         <i data-lucide="chevron-right"></i></button>`;
@@ -699,12 +729,12 @@
             ${tripCard()}
             ${chipsHtml()}
             ${hero(0)}
-            ${w0 ? `<button class="wx-alert" type="button" data-day="${w0.i}"><i data-lucide="${w0.icon}"></i><span><b>${esc(w0.title)} · ${esc(w0.date === today() ? 'сегодня' : dayLong(w0.date))}</b><span>${esc(w0.text)}. По данным прогноза.</span></span></button>` : ''}
+            ${w0 ? `<button class="wx-alert" type="button" data-day="${w0.i}"><i data-lucide="${w0.icon}"></i><span><b>${esc(w0.title)} · ${esc(w0.date === today() ? L('сегодня') : dayLong(w0.date))}</b><span>${esc(L('{t}. По данным прогноза.', { t: w0.text }))}</span></span></button>` : ''}
             <div class="wx-card wx-stats">
               <div class="wx-stat"><i data-lucide="thermometer"></i><small>Ощущается</small><b>${deg(c.apparent_temperature)}${UNIT}</b></div>
-              <div class="wx-stat"><i data-lucide="wind"></i><small>Ветер</small><b>${Math.round(c.wind_speed_10m)} км/ч</b></div>
+              <div class="wx-stat"><i data-lucide="wind"></i><small>Ветер</small><b>${esc(L('{v} км/ч', { v: Math.round(c.wind_speed_10m) }))}</b></div>
               <div class="wx-stat"><i data-lucide="droplet"></i><small>Влажность</small><b>${Math.round(c.relative_humidity_2m)} %</b></div>
-              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${uvNow == null ? '—' : Math.round(uvNow) + ' ' + uvT}</b>${uvNow != null && D.uv_index_max[0] != null && Math.round(D.uv_index_max[0]) > Math.round(uvNow) ? `<em>днём до ${Math.round(D.uv_index_max[0])}</em>` : ''}</div>
+              <div class="wx-stat"><i data-lucide="sun"></i><small>УФ-индекс</small><b style="color:${uvC}">${uvNow == null ? '—' : Math.round(uvNow) + ' ' + esc(L(uvT))}</b>${uvNow != null && D.uv_index_max[0] != null && Math.round(D.uv_index_max[0]) > Math.round(uvNow) ? `<em>${esc(L('днём до {v}', { v: Math.round(D.uv_index_max[0]) }))}</em>` : ''}</div>
             </div>
             <div id="wx-aq"></div>
             <div class="wx-hours">${hours.map((k, n) => {
@@ -712,12 +742,12 @@
               return `<div class="wx-hour${now ? ' now' : ''}"><span>${now ? 'Сейчас' : hhmm(H.time[k])}</span>${wxIcon(now ? c.weather_code : H.weather_code[k], now ? c.is_day : H.is_day[k], 36)}
                 <b>${deg(now ? c.temperature_2m : H.temperature_2m[k])}</b><small>${pp >= 20 ? pp + '%' : ''}</small></div>`;
             }).join('')}</div>
-            ${tripInWindow ? `<button class="wx-card wx-tip" type="button" data-day="${Math.max(0, dayIndex(f, tripDates.start))}"><i data-lucide="luggage"></i><span><b>Погода на даты поездки</b><span>${esc(rangeLabel(tripDates.start, tripDates.end))} — дни поездки отмечены в прогнозе</span></span></button>` : ''}
+            ${tripInWindow ? `<button class="wx-card wx-tip" type="button" data-day="${Math.max(0, dayIndex(f, tripDates.start))}"><i data-lucide="luggage"></i><span><b>Погода на даты поездки</b><span>${esc(L('{r} — дни поездки отмечены в прогнозе', { r: rangeLabel(tripDates.start, tripDates.end) }))}</span></span></button>` : ''}
             ${climateNeeded ? `<div class="wx-card wx-tip" id="wx-clim"><i data-lucide="calendar-range"></i><span><b>Климат на даты поездки</b><span>Загружаю средние значения…</span></span></div>` : ''}
             <div class="wx-h2">Прогноз на 7 дней</div>
             <div class="wx-card wx-days">${D.time.slice(0, 7).map((_, i) => dayRow(i)).join('')}</div>
             <div class="wx-card wx-tip"><i data-lucide="shirt"></i><span><b>Что надеть сегодня</b><span>${esc(advice(f, 0))}</span></span></div>
-            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.) · воздух: CAMS (Copernicus)<br>Обновлено ${new Date(f.cachedAt || Date.now()).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' })}${f.offline ? ' · сейчас нет сети, показан сохранённый прогноз' : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
+            <div class="wx-note">Open-Meteo · лучшая модель для региона (DWD, Météo-France, ECMWF и др.) · воздух: CAMS (Copernicus)<br>${esc(L('Обновлено {t}', { t: new Date(f.cachedAt || Date.now()).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' }) }))}${f.offline ? esc(L(' · сейчас нет сети, показан сохранённый прогноз')) : ''} · <a href="#" data-a="refresh" style="color:var(--wx-ac);font-weight:700">Обновить</a></div>
             <div style="height:8px"></div>`;
           bindCommon(body, scr);
           // температура в чипах для мест без свежих данных
@@ -727,7 +757,7 @@
           fillAir(body, loc);
           if (climateNeeded) climate(loc, tripDates.start, tripDates.end).then(cl => {
             const el = body.querySelector('#wx-clim span span'); if (!el) return;
-            el.textContent = rangeLabel(tripDates.start, tripDates.end) + ': обычно ' + deg(cl.min) + ' / ' + deg(cl.max) + ', дождливых дней ≈ ' + Math.round(cl.rainDays) + ' из ' + cl.days + '. Это климатические средние за ' + cl.years + ' прошлых года, а не прогноз — он появится за 16 дней до поездки.';
+            el.textContent = L('{r}: обычно {mn} / {mx}, дождливых дней ≈ {d} из {n}. Это климатические средние за {y} прошлых года, а не прогноз — он появится за 16 дней до поездки.', { r: rangeLabel(tripDates.start, tripDates.end), mn: deg(cl.min), mx: deg(cl.max), d: Math.round(cl.rainDays), n: cl.days, y: cl.years });
           }).catch(() => { const el = body.querySelector('#wx-clim span span'); if (el) el.textContent = 'Прогноз появится за 16 дней до поездки. Средние значения сейчас недоступны.'; });
         }
       });
@@ -755,7 +785,7 @@
           <div class="wx-aq-bar"><i style="left:${Math.min(100, v / 120 * 100)}%"></i></div>
           <div class="wx-aq-g"><span><small>PM2.5</small><b>${n(c.pm2_5)}</b></span><span><small>PM10</small><b>${n(c.pm10)}</b></span><span><small>NO₂</small><b>${n(c.nitrogen_dioxide)}</b></span><span><small>O₃</small><b>${n(c.ozone)}</b></span></div>
           ${tip ? `<div class="wx-aq-tip">${esc(tip)}</div>` : ''}
-          <div class="wx-aq-src">Европейский индекс EAQI, мкг/м³. Данные CAMS (Copernicus) через Open-Meteo на ${esc(hhmm(c.time))} — модельная оценка для сетки ~${eu ? 11 : 45} км, а не замер датчика у вас на улице.</div>
+          <div class="wx-aq-src">${esc(L('Европейский индекс EAQI, мкг/м³. Данные CAMS (Copernicus) через Open-Meteo на {t} — модельная оценка для сетки ~{k} км, а не замер датчика у вас на улице.', { t: hhmm(c.time), k: eu ? 11 : 45 }))}</div>
         </div>`;
       if (typeof initializeIcons === 'function') initializeIcons(box);
     }
@@ -830,7 +860,7 @@
             if (isFav()) { const k = keyOf(loc); places = places.filter(x => keyOf(x) !== k); ls.set('st_wx_places', places); }
             else addPlace(loc, false);
             document.getElementById('mod-action-2')?.classList.toggle('on', isFav());
-            ctx.toast(isFav() ? loc.name + ' — добавлено в «Мои места»' : loc.name + ' убрано из «Моих мест»');
+            ctx.toast(isFav() ? L('{n} — добавлено в «Мои места»', { n: loc.name }) : L('{n} убрано из «Моих мест»', { n: loc.name }));
           } }
         ],
         render(body, screen) {
@@ -843,20 +873,20 @@
             const press = atNoon(cur, 'pressure_msl'), vis = atNoon(cur, 'visibility');
             const dayWarn = warnings(f, date, date);
             content = `
-              ${dayWarn.map(w => `<div class="wx-alert"><i data-lucide="${w.icon}"></i><span><b>${esc(w.title)}</b><span>${esc(w.text)}. По данным прогноза.</span></span></div>`).join('')}
+              ${dayWarn.map(w => `<div class="wx-alert"><i data-lucide="${w.icon}"></i><span><b>${esc(w.title)}</b><span>${esc(L('{t}. По данным прогноза.', { t: w.text }))}</span></span></div>`).join('')}
               <div class="wx-h2">Ход температуры</div>
               <div class="wx-card wx-chart">${tempChart(cur)}</div>
               <div class="wx-h2">Осадки и ветер</div>
               <div class="wx-card wx-chart">${rainChart(cur)}
-                <div class="wx-note" style="text-align:left;padding:6px 8px 4px;color:var(--text)">💧 Осадки за день: <b>${(D.precipitation_sum[cur] || 0).toFixed(1).replace('.', ',')} мм</b> · ветер до <b>${Math.round(D.wind_speed_10m_max[cur])} км/ч</b>${D.wind_gusts_10m_max ? ', порывы ' + Math.round(D.wind_gusts_10m_max[cur]) : ''}</div></div>
+                <div class="wx-note" style="text-align:left;padding:6px 8px 4px;color:var(--text)">💧 ${L('Осадки за день: <b>{p} мм</b> · ветер до <b>{w} км/ч</b>{g}', { p: (D.precipitation_sum[cur] || 0).toFixed(1).replace('.', ','), w: Math.round(D.wind_speed_10m_max[cur]), g: D.wind_gusts_10m_max ? L(', порывы {v}', { v: Math.round(D.wind_gusts_10m_max[cur]) }) : '' })}</div></div>
               <div class="wx-h2">Подробнее</div>
               <div class="wx-grid2">
                 <div class="wx-card wx-box"><i data-lucide="sunrise"></i><span><small>Восход</small><b>${hhmm(D.sunrise[cur])}</b></span></div>
                 <div class="wx-card wx-box sunset"><i data-lucide="sunset"></i><span><small>Закат</small><b>${hhmm(D.sunset[cur])}</b></span></div>
-                <div class="wx-card wx-box"><i data-lucide="gauge"></i><span><small>Давление</small><b>${press != null ? Math.round(press) + ' гПа' : '—'}</b></span></div>
-                <div class="wx-card wx-box"><i data-lucide="eye"></i><span><small>Видимость</small><b>${vis != null ? Math.round(vis / 1000) + ' км' : '—'}</b></span></div>
+                <div class="wx-card wx-box"><i data-lucide="gauge"></i><span><small>Давление</small><b>${press != null ? esc(L('{v} гПа', { v: Math.round(press) })) : '—'}</b></span></div>
+                <div class="wx-card wx-box"><i data-lucide="eye"></i><span><small>Видимость</small><b>${vis != null ? esc(L('{v} км', { v: Math.round(vis / 1000) })) : '—'}</b></span></div>
               </div>
-              <div class="wx-card wx-uv"><i data-lucide="sun-medium"></i><div class="wx-uv-t"><b>УФ-индекс: ${Math.round(D.uv_index_max[cur] || 0)} – ${uvT}</b><div class="wx-uvbar"><i style="left:${uvPos}%"></i></div></div></div>
+              <div class="wx-card wx-uv"><i data-lucide="sun-medium"></i><div class="wx-uv-t"><b>${esc(L('УФ-индекс: {v} – {t}', { v: Math.round(D.uv_index_max[cur] || 0), t: L(uvT) }))}</b><div class="wx-uvbar"><i style="left:${uvPos}%"></i></div></div></div>
               <div class="wx-card wx-tip"><i data-lucide="shirt"></i><span><b>Совет на день</b><span>${esc(advice(f, cur))}</span></span></div>`;
           } else if (mode === '7' || mode === '14') {
             const n = mode === '7' ? 7 : Math.min(14, D.time.length);
@@ -869,7 +899,7 @@
           }
           body.innerHTML = `${hero(cur, true)}
             <div class="wx-card wx-tabs">${tabs.map(([k, t]) => `<button class="wx-tab${mode === k ? ' on' : ''}" type="button" data-tab="${k}">${esc(t)}</button>`).join('')}</div>
-            ${content}<div style="height:10px"></div>`;
+            ${content}${mode === 'radar' ? '' : '<div style="height:10px"></div>'}`;
           fillPhotos(body);
           body.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { mode = b.dataset.tab; screen.refresh(); }));
           body.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { cur = +b.dataset.day; mode = 'day'; screen.refresh(); window.scrollTo(0, 0); }));
@@ -878,29 +908,84 @@
       });
     }
 
-    // Радар: плитки RainViewer поверх карты OpenStreetMap (без библиотек)
+    // Радар: плитки RainViewer поверх карты OpenStreetMap (без библиотек).
+    // Бесплатный RainViewer (с 01.2026): зум до 7, одна цветовая схема (2), до 100 запросов/мин с IP,
+    // поэтому анимация — 6 последних кадров (≈1 час), 9 плиток на кадр.
+    let radarTimer = null;
     async function radar(box) {
       if (!box) return;
+      clearInterval(radarTimer);
+      // высота по экрану: карта и подписи помещаются без прокрутки
+      const fit = () => {
+        const top = box.getBoundingClientRect().top, below = 74;
+        const h = Math.max(240, Math.min(box.clientWidth * 1.4, window.innerHeight - top - below));
+        box.style.aspectRatio = 'auto'; box.style.height = Math.round(h) + 'px';
+        // точная подгонка: если страница всё ещё длиннее экрана — уменьшаем карту на этот остаток
+        const over = (document.scrollingElement || document.documentElement).scrollHeight - window.innerHeight;
+        if (over > 0) box.style.height = Math.round(Math.max(180, h - over)) + 'px';
+      };
+      // браузеры без :has() — подгоняем высоту вручную
+      if (!(window.CSS && CSS.supports && CSS.supports('selector(:has(a))'))) fit();
       try {
         const j = await getJSON('https://api.rainviewer.com/public/weather-maps.json', 8000);
-        const fr = j.radar && j.radar.past && j.radar.past[j.radar.past.length - 1];
-        if (!fr) throw new Error('radar');
+        const frames = ((j.radar && j.radar.past) || []).slice(-6);
+        if (!frames.length) throw new Error('radar');
         const z = 6, n = 2 ** z;
         const xf = (+loc.lon + 180) / 360 * n;
         const lr = +loc.lat * Math.PI / 180;
         const yf = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
         const x0 = Math.floor(xf) - 1, y0 = Math.floor(yf) - 1;
-        const tiles = [];
+        const cells = [];
         for (let dy = 0; dy < 3; dy++) for (let dx = 0; dx < 3; dx++) {
           const x = ((x0 + dx) % n + n) % n, y = y0 + dy;
-          if (y < 0 || y >= n) continue;
-          tiles.push(`<img src="https://tile.openstreetmap.org/${z}/${x}/${y}.png" style="left:${dx * 256}px;top:${dy * 256}px" alt="">
-            <img class="rad" src="${j.host}${fr.path}/256/${z}/${x}/${y}/2/1_1.png" style="left:${dx * 256}px;top:${dy * 256}px" alt="">`);
+          if (y >= 0 && y < n) cells.push({ x, y, dx, dy });
         }
-        const W = box.clientWidth || 340, scale = W / 300;
+        const pos = c => `left:${c.dx * 256}px;top:${c.dy * 256}px`;
+        const base = cells.map(c => `<img src="https://tile.openstreetmap.org/${z}/${c.x}/${c.y}.png" style="${pos(c)}" alt="">`).join('');
+        const layers = frames.map((fr, k) => cells.map(c => `<img class="rad" data-f="${k}" src="${j.host}${fr.path}/256/${z}/${c.x}/${c.y}/2/1_1.png" style="${pos(c)};opacity:${k === frames.length - 1 ? .9 : 0}" alt="">`).join('')).join('');
+        const W = box.clientWidth || 340, Hh = box.clientHeight || W, scale = W / 300;
         const ox = (xf - x0) * 256, oy = (yf - y0) * 256;
-        box.innerHTML = `<div class="wx-radar-in" style="transform:scale(${scale}) translate(${150 - ox}px,${150 - oy}px)">${tiles.join('')}</div><div class="wx-pin"></div>
-          <div class="wx-src" style="position:absolute;right:10px;bottom:8px;background:rgba(255,255,255,.85);border-radius:8px;padding:2px 6px;color:#333">${new Date(fr.time * 1000).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>`;
+        const tm = t => new Date(t * 1000).toLocaleTimeString(window.STModuleUI?.locale() || 'ru-RU', { hour: '2-digit', minute: '2-digit' });
+        box.innerHTML = `<div class="wx-radar-in" style="transform:scale(${scale}) translate(${150 - ox}px,${Hh / scale / 2 - oy}px)">${base}${layers}</div><div class="wx-pin"></div>
+          <div class="wx-rbar"><button type="button" data-rplay aria-label="${esc(L('Воспроизвести'))}"><i data-lucide="play"></i></button><span class="wx-rtime">${tm(frames[frames.length - 1].time)}</span>
+            <span class="wx-rleg">${esc(L('слабые'))}<i></i>${esc(L('сильные'))}</span></div>`;
+        if (typeof initializeIcons === 'function') initializeIcons(box);
+        let cur = frames.length - 1;
+        const show = k => {
+          box.querySelectorAll('.rad').forEach(im => { im.style.opacity = +im.dataset.f === k ? .9 : 0; });
+          box.querySelector('.wx-rtime').textContent = tm(frames[k].time);
+        };
+        const btn = box.querySelector('[data-rplay]');
+        const setIcon = playing => { btn.innerHTML = `<i data-lucide="${playing ? 'pause' : 'play'}"></i>`; btn.setAttribute('aria-label', L(playing ? 'Пауза' : 'Воспроизвести')); if (typeof initializeIcons === 'function') initializeIcons(btn); };
+        btn.addEventListener('click', () => {
+          if (radarTimer) { clearInterval(radarTimer); radarTimer = null; setIcon(false); return; }
+          setIcon(true);
+          radarTimer = setInterval(() => {
+            if (!box.isConnected) { clearInterval(radarTimer); radarTimer = null; return; }
+            cur = (cur + 1) % frames.length; show(cur);
+          }, 700);
+        });
+        // есть ли осадки рядом в последнем кадре: отдельные «пробные» картинки с CORS,
+        // чтобы показ радара не зависел от того, разрешает ли сервер читать пиксели
+        const lastFr = frames[frames.length - 1];
+        Promise.all(cells.map(c => new Promise(r => {
+          const im = new Image(); im.crossOrigin = 'anonymous';
+          im.onload = () => r(im); im.onerror = () => r(null);
+          im.src = `${j.host}${lastFr.path}/256/${z}/${c.x}/${c.y}/2/1_1.png`;
+        }))).then(imgs => {
+          const ok = imgs.filter(Boolean);
+          if (!ok.length || !box.isConnected) return;
+          try {
+            const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d');
+            let wet = 0;
+            for (const im of ok) {
+              g.clearRect(0, 0, 64, 64); g.drawImage(im, 0, 0, 64, 64);
+              const px = g.getImageData(0, 0, 64, 64).data;
+              for (let q = 3; q < px.length; q += 4) if (px[q] > 40) wet++;
+            }
+            if (!wet) box.insertAdjacentHTML('beforeend', `<div class="wx-rnone">${esc(L('В этом районе сейчас нет осадков'))}</div>`);
+          } catch (_) { /* без разрешения CORS подсказку не показываем */ }
+        });
       } catch (_) {
         box.innerHTML = '<div class="wx-empty" style="position:absolute;inset:0;justify-content:center">Радар сейчас недоступен</div>';
       }
@@ -908,7 +993,7 @@
 
     function alertsSheet() {
       const all = warnings(f, today(), f.daily.time[f.daily.time.length - 1]);
-      sheet('Предупреждения', `<div class="st-muted" style="margin:4px 0 10px;font-size:.84rem">Опасная погода по прогнозу Open-Meteo на ${f.daily.time.length} дней. Это не официальные предупреждения метеослужбы.</div>
+      sheet('Предупреждения', `<div class="st-muted" style="margin:4px 0 10px;font-size:.84rem">${esc(L('Опасная погода по прогнозу Open-Meteo на {n} дней. Это не официальные предупреждения метеослужбы.', { n: f.daily.time.length }))}</div>
         <div style="display:flex;flex-direction:column;gap:8px">${all.length ? all.map(w => `<button class="wx-alert" type="button" data-i="${w.i}"><i data-lucide="${w.icon}"></i><span><b>${esc(w.title)} · ${esc(dayLong(w.date))}</b><span>${esc(w.text)}</span></span></button>`).join('')
           : '<div class="wx-empty">Опасной погоды не ожидается 👍</div>'}</div>`, (root, close) => {
         root.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => { close(); openDay(+b.dataset.i, 'day'); }));
@@ -923,9 +1008,9 @@
           <div class="st-input" style="display:flex;align-items:center;gap:8px;padding:0 12px"><i data-lucide="search" style="width:18px;height:18px;color:var(--t2)"></i>
             <input id="wx-q" placeholder="Добавить город, например Барселона" autocomplete="off" style="flex:1;border:0;background:transparent;font:inherit;font-size:16px;color:var(--text);outline:none;min-height:46px"></div>
           <div id="wx-res" style="display:flex;flex-direction:column;gap:8px"></div>
-          ${row('data-here', 'navigation', 'Моё местоположение', here ? here.name + ' · определяется автоматически' : 'Определяется по геолокации устройства', sel === 'here')}
+          ${row('data-here', 'navigation', 'Моё местоположение', here ? L('{n} · определяется автоматически', { n: here.name }) : 'Определяется по геолокации устройства', sel === 'here')}
           ${places.length ? '<div class="wx-lbl">Мои места</div>' + places.map(c => row(`data-pl="${esc(keyOf(c))}"`, 'map-pin', c.name, c.region, sel === keyOf(c), keyOf(c))).join('') : ''}
-          ${cities.length ? '<div class="wx-lbl">Из поездки</div>' + cities.map((c, i) => row(`data-tc="${i}"`, 'luggage', c.q, c.from ? (c.to ? rangeLabel(c.from, c.to) : 'с ' + dayName(c.from)) : '')).join('') : ''}
+          ${cities.length ? '<div class="wx-lbl">Из поездки</div>' + cities.map((c, i) => row(`data-tc="${i}"`, 'luggage', c.q, c.from ? (c.to ? rangeLabel(c.from, c.to) : L('с {d}', { d: dayName(c.from) })) : '')).join('') : ''}
           <div class="wx-lbl">Единицы</div>
           <div class="wx-units"><button type="button" data-u="C" class="${UNIT === 'C' ? 'on' : ''}">°C</button><button type="button" data-u="F" class="${UNIT === 'F' ? 'on' : ''}">°F</button></div>
         </div>`, (root, close) => {
@@ -944,7 +1029,7 @@
               if (q.value.trim() !== v) return;
               res.innerHTML = list.length ? list.map((c, i) => row(`data-r="${i}"`, 'plus', c.name, c.region)).join('') : '<div class="st-muted" style="font-size:.85rem;padding:4px">Не нашли такое место. Проверьте название или выберите «Моё местоположение» — погода будет по координатам GPS.</div>';
               if (typeof initializeIcons === 'function') initializeIcons(res);
-              res.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { addPlace(list[+b.dataset.r], true); ctx.toast('Добавлено: ' + list[+b.dataset.r].name); go(); }));
+              res.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { addPlace(list[+b.dataset.r], true); ctx.toast(L('Добавлено: {n}', { n: list[+b.dataset.r].name })); go(); }));
             } catch (_) { res.innerHTML = '<div class="st-muted" style="font-size:.85rem;padding:4px">Нет интернета</div>'; }
           }, 450);
         });
@@ -952,14 +1037,14 @@
         root.querySelectorAll('[data-pl]').forEach(b => b.addEventListener('click', () => { select(b.dataset.pl); go(); }));
         root.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
           const p = places.find(x => keyOf(x) === b.dataset.rm);
-          removePlace(b.dataset.rm); ctx.toast('Убрано: ' + (p ? p.name : 'место')); close(); citySheet(screen);
+          removePlace(b.dataset.rm); ctx.toast(L('Убрано: {n}', { n: p ? p.name : L('место') })); close(); citySheet(screen);
         }));
         root.querySelectorAll('[data-tc]').forEach(b => b.addEventListener('click', async () => {
           const nm = cities[+b.dataset.tc].q;
           try {
             const r = await resolve(nm);
-            if (!r) { ctx.toast('«' + nm + '» не найден'); return; }
-            if (/^PCL|^ADM1$/.test(r.fc || '')) { ctx.toast('«' + nm + '» — это страна или регион. Найдите город через поиск'); q.focus(); return; }
+            if (!r) { ctx.toast(L('«{n}» не найден', { n: nm })); return; }
+            if (/^PCL|^ADM1$/.test(r.fc || '')) { ctx.toast(L('«{n}» — это страна или регион. Найдите город через поиск', { n: nm })); q.focus(); return; }
             addPlace(r, true); go();
           } catch (_) { ctx.toast('Нет интернета'); }
         }));
