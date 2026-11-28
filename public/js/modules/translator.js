@@ -704,7 +704,7 @@
                 <button class="tl-btn" type="button" data-a="shot"><i data-lucide="camera"></i>Снять</button>
                 <button class="tl-btn lite" type="button" data-a="pick"><i data-lucide="image"></i>Из галереи</button>
               </div>
-              <div class="tl-note">Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется. Перевод — на «${esc(nm(my).toLowerCase())}».</div>
+              <div class="tl-note"><span>Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется.</span> <span>Перевод:</span> <span>${esc(nm(my))}</span></div>
             </div>
             ${st.url ? `<img class="tl-photo" src="${st.url}" alt="" style="margin-top:12px">` : ''}
             ${st.busy ? `<div class="tl-card" style="margin-top:12px"><b>${esc(st.busy)}</b><div class="tl-prog"><i style="width:${Math.round(st.pct * 100)}%"></i></div></div>` : ''}

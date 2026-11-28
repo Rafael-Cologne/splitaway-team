@@ -331,5 +331,14 @@
   },
   "Не удалось скопировать": {
     "en": "Could not copy", "de": "Kopieren fehlgeschlagen", "fr": "Impossible de copier", "it": "Impossibile copiare", "es": "No se pudo copiar", "pt": "Não foi possível copiar", "pl": "Nie udało się skopiować", "el": "Η αντιγραφή απέτυχε", "tr": "Kopyalanamadı"
+  },
+  "Снять": {
+    "en": "Take photo", "de": "Foto aufnehmen", "fr": "Prendre une photo", "it": "Scatta foto", "es": "Hacer foto", "pt": "Tirar foto", "pl": "Zrób zdjęcie", "el": "Λήψη φωτογραφίας", "tr": "Fotoğraf çek"
+  },
+  "Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется.": {
+    "en": "Menus, signs, notices, documents. Text is recognised on your phone — the photo is never uploaded.", "de": "Speisekarten, Schilder, Aushänge, Dokumente. Die Erkennung läuft auf dem Gerät – das Foto wird nirgendwohin gesendet.", "fr": "Menus, panneaux, affiches, documents. La reconnaissance se fait sur le téléphone — la photo n’est envoyée nulle part.", "it": "Menu, insegne, avvisi, documenti. Il riconoscimento avviene sul telefono: la foto non viene inviata da nessuna parte.", "es": "Menús, carteles, anuncios, documentos. El reconocimiento se hace en el teléfono: la foto no se envía a ninguna parte.", "pt": "Menus, placas, avisos, documentos. O reconhecimento é feito no telemóvel — a foto não é enviada para lado nenhum.", "pl": "Menu, szyldy, ogłoszenia, dokumenty. Rozpoznawanie odbywa się na telefonie — zdjęcie nigdzie nie jest wysyłane.", "el": "Μενού, πινακίδες, ανακοινώσεις, έγγραφα. Η αναγνώριση γίνεται στο κινητό — η φωτογραφία δεν αποστέλλεται πουθενά.", "tr": "Menüler, tabelalar, ilanlar, belgeler. Tanıma telefonda yapılır — fotoğraf hiçbir yere gönderilmez."
+  },
+  "Перевод:": {
+    "en": "Translation:", "de": "Übersetzung:", "fr": "Traduction :", "it": "Traduzione:", "es": "Traducción:", "pt": "Tradução:", "pl": "Tłumaczenie:", "el": "Μετάφραση:", "tr": "Çeviri:"
   }
 }
