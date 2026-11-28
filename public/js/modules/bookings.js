@@ -44,6 +44,63 @@
   }
   const money = (n, cur) => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur || 'EUR' }).format(n); } catch (_) { return (+n).toFixed(2) + ' ' + cur; } };
   const initials = s => String(s || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  // ---------- Заставка брони ----------
+  // Своё фото → фото этого места (отель/достопримечательность по названию, только рядом с адресом) → фото города брони.
+  // Перелёт: фото города прилёта + логотип авиакомпании. Всё бесплатно и без ключей: адрес → координаты (Nominatim),
+  // фото — Wikidata/Commons через STPlacePhoto, логотипы — pics.avs.io по IATA-коду. Не нашлось — картинка категории.
+  let toolsP = null;
+  const loadTools = () => toolsP || (toolsP = new Promise((ok, no) => {
+    if (window.STBookingTools) return ok(window.STBookingTools);
+    const s = document.createElement('script'); s.src = '/js/modules/bookings-tools.js?v=3';
+    s.onload = () => ok(window.STBookingTools); s.onerror = () => { toolsP = null; no(new Error('tools')); };
+    document.head.appendChild(s);
+  }));
+  const LOGO = code => 'https://pics.avs.io/480/160/' + code + '@2x.png';
+  async function geocodeOnce(q) {
+    const k = 'st_bk_geo_' + String(q).toLowerCase().trim();
+    try { const c = JSON.parse(localStorage.getItem(k) || 'null'); if (c && Date.now() - c.t < 90 * 864e5) return c.g; } catch (_) {}
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 7000);
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=en&q=' + encodeURIComponent(q), { signal: ctl.signal, headers: { Accept: 'application/json' } });
+      const j = r.ok ? await r.json() : null;
+      const g = j && j[0] ? { lat: +j[0].lat, lon: +j[0].lon } : null;
+      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), g })); } catch (_) {}
+      return g;
+    } catch (_) { return null; } finally { clearTimeout(tm); }
+  }
+  // «Friedrichstraße 96, 10117 Berlin, Deutschland» → «Berlin»
+  function cityOfAddr(a) {
+    const parts = String(a || '').split(',').map(x => x.trim()).filter(Boolean);
+    // часть с почтовым индексом (10117, 00184, SW1A 2AA): город — слова без цифр и без кода провинции (RM)
+    const POST = /\b\d{4,6}\b|\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/;
+    for (const x of parts) if (POST.test(x)) { const w = x.split(/\s+/).filter(t => !/\d/.test(t) && !/^[A-Z]{1,2}$/.test(t)); if (w.length) return w.join(' '); }
+    return parts.length >= 2 ? parts[parts.length - 2].replace(/\d+/g, '').trim() : (parts[0] || '');
+  }
+  async function airlineCode(b) {
+    const T = await loadTools().catch(() => null); if (!T) return '';
+    const db = await T.loadDb().catch(() => null); if (!db) return '';
+    const m = String(b.number || '').toUpperCase().match(/^([A-Z0-9]{2})\s?\d/);
+    if (m && db.airlines[m[1]]) return m[1];
+    const n = T.norm(b.provider || ''); if (n.length < 2) return '';
+    const all = Object.entries(db.airlines);
+    const hit = all.find(([, v]) => T.norm(v) === n) || all.find(([, v]) => { const x = T.norm(v); return x.length > 3 && (n.includes(x) || x.includes(n)); });
+    return hit ? hit[0] : '';
+  }
+  async function heroOf(b) {
+    const P = window.STPlacePhoto; if (!P || b.photo) return null;
+    const url = r => (r && r.url && !r.flag ? r.url : null);
+    if (b.cat === 'flight') {
+      const T = await loadTools().catch(() => null), to = String(b.to || '').trim();
+      let city = to.replace(/\s*\(.*\)\s*/, '');
+      if (T && /^[A-Za-z]{3}$/.test(to)) { const db = await T.loadDb().catch(() => null); const a = db && db.byCode.get(to.toUpperCase()); if (a) city = T.cityShort(a); }
+      return city ? url(await P.photo(city, { prefer: 'banner', width: 1200 })) : null;
+    }
+    const g = b.place ? await geocodeOnce(b.place) : null;
+    const near = g ? { lat: g.lat, lon: g.lon } : null;
+    if (near && b.title) { const r = url(await P.photo(b.title, Object.assign({ width: 1200 }, near))); if (r) return r; }
+    const city = cityOfAddr(b.place);
+    return city ? url(await P.photo(city, Object.assign({ prefer: 'banner', width: 1200 }, near || {}))) : null;
+  }
   const hueOf = s => { let h = 7; for (const c of String(s || '')) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
   const fileSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' МБ' : Math.max(1, Math.round(b / 1024)) + ' КБ';
 
@@ -214,6 +271,10 @@
     .bk-head-top .bk-pill{margin-left:auto}
     .bk-logo{width:76px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:800;font-size:1.15rem;letter-spacing:.02em;overflow:hidden}
     .bk-logo svg{width:30px;height:30px;stroke-width:2.2}
+    .bk-logo.img{border:1px solid var(--hub-card-b);padding:6px}
+    .bk-logo.img img{width:100%;height:100%;object-fit:contain}
+    .bk-hero-al{position:absolute;top:12px;right:12px;z-index:1;background:#fff;border-radius:14px;padding:6px 10px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+    .bk-hero-al img{display:block;height:34px;width:auto;max-width:150px;object-fit:contain}
     .bk-head-txt{flex:1 1 150px;min-width:0;padding-top:4px}
     .bk-head-txt b{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:1.28rem;font-weight:800;line-height:1.2;overflow-wrap:break-word}
     .bk-head-txt b svg{width:20px;height:20px;color:var(--t2)}
@@ -520,7 +581,7 @@
           const c = cat(b.cat);
           normDocs(b);
           const logo = b.cat === 'flight' && b.provider
-            ? `<div class="bk-logo" style="background:hsl(${hueOf(b.provider)},68%,46%)">${esc(initials(b.provider))}</div>`
+            ? `<div class="bk-logo" data-al style="background:hsl(${hueOf(b.provider)},68%,46%)">${esc(initials(b.provider))}</div>`
             : `<div class="bk-logo" style="background:${c.bg};color:${c.color}"><i data-lucide="${c.icon}"></i></div>`;
           const title = b.cat === 'flight' && b.from && b.to && !b.title
             ? `Рейс ${esc(b.from)} <i data-lucide="arrow-right"></i> ${esc(b.to)}` : esc(titleOf(b));
@@ -534,7 +595,7 @@
           if (+b.price > 0) rows.push(`<div class="bk-r"><i data-lucide="circle-dollar-sign"></i><span class="bk-r-l">Цена</span><span class="bk-r-v big">${esc(money(+b.price, b.currency || tripCur))}</span></div>`);
           if (b.note) rows.push(`<div class="bk-r" style="align-items:flex-start;padding:14px 0"><i data-lucide="file-text"></i><span class="bk-r-l">Заметка</span><span class="bk-r-v" style="white-space:normal;color:var(--t2)">${esc(b.note)}</span></div>`);
           body.innerHTML = `
-            <div class="bk-hero"><img src="${esc(b.photo || IMG + c.hero)}" alt=""><div class="bk-hero-l${b.cat === 'flight' ? ' fl' : ''}"><i data-lucide="${c.icon}"></i>${c.one}</div></div>
+            <div class="bk-hero"><img src="${esc(b.photo || IMG + c.hero)}" alt=""><div class="bk-hero-l${b.cat === 'flight' ? ' fl' : ''}"><i data-lucide="${c.icon}"></i>${c.one}</div>${b.cat === 'flight' ? '<div class="bk-hero-al" hidden><img alt=""></div>' : ''}</div>
             <div class="bk-card bk-head">
               <div class="bk-head-top">${logo}<div class="bk-head-txt"><b>${title}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</div>${pill(b)}</div>
               ${routeBlock(b)}
@@ -557,6 +618,17 @@
             <div style="height:20px"></div>
           `;
           body.querySelectorAll('[data-edit]').forEach(x => x.addEventListener('click', () => openForm(b, () => openItem(b.id))));
+          // заставка этой брони и логотип авиакомпании — подгружаются, когда найдены
+          heroOf(b).then(u => { const im = body.querySelector('.bk-hero > img'); if (!u || !im || !im.isConnected) return; const n = new Image(); n.onload = () => { im.src = u; }; n.src = u; }).catch(() => {});
+          if (b.cat === 'flight') airlineCode(b).then(code => {
+            if (!code) return;
+            const n = new Image(); n.alt = b.provider || code;
+            n.onload = () => {
+              const box = body.querySelector('[data-al]'); if (box) { box.textContent = ''; box.style.background = '#fff'; box.classList.add('img'); box.appendChild(n); }
+              const badge = body.querySelector('.bk-hero-al'); if (badge) { badge.querySelector('img').src = n.src; badge.hidden = false; }
+            };
+            n.src = LOGO(code);
+          }).catch(() => {});
           body.querySelector('[data-map]')?.addEventListener('click', () => window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(b.place), '_blank'));
           body.querySelector('[data-copy]')?.addEventListener('click', e => {
             const v = e.currentTarget.dataset.copy;
@@ -672,13 +744,7 @@
     }
 
     // ===== Помощник: аэропорты и чтение броней (bookings-tools.js, грузится по требованию) =====
-    let toolsP = null;
-    const tools = () => toolsP || (toolsP = new Promise((ok, no) => {
-      if (window.STBookingTools) return ok(window.STBookingTools);
-      const s = document.createElement('script'); s.src = '/js/modules/bookings-tools.js?v=3';
-      s.onload = () => ok(window.STBookingTools); s.onerror = () => { toolsP = null; no(new Error('tools')); };
-      document.head.appendChild(s);
-    }));
+    const tools = loadTools;
 
     // ===== Страница 3: новая бронь / изменить =====
     // opts.review = { file, name, kind, idx, total } — проверка брони из загруженного файла
