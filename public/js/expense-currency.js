@@ -31,11 +31,13 @@
   // 1.0.22: курс всегда показывается и вводится как «1 <основная валюта> = X <другая>»
   const perBase=(code,rate)=>code===base()?rate:1/rate;
   const foreignOf=(code,target)=>code===base()?target:code;
-  const plain=value=>String(Number(Number(value).toPrecision(8)));
+  // Two decimals normally; extend small rates past leading zeros to show two significant digits.
+  const rateDigits=value=>Math.min(16,Math.max(2,Math.ceil(-Math.log10(value))+1));
+  const plain=value=>Number.isFinite(value)&&value>0?value.toFixed(rateDigits(value)):'';
   function fmtRate(value){
     const locale=typeof fmtLocale==='function'?fmtLocale():undefined;
-    const opts=value>=100?{minimumFractionDigits:2,maximumFractionDigits:2}:value>=1?{minimumFractionDigits:2,maximumFractionDigits:4}:{maximumSignificantDigits:4};
-    return value.toLocaleString(locale,opts);
+    const digits=rateDigits(value);
+    return value.toLocaleString(locale,{minimumFractionDigits:digits,maximumFractionDigits:digits});
   }
   function displayRate(code,target,rate){
     if(!Number.isFinite(rate)||rate<=0||!target)return '';
@@ -122,11 +124,14 @@
         baseAmount:expense.amount,rate:expense.fxRate,rateDate:expense.fxRateDate,rateSource:expense.fxRateSource,manual:!!expense.fxRateManual}:null};
     states[prefix]=s;root.replaceChildren();
     const switcher=document.createElement('div');switcher.className='expense-currency-switch';
+    const caption=document.createElement('div');caption.className='expense-currency-caption';
+    caption.textContent=({ru:'Валюта суммы',en:'Amount currency',de:'Währung des Betrags',fr:'Devise du montant',it:'Valuta dell’importo',es:'Moneda del importe',pt:'Moeda do valor',pl:'Waluta kwoty',el:'Νόμισμα ποσού',tr:'Tutarın para birimi'})[typeof getLang==='function'?getLang():'ru']||'Amount currency';
+    root.append(caption);
     for(const currency of [...new Set([base(),extra(),expense?.originalCurrency].filter(Boolean))]){
       const button=document.createElement('button');button.type='button';button.dataset.expCode=currency;
       button.textContent=(typeof currencyFlag==='function'?currencyFlag(currency)+' ':'')+currency;
       button.onclick=()=>{s.code=currency;s.rate=null;s.error=null;s.manual=false;++s.request;
-        if(prefix==='ae')remember(currency);paint(prefix);load(prefix)};
+        if(prefix==='ae')remember(currency);paint(prefix);load(prefix);if(prefix==='ae'&&typeof updateExactStatus==='function')updateExactStatus()};
       switcher.append(button);
     }
     root.append(switcher);
@@ -135,14 +140,15 @@
       return;
     }
     const panel=document.createElement('div');panel.dataset.expPanel='';panel.className='expense-currency-panel';
-    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
+    panel.innerHTML='<strong data-exp-result></strong><div data-exp-info></div><label><input type="checkbox" data-exp-manual> '+words().manual+'</label><div data-exp-rate-row hidden style="display:flex;align-items:center;gap:6px;margin-top:5px"><span data-exp-rate-prefix style="white-space:nowrap"></span><input class="inp" type="text" inputmode="decimal" data-money data-money-decimals="16" data-exp-rate style="flex:1;min-width:0"><span data-exp-rate-suffix></span></div><div data-exp-deviation hidden style="color:var(--red);margin-top:4px"></div><div data-exp-date-warning hidden></div><button type="button" class="btn btn-g btn-sm" data-exp-refresh hidden>'+words().refresh+'</button>';
     root.append(panel);
     panel.querySelector('[data-exp-manual]').onchange=event=>{s.manual=event.target.checked;++s.request;
       const field=panel.querySelector('[data-exp-rate]');
       if(s.manual){
         s.marketPerBase=s.rate?perBase(s.code,s.rate.rate):null;
         field.value=s.marketPerBase?plain(s.marketPerBase):'';field.dataset.touched='1';
-        s.rate=s.rate?{rate:s.rate.rate,asOf:document.getElementById(prefix+'-date')?.value||'',source:'Manual'}:null;
+        const shown=Number(field.value);
+        s.rate=shown>0?{rate:Number((s.code===base()?shown:1/shown).toFixed(12)),asOf:document.getElementById(prefix+'-date')?.value||'',source:'Manual'}:null;
         setTimeout(()=>field.focus(),0);
       }else{field.dataset.touched='';s.rate=null;load(prefix)}
       paint(prefix)};
@@ -181,15 +187,20 @@
     return {amount:converted.minor/10**converted.digits,metadata:{originalAmount,originalCurrency:s.code,
       baseCurrency:base(),fxRate:s.rate.rate,fxRateDate:s.rate.asOf,fxRateSource:s.rate.source,fxRateManual:s.manual}};
   }
-  let schemaReady=false;
   async function backendReady(){
-    if(schemaReady)return true;
-    schemaReady=Boolean(S.trip&&S.me&&getMemberKey());
-    return schemaReady;
+    if(S.trip&&S.me&&!getMemberKey()&&typeof ensureMemberKey==='function'){
+      if(typeof _mkeyAsked==='boolean')_mkeyAsked=false;
+      await ensureMemberKey();
+    }
+    return Boolean(S.trip&&S.me&&getMemberKey());
   }
-  window.SplitawayExpenseCurrency={open,resolve,words,backendReady};
+  const accessError=()=>({ru:'Не удалось подтвердить доступ к поездке. Войдите по личному ключу и повторите.',en:'Trip access could not be confirmed. Sign in with your personal key and try again.',de:'Der Zugriff auf die Reise konnte nicht bestätigt werden. Melde dich mit deinem persönlichen Schlüssel an und versuche es erneut.',fr:'Impossible de confirmer l’accès au voyage. Connectez-vous avec votre clé personnelle et réessayez.',it:'Impossibile confermare l’accesso al viaggio. Accedi con la tua chiave personale e riprova.',es:'No se pudo confirmar el acceso al viaje. Entra con tu clave personal e inténtalo de nuevo.',pt:'Não foi possível confirmar o acesso à viagem. Entre com a sua chave pessoal e tente novamente.',pl:'Nie udało się potwierdzić dostępu do podróży. Zaloguj się kluczem osobistym i spróbuj ponownie.',el:'Δεν ήταν δυνατή η επιβεβαίωση πρόσβασης στο ταξίδι. Συνδεθείτε με το προσωπικό σας κλειδί και δοκιμάστε ξανά.',tr:'Seyahate erişim doğrulanamadı. Kişisel anahtarınızla giriş yapıp tekrar deneyin.'})[typeof getLang==='function'?getLang():'ru']||'Trip access could not be confirmed. Sign in with your personal key and try again.';
+  // валюта, в которой сейчас вводится сумма (для «точных сумм по участникам»)
+  const code=prefix=>states[prefix]?.code||base();
+  window.SplitawayExpenseCurrency={open,resolve,words,backendReady,code,accessError};
   const style=document.createElement('style');style.textContent=`
     .expense-currency-switch{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+    .expense-currency-caption{font-size:.76rem;color:var(--t2);margin-top:4px}
     .expense-currency-switch button{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rxs);color:var(--text);padding:6px 10px;font:inherit;font-size:.76rem;min-height:34px}
     .expense-currency-switch button[aria-pressed="true"]{border-color:var(--accent);background:var(--aglow);color:var(--ac2)}
     .expense-currency-panel{font-size:.73rem;color:var(--t2);line-height:1.4;margin-bottom:8px}
