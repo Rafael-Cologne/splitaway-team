@@ -336,6 +336,7 @@
       return ds.length ? { start: ds[0], end: ds[ds.length - 1] } : null;
     }
     function tripCard() {
+      if (!ctx.trip) return ''; // без поездки карточку не показываем — бронирования работают и так
       const t = ctx.trip || {}, d = tripDates(), n = ctx.members.length;
       const yr = d ? ' ' + parse(d.end).getFullYear() : '';
       return `<button class="bk-card bk-trip" type="button" data-a="trip">
@@ -401,7 +402,7 @@
               <div class="bk-sum-r"><span>Итого</span><b>${esc(sum.main)}</b>${sum.rest.map(r => `<small>${esc(r)}</small>`).join('')}</div></div>
           `;
           body.querySelectorAll('[data-f]').forEach(x => x.addEventListener('click', () => { filter = x.dataset.f; screen.refresh(); }));
-          body.querySelector('[data-a="trip"]').addEventListener('click', () => STHub.show('trips'));
+          body.querySelector('[data-a="trip"]')?.addEventListener('click', () => STHub.show('trips'));
           if (window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.bk-trip img'), ctx.trip, { width: 400 }); // фото места поездки
           body.querySelector('[data-a="add"]')?.addEventListener('click', () => openForm(null, openList));
           body.querySelectorAll('[data-id]').forEach(x => x.addEventListener('click', () => openItem(x.dataset.id)));
