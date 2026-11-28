@@ -442,5 +442,41 @@
   },
   "Какой пароль от Wi-Fi?": {
     "en": "What is the Wi-Fi password?", "de": "Wie lautet das WLAN-Passwort?", "fr": "Quel est le mot de passe Wi-Fi ?", "it": "Qual è la password Wi-Fi?", "es": "¿Cuál es la contraseña de Wi-Fi?", "pt": "Qual é a senha do Wi-Fi?", "pl": "Jakie jest hasło Wi-Fi?", "el": "Ποιος είναι ο κωδικός του Wi-Fi;", "tr": "Wi-Fi şifresi nedir?"
+  },
+  "Своя фраза": {
+    "en": "My phrase", "de": "Eigener Satz", "fr": "Ma phrase", "it": "Frase personale", "es": "Frase propia", "pt": "Frase própria", "pl": "Własne zdanie", "el": "Δική μου φράση", "tr": "Kendi ifadem"
+  },
+  "Добавить свою фразу": {
+    "en": "Add my own phrase", "de": "Eigenen Satz hinzufügen", "fr": "Ajouter ma phrase", "it": "Aggiungi una frase", "es": "Añadir mi frase", "pt": "Adicionar frase própria", "pl": "Dodaj własne zdanie", "el": "Προσθήκη δικής μου φράσης", "tr": "Kendi ifademi ekle"
+  },
+  "Что хотите сказать": {
+    "en": "What you want to say", "de": "Was möchten Sie sagen", "fr": "Ce que vous voulez dire", "it": "Cosa vuoi dire", "es": "Lo que quiere decir", "pt": "O que quer dizer", "pl": "Co chcesz powiedzieć", "el": "Τι θέλετε να πείτε", "tr": "Ne söylemek istiyorsunuz"
+  },
+  "Например: у меня аллергия на орехи": {
+    "en": "For example: I am allergic to nuts", "de": "Zum Beispiel: Ich bin allergisch gegen Nüsse", "fr": "Par exemple : je suis allergique aux noix", "it": "Per esempio: sono allergico alla frutta secca", "es": "Por ejemplo: soy alérgico a los frutos secos", "pt": "Por exemplo: sou alérgico a frutos secos", "pl": "Na przykład: mam alergię na orzechy", "el": "Για παράδειγμα: έχω αλλεργία στους ξηρούς καρπούς", "tr": "Örneğin: Kuruyemişe alerjim var"
+  },
+  "Язык перевода": {
+    "en": "Translation language", "de": "Zielsprache", "fr": "Langue de traduction", "it": "Lingua di traduzione", "es": "Idioma de traducción", "pt": "Idioma da tradução", "pl": "Język tłumaczenia", "el": "Γλώσσα μετάφρασης", "tr": "Çeviri dili"
+  },
+  "Перевод — можно исправить или написать свой": {
+    "en": "Translation — you can edit it or write your own", "de": "Übersetzung — Sie können sie ändern oder selbst schreiben", "fr": "Traduction — vous pouvez la corriger ou écrire la vôtre", "it": "Traduzione — puoi correggerla o scriverne una tua", "es": "Traducción: puede corregirla o escribir la suya", "pt": "Tradução — pode corrigi-la ou escrever a sua", "pl": "Tłumaczenie — możesz je poprawić lub wpisać własne", "el": "Μετάφραση — μπορείτε να τη διορθώσετε ή να γράψετε τη δική σας", "tr": "Çeviri — düzeltebilir ya da kendiniz yazabilirsiniz"
+  },
+  "Сохранить в избранное": {
+    "en": "Save to favorites", "de": "In Favoriten speichern", "fr": "Enregistrer dans les favoris", "it": "Salva nei preferiti", "es": "Guardar en favoritos", "pt": "Guardar nos favoritos", "pl": "Zapisz w ulubionych", "el": "Αποθήκευση στα αγαπημένα", "tr": "Favorilere kaydet"
+  },
+  "Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.": {
+    "en": "Without internet, type the translation yourself — the phrase will be saved and work offline.", "de": "Ohne Internet tragen Sie die Übersetzung selbst ein — der Satz wird gespeichert und funktioniert offline.", "fr": "Sans internet, saisissez la traduction vous-même : la phrase sera enregistrée et fonctionnera hors ligne.", "it": "Senza internet scrivi tu la traduzione: la frase verrà salvata e funzionerà offline.", "es": "Sin internet, escriba la traducción usted mismo: la frase se guardará y funcionará sin conexión.", "pt": "Sem internet, escreva a tradução — a frase fica guardada e funciona offline.", "pl": "Bez internetu wpisz tłumaczenie sam — zdanie zostanie zapisane i będzie działać offline.", "el": "Χωρίς internet γράψτε μόνοι σας τη μετάφραση — η φράση θα αποθηκευτεί και θα λειτουργεί εκτός σύνδεσης.", "tr": "İnternet yoksa çeviriyi kendiniz yazın — ifade kaydedilir ve çevrimdışı çalışır."
+  },
+  "Фраза сохранена в избранное": {
+    "en": "Phrase saved to favorites", "de": "Satz in Favoriten gespeichert", "fr": "Phrase enregistrée dans les favoris", "it": "Frase salvata nei preferiti", "es": "Frase guardada en favoritos", "pt": "Frase guardada nos favoritos", "pl": "Zdanie zapisane w ulubionych", "el": "Η φράση αποθηκεύτηκε στα αγαπημένα", "tr": "İfade favorilere kaydedildi"
+  },
+  "Напишите фразу и перевод": {
+    "en": "Enter the phrase and its translation", "de": "Geben Sie Satz und Übersetzung ein", "fr": "Saisissez la phrase et sa traduction", "it": "Scrivi la frase e la traduzione", "es": "Escriba la frase y la traducción", "pt": "Escreva a frase e a tradução", "pl": "Wpisz zdanie i tłumaczenie", "el": "Γράψτε τη φράση και τη μετάφραση", "tr": "İfadeyi ve çevirisini yazın"
+  },
+  "Напишите фразу": {
+    "en": "Enter a phrase", "de": "Geben Sie einen Satz ein", "fr": "Saisissez une phrase", "it": "Scrivi una frase", "es": "Escriba una frase", "pt": "Escreva uma frase", "pl": "Wpisz zdanie", "el": "Γράψτε μια φράση", "tr": "Bir ifade yazın"
+  },
+  "Нажмите ☆ у перевода или фразы — или добавьте свою. Избранное работает без интернета.": {
+    "en": "Tap ☆ next to a translation or phrase — or add your own. Favorites work without internet.", "de": "Tippen Sie bei einer Übersetzung oder einem Satz auf ☆ — oder fügen Sie einen eigenen hinzu. Favoriten funktionieren ohne Internet.", "fr": "Touchez ☆ à côté d’une traduction ou d’une phrase, ou ajoutez la vôtre. Les favoris fonctionnent sans internet.", "it": "Tocca ☆ accanto a una traduzione o a una frase, oppure aggiungine una tua. I preferiti funzionano senza internet.", "es": "Toque ☆ junto a una traducción o frase, o añada la suya. Los favoritos funcionan sin internet.", "pt": "Toque em ☆ junto a uma tradução ou frase, ou adicione a sua. Os favoritos funcionam sem internet.", "pl": "Dotknij ☆ przy tłumaczeniu lub zwrocie albo dodaj własne. Ulubione działają bez internetu.", "el": "Πατήστε ☆ δίπλα σε μια μετάφραση ή φράση — ή προσθέστε τη δική σας. Τα αγαπημένα λειτουργούν χωρίς internet.", "tr": "Bir çevirinin ya da ifadenin yanındaki ☆ simgesine dokunun veya kendi ifadenizi ekleyin. Favoriler internetsiz çalışır."
   }
 }

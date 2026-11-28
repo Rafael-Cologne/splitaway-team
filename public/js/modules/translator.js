@@ -224,6 +224,12 @@
     if (i >= 0) list.splice(i, 1); else list.unshift({ from: x.from, to: x.to, src: x.src, tr: x.tr, t: Date.now() });
     LS.set('fav', list.slice(0, 200)); return i < 0;
   }
+  // своя фраза: та же запись, что и ☆, но с пометкой own; повторное сохранение заменяет старую
+  function saveFav(x) {
+    const k = keyOf(x), list = favs().filter(f => keyOf(f) !== k);
+    list.unshift({ from: x.from, to: x.to, src: x.src, tr: x.tr, t: Date.now(), own: true });
+    LS.set('fav', list.slice(0, 200));
+  }
   function addHist(x) {
     // пока человек печатает, не копим «Hal», «Hall», «Hallo» — оставляем только последний вариант
     const list = hist().filter(h => keyOf(h) !== keyOf(x) && !(h.from === x.from && h.to === x.to && Date.now() - h.t < 60000 && (x.src.startsWith(h.src) || h.src.startsWith(x.src))));
@@ -800,12 +806,13 @@
         const list = S.favTab === 'fav' ? favs() : hist();
         body.innerHTML = `
           <div class="tl-tabs"><button type="button" data-t="fav" class="${S.favTab === 'fav' ? 'on' : ''}">Избранное</button><button type="button" data-t="hist" class="${S.favTab === 'hist' ? 'on' : ''}">История</button></div>
+          ${S.favTab === 'fav' ? '<button class="tl-btn lite" type="button" data-a="own" style="margin-top:12px"><i data-lucide="plus"></i>Добавить свою фразу</button>' : ''}
           <div class="tl-list" style="margin-top:12px">${list.length ? list.map((x, i) => `
             <div class="tl-ph" data-i="${i}"><span><b translate="no">${esc(x.tr)}</b><small>${flag(x.from, 'tl-flag" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px')}${esc(x.src)}</small></span>
               <button class="tl-act" type="button" data-say="${i}" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
               ${S.favTab === 'fav' ? `<button class="tl-act" type="button" data-del="${i}" aria-label="Удалить"><i data-lucide="trash-2"></i></button>`
                 : `<button class="tl-act${isFav(x) ? ' fav' : ''}" type="button" data-fav="${i}" aria-label="В избранное"><i data-lucide="star"></i></button>`}</div>`).join('')
-            : `<div class="st-empty"><i data-lucide="${S.favTab === 'fav' ? 'star' : 'history'}"></i><div>${S.favTab === 'fav' ? 'Нажмите ☆ у перевода или фразы — она появится здесь и будет доступна без интернета.' : 'Здесь появятся ваши последние переводы.'}</div></div>`}</div>
+            : `<div class="st-empty"><i data-lucide="${S.favTab === 'fav' ? 'star' : 'history'}"></i><div>${S.favTab === 'fav' ? 'Нажмите ☆ у перевода или фразы — или добавьте свою. Избранное работает без интернета.' : 'Здесь появятся ваши последние переводы.'}</div></div>`}</div>
           ${S.favTab === 'hist' && list.length ? '<button class="tl-btn lite" type="button" data-a="clear" style="margin-top:14px"><i data-lucide="trash-2"></i>Очистить историю</button>' : ''}`;
         icons(body);
         body.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { S.favTab = b.dataset.t; screen.refresh(); }));
@@ -814,7 +821,49 @@
         body.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { toggleFav(list[+b.dataset.del]); screen.refresh(); }));
         body.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => { const on = toggleFav(list[+b.dataset.fav]); b.classList.toggle('fav', on); }));
         const cl = body.querySelector('[data-a="clear"]'); if (cl) cl.addEventListener('click', () => { LS.set('hist', []); screen.refresh(); });
+        const ow = body.querySelector('[data-a="own"]'); if (ow) ow.addEventListener('click', () => ownPhrase());
       });
+    }
+
+    // ===== Своя фраза в избранное =====
+    // Пишем фразу на своём языке, переводим (на устройстве / онлайн) или вписываем перевод сами — без сети тоже можно.
+    function ownPhrase() {
+      const st = { to: S.ownLang || (foreign() !== my ? foreign() : (my === 'en' ? 'de' : 'en')), src: '', tr: '', busy: false, msg: '' };
+      screenOf('tl-own', 'Своя фраза', (body, screen) => {
+        const draw = () => {
+          body.innerHTML = `
+            <div class="tl-sec" style="margin-top:4px"><span>Что хотите сказать</span> · <span translate="no">${esc(nm(my))}</span></div>
+            <textarea class="tl-ta" id="ow-src" translate="no" placeholder="Например: у меня аллергия на орехи" style="min-height:90px">${esc(st.src)}</textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px">
+              <span style="font-weight:700;color:var(--t2)">Язык перевода</span>
+              <button class="tl-chip" type="button" data-a="lang">${flag(st.to)}${esc(nm(st.to))}<i data-lucide="chevron-down"></i></button></div>
+            <button class="tl-btn lite" type="button" data-a="tr" style="margin-top:12px"${st.busy ? ' disabled' : ''}><i data-lucide="languages"></i>${st.busy ? 'Перевожу…' : 'Перевести'}</button>
+            <div class="tl-sec">Перевод — можно исправить или написать свой</div>
+            <textarea class="tl-ta" id="ow-tr" translate="no" style="min-height:90px">${esc(st.tr)}</textarea>
+            ${st.msg ? `<div class="tl-note">${esc(st.msg)}</div>` : ''}
+            <button class="tl-btn" type="button" data-a="save" style="margin-top:14px"><i data-lucide="star"></i>Сохранить в избранное</button>
+            <div class="tl-note">Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.</div>`;
+          icons(body);
+          const src = body.querySelector('#ow-src'), tr = body.querySelector('#ow-tr');
+          src.addEventListener('input', () => { st.src = src.value; });
+          tr.addEventListener('input', () => { st.tr = tr.value; });
+          body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык перевода', st.to, x => { st.to = S.ownLang = x; st.msg = ''; draw(); }, x => x !== my));
+          body.querySelector('[data-a="tr"]').addEventListener('click', async () => {
+            if (!st.src.trim()) { ctx.toast('Напишите фразу'); src.focus(); return; }
+            st.busy = true; st.msg = ''; draw();
+            try { const r = await translate(st.src, my, st.to); st.tr = r ? r.text : ''; st.msg = ''; }
+            catch (e) { st.msg = errText(e); }
+            st.busy = false; draw();
+          });
+          body.querySelector('[data-a="save"]').addEventListener('click', () => {
+            const a = st.src.trim(), b = st.tr.trim();
+            if (!a || !b) { ctx.toast('Напишите фразу и перевод'); (a ? tr : src).focus(); return; }
+            saveFav({ from: my, to: st.to, src: a, tr: b });
+            ctx.toast('Фраза сохранена в избранное'); S.favTab = 'fav'; fav();
+          });
+        };
+        draw();
+      }, fav);
     }
 
     // ===== Языки для офлайна =====
