@@ -478,5 +478,8 @@
   },
   "Нажмите ☆ у перевода или фразы — или добавьте свою. Избранное работает без интернета.": {
     "en": "Tap ☆ next to a translation or phrase — or add your own. Favorites work without internet.", "de": "Tippen Sie bei einer Übersetzung oder einem Satz auf ☆ — oder fügen Sie einen eigenen hinzu. Favoriten funktionieren ohne Internet.", "fr": "Touchez ☆ à côté d’une traduction ou d’une phrase, ou ajoutez la vôtre. Les favoris fonctionnent sans internet.", "it": "Tocca ☆ accanto a una traduzione o a una frase, oppure aggiungine una tua. I preferiti funzionano senza internet.", "es": "Toque ☆ junto a una traducción o frase, o añada la suya. Los favoritos funcionan sin internet.", "pt": "Toque em ☆ junto a uma tradução ou frase, ou adicione a sua. Os favoritos funcionam sem internet.", "pl": "Dotknij ☆ przy tłumaczeniu lub zwrocie albo dodaj własne. Ulubione działają bez internetu.", "el": "Πατήστε ☆ δίπλα σε μια μετάφραση ή φράση — ή προσθέστε τη δική σας. Τα αγαπημένα λειτουργούν χωρίς internet.", "tr": "Bir çevirinin ya da ifadenin yanındaki ☆ simgesine dokunun veya kendi ifadenizi ekleyin. Favoriler internetsiz çalışır."
+  },
+  "Определён язык:": {
+    "en": "Detected language:", "de": "Erkannte Sprache:", "fr": "Langue détectée :", "it": "Lingua rilevata:", "es": "Idioma detectado:", "pt": "Idioma detetado:", "pl": "Wykryty język:", "el": "Εντοπίστηκε γλώσσα:", "tr": "Algılanan dil:"
   }
 }

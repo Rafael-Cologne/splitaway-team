@@ -177,7 +177,37 @@
         if (d) { const r = await d.detect(t); const top = r && r[0]; if (top && top.confidence > 0.6 && L[top.detectedLanguage]) return top.detectedLanguage; }
       } catch (_) { detP = null; }
     }
-    return null;
+    return latinGuess(t);
+  }
+  // Запасной вариант для латиницы без детектора Chrome: особые буквы, затем частые короткие слова.
+  // Отвечает только при явном перевесе, иначе null.
+  const LAT_WORDS = {
+    en: 'the is are and you to how where what my please can do i it this of need have want me',
+    de: 'der die das und ist ich nicht wie wo bitte ein eine zu ist sie mein kann',
+    fr: 'le la les et est je vous de un une où comment pour pas mon ce',
+    es: 'el la los las y es yo de un una dónde donde cómo como a por favor para no mi hay tiene',
+    it: 'il lo la gli e è di un una dove come sono per non mi che a al alla posso con vorrei',
+    pt: 'o a os as e é de um uma onde como eu não para meu por posso com quero',
+    nl: 'de het een en is ik waar hoe niet mijn van',
+    pl: 'i w nie jest to jak gdzie się na proszę',
+    tr: 've bir bu ne nerede nasıl lütfen için mi'
+  };
+  function latinGuess(t) {
+    const low = t.toLowerCase();
+    if (/[ğış]/.test(low)) return 'tr';
+    if (/[ąćęłńśźż]/.test(low)) return 'pl';
+    if (/[ãõ]/.test(low)) return 'pt';
+    if (/[ñ¿¡]/.test(low)) return 'es';
+    if (/[äöüß]/.test(low)) return 'de';
+    if (/[œ]|[èêëîûù]/.test(low)) return 'fr';
+    const words = low.match(/[a-zà-ÿ]+/g) || [];
+    if (!words.length) return null;
+    let best = null, top = 0, second = 0;
+    for (const [c, list] of Object.entries(LAT_WORDS)) {
+      const set = new Set(list.split(' ')); const n = words.filter(w => set.has(w)).length;
+      if (n > top) { second = top; top = n; best = c; } else if (n > second) second = n;
+    }
+    return top >= 1 && top > second ? best : null;
   }
 
   // ---------- Голос ----------
@@ -826,13 +856,14 @@
     }
 
     // ===== Своя фраза в избранное =====
-    // Пишем фразу на своём языке, переводим (на устройстве / онлайн) или вписываем перевод сами — без сети тоже можно.
+    // Пишем фразу на любом языке (он определяется сам), переводим (на устройстве / онлайн) или вписываем перевод сами — без сети тоже можно.
     function ownPhrase() {
-      const st = { to: S.ownLang || (foreign() !== my ? foreign() : (my === 'en' ? 'de' : 'en')), src: '', tr: '', busy: false, msg: '' };
+      const st = { to: S.ownLang || (foreign() !== my ? foreign() : (my === 'en' ? 'de' : 'en')), from: '', src: '', tr: '', busy: false, msg: '' };
+      const srcLang = async () => (await detect(st.src)) || my;
       screenOf('tl-own', 'Своя фраза', (body, screen) => {
         const draw = () => {
           body.innerHTML = `
-            <div class="tl-sec" style="margin-top:4px"><span>Что хотите сказать</span> · <span translate="no">${esc(nm(my))}</span></div>
+            <div class="tl-sec" style="margin-top:4px">Что хотите сказать</div>
             <textarea class="tl-ta" id="ow-src" translate="no" placeholder="Например: у меня аллергия на орехи" style="min-height:90px">${esc(st.src)}</textarea>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px">
               <span style="font-weight:700;color:var(--t2)">Язык перевода</span>
@@ -840,25 +871,25 @@
             <button class="tl-btn lite" type="button" data-a="tr" style="margin-top:12px"${st.busy ? ' disabled' : ''}><i data-lucide="languages"></i>${st.busy ? 'Перевожу…' : 'Перевести'}</button>
             <div class="tl-sec">Перевод — можно исправить или написать свой</div>
             <textarea class="tl-ta" id="ow-tr" translate="no" style="min-height:90px">${esc(st.tr)}</textarea>
-            ${st.msg ? `<div class="tl-note">${esc(st.msg)}</div>` : ''}
+            ${st.msg ? `<div class="tl-note">${esc(st.msg)}</div>` : st.from && st.tr ? `<div class="tl-note"><span>Определён язык:</span> <span>${esc(nm(st.from))}</span></div>` : ''}
             <button class="tl-btn" type="button" data-a="save" style="margin-top:14px"><i data-lucide="star"></i>Сохранить в избранное</button>
             <div class="tl-note">Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.</div>`;
           icons(body);
           const src = body.querySelector('#ow-src'), tr = body.querySelector('#ow-tr');
-          src.addEventListener('input', () => { st.src = src.value; });
+          src.addEventListener('input', () => { st.src = src.value; st.from = ''; });
           tr.addEventListener('input', () => { st.tr = tr.value; });
-          body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык перевода', st.to, x => { st.to = S.ownLang = x; st.msg = ''; draw(); }, x => x !== my));
+          body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык перевода', st.to, x => { st.to = S.ownLang = x; st.msg = ''; draw(); }));
           body.querySelector('[data-a="tr"]').addEventListener('click', async () => {
             if (!st.src.trim()) { ctx.toast('Напишите фразу'); src.focus(); return; }
             st.busy = true; st.msg = ''; draw();
-            try { const r = await translate(st.src, my, st.to); st.tr = r ? r.text : ''; st.msg = ''; }
+            try { st.from = await srcLang(); const r = await translate(st.src, st.from, st.to); st.tr = r ? r.text : ''; st.msg = ''; }
             catch (e) { st.msg = errText(e); }
             st.busy = false; draw();
           });
-          body.querySelector('[data-a="save"]').addEventListener('click', () => {
+          body.querySelector('[data-a="save"]').addEventListener('click', async () => {
             const a = st.src.trim(), b = st.tr.trim();
             if (!a || !b) { ctx.toast('Напишите фразу и перевод'); (a ? tr : src).focus(); return; }
-            saveFav({ from: my, to: st.to, src: a, tr: b });
+            saveFav({ from: st.from || await srcLang(), to: st.to, src: a, tr: b });
             ctx.toast('Фраза сохранена в избранное'); S.favTab = 'fav'; fav();
           });
         };
