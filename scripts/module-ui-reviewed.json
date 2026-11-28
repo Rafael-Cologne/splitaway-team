@@ -487,5 +487,80 @@
   },
   "Все языки": {
     "en": "All languages", "de": "Alle Sprachen", "fr": "Toutes les langues", "it": "Tutte le lingue", "es": "Todos los idiomas", "pt": "Todos os idiomas", "pl": "Wszystkie języki", "el": "Όλες οι γλώσσες", "tr": "Tüm diller"
+  },
+  "PDF или фото билета — приложение заполнит бронь само": {
+    "en": "PDF or photo of the ticket — the app fills in the booking itself", "de": "PDF oder Foto des Tickets – die App füllt die Buchung selbst aus", "fr": "PDF ou photo du billet — l’application remplit la réservation toute seule", "it": "PDF o foto del biglietto: l’app compila la prenotazione da sola", "es": "PDF o foto del billete: la app rellena la reserva sola", "pt": "PDF ou foto do bilhete — a app preenche a reserva sozinha", "pl": "PDF lub zdjęcie biletu — aplikacja sama uzupełni rezerwację", "el": "PDF ή φωτογραφία του εισιτηρίου — η εφαρμογή συμπληρώνει μόνη της την κράτηση", "tr": "Biletin PDF’i veya fotoğrafı — uygulama rezervasyonu kendisi doldurur"
+  },
+  "Апартаменты, отель": {
+    "en": "Apartment, hotel", "de": "Apartment, Hotel", "fr": "Appartement, hôtel", "it": "Appartamento, hotel", "es": "Apartamento, hotel", "pt": "Apartamento, hotel", "pl": "Apartament, hotel", "el": "Διαμέρισμα, ξενοδοχείο", "tr": "Daire, otel"
+  },
+  "В файле": {
+    "en": "In the file", "de": "In der Datei", "fr": "Dans le fichier", "it": "Nel file", "es": "En el archivo", "pt": "No ficheiro", "pl": "W pliku", "el": "Στο αρχείο", "tr": "Dosyada"
+  },
+  "Водители": {
+    "en": "Drivers", "de": "Fahrer", "fr": "Conducteurs", "it": "Conducenti", "es": "Conductores", "pt": "Condutores", "pl": "Kierowcy", "el": "Οδηγοί", "tr": "Sürücüler"
+  },
+  "Вылет": {
+    "en": "Departure", "de": "Abflug", "fr": "Départ", "it": "Partenza", "es": "Salida", "pt": "Partida", "pl": "Wylot", "el": "Αναχώρηση", "tr": "Kalkış"
+  },
+  "Загрузить подтверждение брони": {
+    "en": "Upload booking confirmation", "de": "Buchungsbestätigung hochladen", "fr": "Importer la confirmation de réservation", "it": "Carica la conferma di prenotazione", "es": "Subir la confirmación de la reserva", "pt": "Carregar a confirmação da reserva", "pl": "Prześlij potwierdzenie rezerwacji", "el": "Μεταφόρτωση επιβεβαίωσης κράτησης", "tr": "Rezervasyon onayını yükle"
+  },
+  "Место получения": {
+    "en": "Pick-up location", "de": "Abholort", "fr": "Lieu de prise en charge", "it": "Luogo di ritiro", "es": "Lugar de recogida", "pt": "Local de levantamento", "pl": "Miejsce odbioru", "el": "Σημείο παραλαβής", "tr": "Teslim alma yeri"
+  },
+  "Найдено броней:": {
+    "en": "Bookings found:", "de": "Gefundene Buchungen:", "fr": "Réservations trouvées :", "it": "Prenotazioni trovate:", "es": "Reservas encontradas:", "pt": "Reservas encontradas:", "pl": "Znalezione rezerwacje:", "el": "Βρέθηκαν κρατήσεις:", "tr": "Bulunan rezervasyonlar:"
+  },
+  "Начало": {
+    "en": "Start", "de": "Beginn", "fr": "Début", "it": "Inizio", "es": "Inicio", "pt": "Início", "pl": "Początek", "el": "Έναρξη", "tr": "Başlangıç"
+  },
+  "Окончание": {
+    "en": "End", "de": "Ende", "fr": "Fin", "it": "Fine", "es": "Fin", "pt": "Fim", "pl": "Koniec", "el": "Λήξη", "tr": "Bitiş"
+  },
+  "Обложка": {
+    "en": "Cover image", "de": "Titelbild", "fr": "Image de couverture", "it": "Immagine di copertina", "es": "Imagen de portada", "pt": "Imagem de capa", "pl": "Zdjęcie okładki", "el": "Εικόνα εξωφύλλου", "tr": "Kapak görseli"
+  },
+  "Ожидает": {
+    "en": "Pending", "de": "Ausstehend", "fr": "En attente", "it": "In attesa", "es": "Pendiente", "pt": "Pendente", "pl": "Oczekuje", "el": "Σε αναμονή", "tr": "Beklemede"
+  },
+  "Открываю…": {
+    "en": "Opening…", "de": "Wird geöffnet…", "fr": "Ouverture…", "it": "Apertura…", "es": "Abriendo…", "pt": "A abrir…", "pl": "Otwieram…", "el": "Άνοιγμα…", "tr": "Açılıyor…"
+  },
+  "Получение": {
+    "en": "Pick-up", "de": "Abholung", "fr": "Prise en charge", "it": "Ritiro", "es": "Recogida", "pt": "Levantamento", "pl": "Odbiór", "el": "Παραλαβή", "tr": "Teslim alma"
+  },
+  "Посадочный": {
+    "en": "Boarding pass", "de": "Bordkarte", "fr": "Carte d’embarquement", "it": "Carta d’imbarco", "es": "Tarjeta de embarque", "pt": "Cartão de embarque", "pl": "Karta pokładowa", "el": "Κάρτα επιβίβασης", "tr": "Biniş kartı"
+  },
+  "Подходит только PDF или фото": {
+    "en": "Only PDF or photo is supported", "de": "Nur PDF oder Foto möglich", "fr": "Seuls les PDF ou photos sont acceptés", "it": "Sono supportati solo PDF o foto", "es": "Solo se admite PDF o foto", "pt": "Só é suportado PDF ou foto", "pl": "Obsługiwany jest tylko PDF lub zdjęcie", "el": "Υποστηρίζεται μόνο PDF ή φωτογραφία", "tr": "Yalnızca PDF veya fotoğraf desteklenir"
+  },
+  "Своё фото": {
+    "en": "Own photo", "de": "Eigenes Foto", "fr": "Ma photo", "it": "Foto personale", "es": "Foto propia", "pt": "Foto própria", "pl": "Własne zdjęcie", "el": "Δική μου φωτογραφία", "tr": "Kendi fotoğrafım"
+  },
+  "Всё верно — сохранить": {
+    "en": "All correct — save", "de": "Alles korrekt – speichern", "fr": "Tout est correct — enregistrer", "it": "Tutto corretto — salva", "es": "Todo correcto: guardar", "pt": "Tudo certo — guardar", "pl": "Wszystko się zgadza — zapisz", "el": "Όλα σωστά — αποθήκευση", "tr": "Her şey doğru — kaydet"
+  },
+  "Читаю бронь…": {
+    "en": "Reading the booking…", "de": "Buchung wird gelesen…", "fr": "Lecture de la réservation…", "it": "Lettura della prenotazione…", "es": "Leyendo la reserva…", "pt": "A ler a reserva…", "pl": "Czytam rezerwację…", "el": "Ανάγνωση κράτησης…", "tr": "Rezervasyon okunuyor…"
+  },
+  "Время окончания раньше начала": {
+    "en": "End time is before start time", "de": "Endzeit liegt vor der Startzeit", "fr": "L’heure de fin précède l’heure de début", "it": "L’ora di fine è prima dell’inizio", "es": "La hora de fin es anterior al inicio", "pt": "A hora de fim é anterior ao início", "pl": "Godzina końca jest wcześniejsza niż początek", "el": "Η ώρα λήξης είναι πριν από την έναρξη", "tr": "Bitiş saati başlangıçtan önce"
+  },
+  "Проверьте данные": {
+    "en": "Check the details", "de": "Daten prüfen", "fr": "Vérifiez les données", "it": "Controlla i dati", "es": "Revisa los datos", "pt": "Verifique os dados", "pl": "Sprawdź dane", "el": "Ελέγξτε τα στοιχεία", "tr": "Bilgileri kontrol edin"
+  },
+  "Удалить бронь «": {
+    "en": "Delete booking “", "de": "Buchung „", "fr": "Supprimer la réservation « ", "it": "Eliminare la prenotazione «", "es": "¿Eliminar la reserva «", "pt": "Eliminar a reserva «", "pl": "Usunąć rezerwację „", "el": "Διαγραφή της κράτησης «", "tr": "«"
+  },
+  "» вместе с документами?": {
+    "en": "” with its documents?", "de": "“ samt Dokumenten löschen?", "fr": " » avec ses documents ?", "it": "» con i documenti?", "es": "» con sus documentos?", "pt": "» com os documentos?", "pl": "” wraz z dokumentami?", "el": "» μαζί με τα έγγραφα;", "tr": "» belgeleriyle birlikte silinsin mi?"
+  },
+  "Уточните аэропорт:": {
+    "en": "Specify the airport:", "de": "Flughafen angeben:", "fr": "Précisez l’aéroport :", "it": "Specifica l’aeroporto:", "es": "Indica el aeropuerto:", "pt": "Indique o aeroporto:", "pl": "Wskaż lotnisko:", "el": "Καθορίστε το αεροδρόμιο:", "tr": "Havalimanını belirtin:"
+  },
+  "Файл «": {
+    "en": "File “", "de": "Datei „", "fr": "Fichier « ", "it": "File «", "es": "Archivo «", "pt": "Ficheiro «", "pl": "Plik „", "el": "Αρχείο «", "tr": "«"
   }
 }

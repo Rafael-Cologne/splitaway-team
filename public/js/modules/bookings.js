@@ -26,15 +26,61 @@
   const parse = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };
   const today = () => iso(new Date());
   const diffDays = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
-  const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
-  const dayName = s => parse(s).getDate() + ' ' + MONTHS[parse(s).getMonth()];
-  const wd = s => WD[parse(s).getDay()];
+  // ---------- Язык, даты, суммы: на языке приложения ----------
+  const LANG = () => (typeof getLang === 'function' ? getLang() : 'ru');
+  const LOC = () => (window.STModuleUI && window.STModuleUI.locale()) || 'ru-RU';
+  const fmtD = (s, o) => { try { return parse(s).toLocaleDateString(LOC(), o); } catch (_) { return s; } };
+  const dayName = s => fmtD(s, { day: 'numeric', month: 'long' });
+  const wd = s => fmtD(s, { weekday: 'short' });
   function rangeLabel(a, b) {
-    const A = parse(a), B = parse(b);
     if (a === b) return dayName(a);
-    if (A.getMonth() === B.getMonth()) return A.getDate() + ' – ' + B.getDate() + ' ' + MONTHS[B.getMonth()];
-    return A.getDate() + ' ' + MONTHS[A.getMonth()] + ' – ' + B.getDate() + ' ' + MONTHS[B.getMonth()];
+    try { return new Intl.DateTimeFormat(LOC(), { day: 'numeric', month: 'long' }).formatRange(parse(a), parse(b)); }
+    catch (_) { return dayName(a) + ' – ' + dayName(b); }
+  }
+  // Слова с числом (ночи, взрослые, дети, гости, пассажиры) на 10 языках. Распознаём любую из форм —
+  // данные, сохранённые на одном языке, показываются на текущем.
+  const NOUN = {
+    night: { ru: ['ночь', 'ночи', 'ночей'], en: ['night', 'nights'], de: ['Nacht', 'Nächte'], fr: ['nuit', 'nuits'], it: ['notte', 'notti'], es: ['noche', 'noches'], pt: ['noite', 'noites'], pl: ['noc', 'noce', 'nocy'], el: ['νύχτα', 'νύχτες'], tr: ['gece', 'gece'] },
+    adult: { ru: ['взрослый', 'взрослых', 'взрослых'], en: ['adult', 'adults'], de: ['Erwachsener', 'Erwachsene'], fr: ['adulte', 'adultes'], it: ['adulto', 'adulti'], es: ['adulto', 'adultos'], pt: ['adulto', 'adultos'], pl: ['dorosły', 'dorosłych', 'dorosłych'], el: ['ενήλικας', 'ενήλικες'], tr: ['yetişkin', 'yetişkin'] },
+    child: { ru: ['ребёнок', 'ребёнка', 'детей'], en: ['child', 'children'], de: ['Kind', 'Kinder'], fr: ['enfant', 'enfants'], it: ['bambino', 'bambini'], es: ['niño', 'niños'], pt: ['criança', 'crianças'], pl: ['dziecko', 'dzieci', 'dzieci'], el: ['παιδί', 'παιδιά'], tr: ['çocuk', 'çocuk'] },
+    guest: { ru: ['гость', 'гостя', 'гостей'], en: ['guest', 'guests'], de: ['Gast', 'Gäste'], fr: ['personne', 'personnes'], it: ['ospite', 'ospiti'], es: ['huésped', 'huéspedes'], pt: ['hóspede', 'hóspedes'], pl: ['gość', 'gości', 'gości'], el: ['επισκέπτης', 'επισκέπτες'], tr: ['misafir', 'misafir'] },
+    passenger: { ru: ['пассажир', 'пассажира', 'пассажиров'], en: ['passenger', 'passengers'], de: ['Passagier', 'Passagiere'], fr: ['passager', 'passagers'], it: ['passeggero', 'passeggeri'], es: ['pasajero', 'pasajeros'], pt: ['passageiro', 'passageiros'], pl: ['pasażer', 'pasażerów', 'pasażerów'], el: ['επιβάτης', 'επιβάτες'], tr: ['yolcu', 'yolcu'] }
+  };
+  function nounOf(n, type) {
+    const l = LANG(), f = NOUN[type][l] || NOUN[type].en, x = Math.abs(n) % 10, y = Math.abs(n) % 100;
+    if (l === 'ru') return f[x === 1 && y !== 11 ? 0 : x >= 2 && x <= 4 && (y < 12 || y > 14) ? 1 : 2];
+    if (l === 'pl') return f[n === 1 ? 0 : x >= 2 && x <= 4 && (y < 12 || y > 14) ? 1 : 2];
+    return f[n === 1 ? 0 : 1];
+  }
+  const cnt = (n, type) => n + ' ' + nounOf(n, type);
+  const FORM = {}; // форма слова (любой язык, без регистра) → тип
+  Object.entries(NOUN).forEach(([t, by]) => Object.values(by).forEach(fs => fs.forEach(w => { FORM[w.toLowerCase()] = t; })));
+  FORM['детей'] = 'child'; FORM['дети'] = 'child'; FORM['ребенок'] = 'child'; FORM['ребенка'] = 'child'; FORM['взрослого'] = 'adult';
+  // «2 взрослых, 1 ребёнок» → «2 Erwachsene, 1 Kind»; свой текст пользователя не трогаем
+  function peopleText(s) {
+    const t = String(s || '').trim(); if (!t) return '';
+    const parts = t.split(/\s*[,;+]\s*|\s+(?:и|und|and|et|e|y)\s+/), out = [];
+    for (const x of parts) {
+      const m = x.match(/^(\d{1,3})\s+(\S+)$/); const type = m && FORM[m[2].toLowerCase()];
+      if (!type) return t;
+      out.push(cnt(+m[1], type));
+    }
+    return out.join(', ');
+  }
+  // Подписи точек брони — свои, потому что общие слова («Начало», «Возврат») в других местах значат другое
+  const LBL_T = {
+    flight: { ru: ['Вылет', 'Прилёт'], en: ['Departure', 'Arrival'], de: ['Abflug', 'Ankunft'], fr: ['Départ', 'Arrivée'], it: ['Partenza', 'Arrivo'], es: ['Salida', 'Llegada'], pt: ['Partida', 'Chegada'], pl: ['Wylot', 'Przylot'], el: ['Αναχώρηση', 'Άφιξη'], tr: ['Kalkış', 'Varış'] },
+    stay: { ru: ['Заезд', 'Выезд'], en: ['Check-in', 'Check-out'], de: ['Check-in', 'Check-out'], fr: ['Arrivée', 'Départ'], it: ['Check-in', 'Check-out'], es: ['Entrada', 'Salida'], pt: ['Check-in', 'Check-out'], pl: ['Zameldowanie', 'Wymeldowanie'], el: ['Άφιξη', 'Αναχώρηση'], tr: ['Giriş', 'Çıkış'] },
+    transport: { ru: ['Получение', 'Возврат'], en: ['Pick-up', 'Return'], de: ['Abholung', 'Rückgabe'], fr: ['Prise en charge', 'Restitution'], it: ['Ritiro', 'Riconsegna'], es: ['Recogida', 'Devolución'], pt: ['Levantamento', 'Devolução'], pl: ['Odbiór', 'Zwrot'], el: ['Παραλαβή', 'Επιστροφή'], tr: ['Teslim alma', 'İade'] },
+    ticket: { ru: ['Начало', 'Окончание'], en: ['Start', 'End'], de: ['Beginn', 'Ende'], fr: ['Début', 'Fin'], it: ['Inizio', 'Fine'], es: ['Inicio', 'Fin'], pt: ['Início', 'Fim'], pl: ['Początek', 'Koniec'], el: ['Έναρξη', 'Λήξη'], tr: ['Başlangıç', 'Bitiş'] }
+  };
+  const SEATS_T = { ru: 'Места', en: 'Seats', de: 'Sitzplätze', fr: 'Sièges', it: 'Posti', es: 'Asientos', pt: 'Lugares', pl: 'Miejsca', el: 'Θέσεις', tr: 'Koltuklar' };
+  const lblOf = c => (LBL_T[c] || LBL_T.ticket)[LANG()] || (LBL_T[c] || LBL_T.ticket).en;
+  const tr = t => (window.STModuleUI ? window.STModuleUI.translate(t) : t);
+  // Заметки, которые пишет само приложение при распознавании
+  function noteText(s) {
+    return String(s || '').replace(/^PIN-код:/, () => tr('PIN-код:'))
+      .replace(/^Цена за все рейсы этой брони \((\d+)\)$/, (_, n) => tr('Цена за все рейсы этой брони (') + n + ')');
   }
   function plural(n, one, few, many) {
     const m10 = n % 10, m100 = n % 100;
@@ -42,7 +88,9 @@
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
     return many;
   }
-  const money = (n, cur) => { try { return new Intl.NumberFormat(window.STModuleUI?.locale() || 'ru-RU', { style: 'currency', currency: cur || 'EUR' }).format(n); } catch (_) { return (+n).toFixed(2) + ' ' + cur; } };
+  // формат сумм один для всех языков: 0,50 € · 1.000,50 € (так просил Рафаэль)
+  const money = (n, cur) => { try { return new Intl.NumberFormat('de-DE', { style: 'currency', currency: cur || 'EUR' }).format(n); } catch (_) { return (+n).toFixed(2) + ' ' + cur; } };
+  const curSym = c => { try { return new Intl.NumberFormat('de-DE', { style: 'currency', currency: c || 'EUR' }).formatToParts(0).find(p => p.type === 'currency').value; } catch (_) { return c || '€'; } };
   const initials = s => String(s || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
   // ---------- Заставка брони ----------
   // Своё фото → фото этого места (отель/достопримечательность по названию, только рядом с адресом) → фото города брони.
@@ -86,6 +134,29 @@
     const hit = all.find(([, v]) => T.norm(v) === n) || all.find(([, v]) => { const x = T.norm(v); return x.length > 3 && (n.includes(x) || x.includes(n)); });
     return hit ? hit[0] : '';
   }
+  // Фото именно этого отеля/места: поиск файлов в Wikimedia Commons по названию.
+  // Берём только снимок, в названии которого есть почти все значимые слова брони (≥ 75 %), интерьеры — в конец.
+  const nz = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss').replace(/strasse/g, 'str').replace(/[^a-z0-9а-яё]+/g, ' ').trim();
+  const GENERIC = new Set(['hotel', 'hotels', 'the', 'and', 'und', 'der', 'die', 'das', 'de', 'la', 'le', 'du', 'des', 'by', 'of', 'am', 'an', 'im', 'in', 'resort', 'spa', 'apartments', 'apartment', 'hostel', 'city', 'centre', 'center', 'mitte', 'zentrum', 'отель', 'гостиница']);
+  const tokens = s => [...new Set(nz(s).split(' ').filter(w => w.length >= 2 && !GENERIC.has(w)))];
+  async function commonsPhoto(title, city) {
+    const want = tokens(title); if (!want.length) return null;
+    const k = 'st_bk_cph_' + nz(title + ' ' + (city || ''));
+    try { const c = JSON.parse(localStorage.getItem(k) || 'null'); if (c && Date.now() - c.t < 30 * 864e5) return c.u; } catch (_) {}
+    const q = title + (city && !nz(title).includes(nz(city)) ? ' ' + city : '');
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const r = await fetch('https://commons.wikimedia.org/w/api.php?format=json&origin=*&action=query&list=search&srnamespace=6&srlimit=15&srsearch=' + encodeURIComponent(q), { signal: ctl.signal });
+      const j = r.ok ? await r.json() : null; if (!j) return null;
+      const files = ((j.query && j.query.search) || []).map(x => x.title.replace(/^File:/, ''))
+        .filter(f => /\.(jpe?g|png|webp)$/i.test(f) && !/\b(map|karte|logo|plan|flag|sign|schild)\b/i.test(f));
+      const score = f => { const have = new Set(tokens(f)); return want.filter(w => have.has(w)).length / want.length - (/\b(lobby|lounge|room|zimmer|bar|restaurant|pool|bath|bad|interior|suite|breakfast|fruhstuck)\b/i.test(nz(f)) ? 0.3 : 0); };
+      const best = files.map(f => [f, score(f)]).sort((a, b) => b[1] - a[1])[0];
+      const u = best && best[1] >= 0.75 ? 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(best[0]) + '?width=1200' : null;
+      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), u })); } catch (_) {}
+      return u;
+    } catch (_) { return null; } finally { clearTimeout(tm); }
+  }
   async function heroOf(b) {
     const P = window.STPlacePhoto; if (!P || b.photo) return null;
     const url = r => (r && r.url && !r.flag ? r.url : null);
@@ -99,10 +170,11 @@
     const near = g ? { lat: g.lat, lon: g.lon } : null;
     if (near && b.title) { const r = url(await P.photo(b.title, Object.assign({ width: 1200 }, near))); if (r) return r; }
     const city = cityOfAddr(b.place);
+    if (b.title && b.cat !== 'transport') { const r = await commonsPhoto(b.title, city); if (r) return r; }
     return city ? url(await P.photo(city, Object.assign({ prefer: 'banner', width: 1200 }, near || {}))) : null;
   }
   const hueOf = s => { let h = 7; for (const c of String(s || '')) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-  const fileSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' МБ' : Math.max(1, Math.round(b / 1024)) + ' КБ';
+  const fileSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' ' + tr('МБ') : Math.max(1, Math.round(b / 1024)) + ' ' + tr('КБ');
 
   // ---------- Категории, статусы, подписи ----------
   const IMG = '/img/bookings/';
@@ -119,7 +191,7 @@
     pending: { name: 'Ожидает', full: 'Ожидает подтверждения', cls: 'wait', icon: 'clock' },
     cancelled: { name: 'Отменено', full: 'Отменено', cls: 'no', icon: 'x' }
   };
-  const LBL = { flight: ['Вылет', 'Прилёт'], stay: ['Заезд', 'Выезд'], transport: ['Получение', 'Возврат'], ticket: ['Начало', 'Окончание'] };
+  const LBL = new Proxy({}, { get: (_, c) => lblOf(c) }); // подписи на языке приложения (см. LBL_T)
   const PEOPLE = { flight: 'Пассажиры', stay: 'Гости', transport: 'Водители', ticket: 'Гости' };
   const DOC_KINDS = [
     { id: 'boarding', name: 'Посадочные талоны', icon: 'ticket' },
@@ -297,6 +369,7 @@
     .bk-r:last-child{border-bottom:0}
     .bk-r>svg:first-child{width:24px;height:24px;color:var(--bk-ac);flex-shrink:0}
     .bk-r-l{font-weight:600;font-size:.94rem}
+    .bk-cur{width:24px;height:24px;flex-shrink:0;border:2px solid var(--bk-ac);border-radius:50%;color:var(--bk-ac);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;line-height:1;letter-spacing:-.03em;box-sizing:border-box}
     .bk-r-v{flex:1;min-width:0;text-align:right;font-size:.94rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .bk-r-v.big{font-weight:800}
     .bk-r .bk-r-go{width:20px;height:20px;color:var(--text);flex-shrink:0}
@@ -382,7 +455,7 @@
 
     const endOf = b => b.endDate || b.date;
     const sortKey = b => (b.date || '9999') + ' ' + (b.time || '00:00');
-    const titleOf = b => b.cat === 'flight' && b.from && b.to && !b.title ? 'Рейс ' + b.from + ' → ' + b.to : (b.title || (b.cat === 'flight' ? 'Перелёт' : 'Бронь'));
+    const titleOf = b => b.cat === 'flight' && b.from && b.to && !b.title ? tr('Рейс') + ' ' + b.from + ' → ' + b.to : (b.title || (b.cat === 'flight' ? 'Перелёт' : 'Бронь'));
     const pill = b => { const s = STATUS[b.status] || STATUS.confirmed; // старое 'booked' = подтверждено
       return `<span class="bk-pill ${s.cls}"><i data-lucide="${s.icon}"></i>${s.name}</span>`; };
     const thumbOf = b => b.photo || (cat(b.cat).thumb ? IMG + cat(b.cat).thumb : '');
@@ -413,14 +486,14 @@
       if (b.cat === 'flight') return [b.time && (b.time + (b.endTime ? ' – ' + b.endTime : '')), b.provider, b.number].filter(Boolean).join(' · ') || range;
       if (b.cat === 'transport') return [range, b.provider].filter(Boolean).join(' · ');
       if (b.cat === 'stay') return b.place || range;
-      return b.people || b.place || range;
+      return peopleText(b.people) || b.place || range;
     }
     function itemRow(b) {
       const c = cat(b.cat), th = thumbOf(b);
       const pic = th ? `<img class="bk-thumb" src="${esc(th)}" alt="">` : `<span class="bk-ic" style="background:${c.bg};color:${c.color}"><i data-lucide="${c.icon}"></i></span>`;
       return `<button class="bk-card bk-item${b.status === 'cancelled' ? ' cancelled' : ''}" type="button" data-id="${b.id}">${pic}
         <span class="bk-txt"><span class="bk-row1"><span class="bk-ttl">${esc(titleOf(b))}</span>${pill(b)}</span>
-        <span class="bk-sub">${esc(subOf(b))}</span></span><i data-lucide="chevron-right" class="bk-go"></i></button>`;
+        <span class="bk-sub" translate="no">${esc(subOf(b))}</span></span><i data-lucide="chevron-right" class="bk-go"></i></button>`;
     }
     function totals(list) {
       const by = {};
@@ -467,6 +540,16 @@
           if (window.STPlacePhoto) STPlacePhoto.tripImg(body.querySelector('.bk-trip img'), ctx.trip, { width: 400 }); // фото места поездки
           body.querySelector('[data-a="add"]')?.addEventListener('click', () => openForm(null, openList));
           body.querySelectorAll('[data-id]').forEach(x => x.addEventListener('click', () => openItem(x.dataset.id)));
+          // картинка в списке — та же, что в шапке брони (подставляется, когда найдена)
+          body.querySelectorAll('[data-id]').forEach(row => {
+            const b = items.find(x => x.id === row.dataset.id); if (!b || b.photo) return;
+            heroOf(b).then(u => {
+              if (!u || !row.isConnected) return;
+              const small = u.replace(/width=\d+/, 'width=400'), n = new Image();
+              n.onload = () => { const old = row.querySelector('.bk-thumb, .bk-ic'); if (!old) return; const im = document.createElement('img'); im.className = 'bk-thumb'; im.alt = ''; im.src = small; old.replaceWith(im); };
+              n.src = small;
+            }).catch(() => {});
+          });
         }
       });
     }
@@ -479,24 +562,25 @@
         if (!b.time || !b.endTime) return '';
         const m = Math.round((dt(e, b.endTime) - dt(b.date, b.time)) / 60000);
         if (m <= 0) return '';
-        return (m >= 60 ? Math.floor(m / 60) + ' ч ' : '') + (m % 60 ? (m % 60) + ' мин' : '').trim();
+        const u = (v, unit) => { try { return new Intl.NumberFormat(LOC(), { style: 'unit', unit, unitDisplay: 'short' }).format(v); } catch (_) { return v + (unit === 'hour' ? ' h' : ' min'); } };
+        return [m >= 60 ? u(Math.floor(m / 60), 'hour') : '', m % 60 ? u(m % 60, 'minute') : ''].filter(Boolean).join(' ');
       }
       const n = diffDays(b.date, e);
       if (n <= 0) return '';
-      return b.cat === 'stay' ? n + ' ' + plural(n, 'ночь', 'ночи', 'ночей') : (n + 1) + ' ' + plural(n + 1, 'день', 'дня', 'дней');
+      return b.cat === 'stay' ? cnt(n, 'night') : (window.STModuleUI ? window.STModuleUI.count(n + 1, 'day') : (n + 1) + ' d');
     }
     const dateLong = s => wd(s) + ', ' + dayName(s);
 
     function routeBlock(b) {
       const c = cat(b.cat), dur = duration(b), [l1, l2] = LBL[b.cat] || LBL.ticket;
-      const mid = `<div class="bk-mid${b.cat === 'flight' ? ' fl' : ''}"><i data-lucide="${b.cat === 'flight' ? 'plane' : c.icon}"></i><span>${esc(dur)}</span></div>`;
+      const mid = `<div class="bk-mid${b.cat === 'flight' ? ' fl' : ''}"><i data-lucide="${b.cat === 'flight' ? 'plane' : c.icon}"></i><span translate="no">${esc(dur)}</span></div>`;
       if (b.cat === 'flight') {
         const pt = (code, city, time, date) => `<div class="bk-pt"><b>${esc(code || '—')}</b><small>${esc(city || '')}</small>
           <div class="bk-time">${esc(time || '—:—')}</div><div class="bk-date">${date ? esc(dateLong(date)) : ''}</div></div>`;
         return `<div class="bk-route">${pt(b.from, b.fromCity, b.time, b.date)}${mid}${pt(b.to, b.toCity, b.endTime, endOf(b))}</div>`;
       }
       if (!b.date) return '';
-      const pt = (lbl, date, time) => `<div class="bk-pt"><small class="bk-lbl">${lbl}</small>
+      const pt = (lbl, date, time) => `<div class="bk-pt"><small class="bk-lbl" translate="no">${lbl}</small>
         <div class="bk-time d">${esc(dayName(date))}</div><div class="bk-date">${esc(wd(date))}${time ? ', ' + esc(time) : ''}</div></div>`;
       const end = endOf(b) !== b.date || b.endTime;
       return `<div class="bk-route">${pt(l1, b.date, b.time)}${end ? mid + pt(l2, endOf(b), b.endTime) : '<div></div><div></div>'}</div>`;
@@ -559,7 +643,7 @@
           const url = URL.createObjectURL(await getFile(f));
           const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
           setTimeout(() => URL.revokeObjectURL(url), 60000);
-        } catch (_) { ctx.toast('Файл «' + f.name + '» не найден на этом устройстве'); }
+        } catch (_) { ctx.toast(tr('Файл «') + f.name + tr('» не найден на этом устройстве')); }
       }
     }
     async function openFile(f) {
@@ -587,13 +671,13 @@
             ? `Рейс ${esc(b.from)} <i data-lucide="arrow-right"></i> ${esc(b.to)}` : esc(titleOf(b));
           const sub = b.cat === 'flight' ? [b.provider, b.number].filter(Boolean).join(' · ') : [b.provider, b.cat === 'transport' ? '' : b.place].filter(Boolean).join(' · ');
           const rows = [];
-          if (b.code || b.number) rows.push(`<div class="bk-r" data-copy="${esc(b.code || b.number)}"><i data-lucide="users"></i><span class="bk-r-l">Номер брони</span><span class="bk-r-v">${esc(b.code || b.number)}</span><i data-lucide="copy" class="bk-copy"></i></div>`);
-          if (b.people) rows.push(`<button class="bk-r" data-edit><i data-lucide="users"></i><span class="bk-r-l">${PEOPLE[b.cat]}</span><span class="bk-r-v">${esc(b.people)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
-          if (b.cat === 'flight' && b.seats) rows.push(`<button class="bk-r" data-edit><i data-lucide="armchair"></i><span class="bk-r-l">Места</span><span class="bk-r-v">${esc(b.seats)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
+          if (b.code || b.number) rows.push(`<div class="bk-r" data-copy="${esc(b.code || b.number)}"><i data-lucide="hash"></i><span class="bk-r-l">Номер брони</span><span class="bk-r-v">${esc(b.code || b.number)}</span><i data-lucide="copy" class="bk-copy"></i></div>`);
+          if (b.people) rows.push(`<button class="bk-r" data-edit><i data-lucide="users"></i><span class="bk-r-l">${PEOPLE[b.cat]}</span><span class="bk-r-v" translate="no">${esc(peopleText(b.people))}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
+          if (b.cat === 'flight' && b.seats) rows.push(`<button class="bk-r" data-edit><i data-lucide="armchair"></i><span class="bk-r-l" translate="no">${SEATS_T[LANG()] || SEATS_T.en}</span><span class="bk-r-v">${esc(b.seats)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
           if (b.cat !== 'flight' && b.place) rows.push(`<button class="bk-r" data-map><i data-lucide="map-pin"></i><span class="bk-r-l">Адрес</span><span class="bk-r-v">${esc(b.place)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
-          if (b.cat === 'transport' && b.placeTo) rows.push(`<button class="bk-r" data-map2><i data-lucide="map-pin-check"></i><span class="bk-r-l">Возврат</span><span class="bk-r-v">${esc(b.placeTo)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
-          if (+b.price > 0) rows.push(`<div class="bk-r"><i data-lucide="circle-dollar-sign"></i><span class="bk-r-l">Цена</span><span class="bk-r-v big">${esc(money(+b.price, b.currency || tripCur))}</span></div>`);
-          if (b.note) rows.push(`<div class="bk-r" style="align-items:flex-start;padding:14px 0"><i data-lucide="file-text"></i><span class="bk-r-l">Заметка</span><span class="bk-r-v" style="white-space:normal;color:var(--t2)">${esc(b.note)}</span></div>`);
+          if (b.cat === 'transport' && b.placeTo) rows.push(`<button class="bk-r" data-map2><i data-lucide="map-pin-check"></i><span class="bk-r-l" translate="no">${lblOf('transport')[1]}</span><span class="bk-r-v">${esc(b.placeTo)}</span><i data-lucide="chevron-right" class="bk-r-go"></i></button>`);
+          if (+b.price > 0) rows.push(`<div class="bk-r"><span class="bk-cur" aria-hidden="true">${esc(curSym(b.currency || tripCur))}</span><span class="bk-r-l">Цена</span><span class="bk-r-v big">${esc(money(+b.price, b.currency || tripCur))}</span></div>`);
+          if (b.note) rows.push(`<div class="bk-r" style="align-items:flex-start;padding:14px 0"><i data-lucide="file-text"></i><span class="bk-r-l">Заметка</span><span class="bk-r-v" translate="no" style="white-space:normal;color:var(--t2)">${esc(noteText(b.note))}</span></div>`);
           body.innerHTML = `
             <div class="bk-hero"><img src="${esc(b.photo || IMG + c.hero)}" alt=""><div class="bk-hero-l${b.cat === 'flight' ? ' fl' : ''}"><i data-lucide="${c.icon}"></i>${c.one}</div>${b.cat === 'flight' ? '<div class="bk-hero-al" hidden><img alt=""></div>' : ''}</div>
             <div class="bk-card bk-head">
@@ -650,8 +734,9 @@
             const d = b.docs.find(x => ['boarding', 'ticket'].includes(x.kind)) || b.docs[0];
             if (!d) { addDocSheet(b, screen); return; }
             const card = body.querySelector(`.bk-doc[data-doc="${d.id}"]`);
-            if (!card.classList.contains('open')) card.querySelector('.bk-doc-row').click();
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const wasOpen = card.classList.contains('open');
+            card.querySelector('.bk-doc-row').click(); // повторное нажатие сворачивает документ
+            if (!wasOpen) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
           body.querySelector('[data-q="route"]').addEventListener('click', () => {
             const dest = b.cat === 'flight' ? [b.from, b.fromCity, 'airport'].filter(Boolean).join(' ') : b.place;
@@ -661,7 +746,7 @@
           body.querySelector('[data-q="copy"]').addEventListener('click', () => {
             const v = b.code || b.number;
             if (!v) { ctx.toast('Номер брони не указан'); return; }
-            (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => ctx.toast('Номер скопирован: ' + v), () => ctx.toast(v));
+            (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => ctx.toast(tr('Номер скопирован:') + ' ' + v), () => ctx.toast(v));
           });
         }
       });
@@ -681,7 +766,7 @@
         });
         root.querySelector('[data-a="map"]')?.addEventListener('click', () => { close(); window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(b.place), '_blank'); });
         root.querySelector('[data-a="del"]').addEventListener('click', () => {
-          if (!confirm('Удалить бронь «' + titleOf(b) + '» вместе с документами?')) return;
+          if (!confirm(tr('Удалить бронь «') + titleOf(b) + tr('» вместе с документами?'))) return;
           (b.docs || []).forEach(d => d.files.forEach(f => DB.del(f.id).catch(() => {})));
           items = items.filter(x => x.id !== b.id); save(); close(); ctx.toast('Бронь удалена'); openList();
         });
@@ -735,7 +820,7 @@
         dn.addEventListener('keydown', e => { if (e.key === 'Enter') ren(); });
         root.querySelector('[data-a="get"]').addEventListener('click', () => download(d.files));
         root.querySelector('[data-a="del"]').addEventListener('click', () => {
-          if (!confirm('Удалить документ «' + d.title + '»?')) return;
+          if (!confirm(tr('Удалить документ «') + d.title + '»?')) return;
           d.files.forEach(f => DB.del(f.id).catch(() => {}));
           b.docs = b.docs.filter(y => y !== d);
           save(); close(); ctx.toast('Документ удалён'); screen.refresh();
@@ -776,7 +861,7 @@
           const statusSel = `<div class="bk-f"><i data-lucide="badge-check"></i><select id="b-status">${Object.entries(STATUS).map(([k, s]) => `<option value="${k}"${draft.status === k ? ' selected' : ''}>${s.full}</option>`).join('')}</select></div>`;
           body.innerHTML = `
             ${o.review ? `<div class="bk-card bk-review"><span class="bk-ic"><i data-lucide="sparkles"></i></span><div>
-                <b>${o.review.total > 1 ? 'Бронь ' + o.review.idx + ' из ' + o.review.total + ' · ' : ''}Проверьте данные</b>
+                <b>${o.review.total > 1 ? '<span translate="no">' + esc(tr('Бронь')) + ' ' + o.review.idx + '/' + o.review.total + ' · </span>' : ''}<span>Проверьте данные</span></b>
                 <span>Заполнено из файла «${esc(o.review.name)}». Поля в фиолетовой рамке найдены автоматически. Исправьте, если нужно, и нажмите «Всё верно».</span></div></div>`
               : `<button class="bk-card bk-upload" type="button" data-a="import"><span class="bk-ic"><i data-lucide="file-up"></i></span>
                 <span class="bk-txt"><b>Загрузить подтверждение брони</b><span class="bk-sub" style="white-space:normal">PDF или фото билета — приложение заполнит бронь само</span></span><i data-lucide="chevron-right" class="bk-go"></i></button>
@@ -796,12 +881,12 @@
               <label>${l1}</label><div class="bk-2"><div>${f('b-date', 'calendar', draft.date, '', 'type="date"')}</div><div>${f('b-time', 'clock', draft.time, '', 'type="time"')}</div></div>
               <label>${l2} <span style="font-weight:500;color:var(--t3)">· необязательно</span></label><div class="bk-2"><div>${f('b-endDate', 'calendar-check', draft.endDate, '', `type="date" min="${esc(draft.date)}"`)}</div><div>${f('b-endTime', 'clock', draft.endTime, '', 'type="time"')}</div></div>
               <label>Номер брони</label>${f('b-code', 'hash', draft.code, '', 'maxlength="30"')}
-              <div class="bk-2"><div><label>${PEOPLE[draft.cat]}</label>${f('b-people', 'users', draft.people)}</div>
-                ${fl ? `<div><label>Места</label>${f('b-seats', 'armchair', draft.seats, '', 'class="up"')}</div>` : `<div><label>Статус</label>${statusSel}</div>`}</div>
+              <div class="bk-2"><div><label>${PEOPLE[draft.cat]}</label>${f('b-people', 'users', peopleText(draft.people))}</div>
+                ${fl ? `<div><label translate="no">${SEATS_T[LANG()] || SEATS_T.en}</label>${f('b-seats', 'armchair', draft.seats, '', 'class="up"')}</div>` : `<div><label>Статус</label>${statusSel}</div>`}</div>
               ${fl ? `<label>Статус</label>${statusSel}` : ''}
               <label>Цена</label><div class="bk-2"><div>${f('b-price', 'circle-dollar-sign', draft.price, '0,00', 'inputmode="decimal"')}</div>
                 <div><div class="bk-f${auto.has('currency') ? ' auto' : ''}"><i data-lucide="coins"></i><select id="b-currency">${curs.map(x => `<option${x === draft.currency ? ' selected' : ''}>${x}</option>`).join('')}</select></div></div></div>
-              <label>Заметка</label><div class="bk-f${auto.has('note') ? ' auto' : ''}"><i data-lucide="file-text" style="align-self:flex-start;margin-top:15px"></i><textarea id="b-note" maxlength="300">${esc(draft.note)}</textarea></div>
+              <label>Заметка</label><div class="bk-f${auto.has('note') ? ' auto' : ''}"><i data-lucide="file-text" style="align-self:flex-start;margin-top:15px"></i><textarea id="b-note" maxlength="300">${esc(noteText(draft.note))}</textarea></div>
               ${o.review ? `<label>Документ</label><div class="bk-card bk-cover" style="cursor:default"><span class="bk-doc-ic" style="width:56px;height:48px"><i data-lucide="${/\.pdf$/i.test(o.review.name) ? 'file-text' : 'image'}"></i></span>
                   <span>${esc(o.review.name)}<small>Файл сохранится в документах брони</small></span></div>
                 <label>Название документа</label><div class="bk-f"><i data-lucide="pencil"></i><input id="b-docname" maxlength="60" value="${esc(o.review.docTitle || docSuggest(draft.cat, o.review.kind))}"></div>` : `
@@ -867,7 +952,7 @@
           body.querySelector('[data-a="save"]').addEventListener('click', submit);
           body.querySelector('[data-a="skip"]')?.addEventListener('click', () => { if (!(o.next && o.next())) openList(); });
           body.querySelector('[data-a="del"]')?.addEventListener('click', () => {
-            if (!confirm('Удалить бронь вместе с документами?')) return;
+            if (!confirm(tr('Удалить бронь вместе с документами?'))) return;
             (draft.docs || []).forEach(d => d.files.forEach(x => DB.del(x.id).catch(() => {})));
             items = items.filter(x => x.id !== draft.id); save(); ctx.toast('Бронь удалена'); openList();
           });
@@ -906,9 +991,9 @@
         if (list.length === 1 && !forceChoose && !res.far) { setAirport(side, list[0], T); return; }
         setHint(side, list.length > 1 ? 'Несколько аэропортов — выберите нужный' : 'Проверьте аэропорт', 'wait');
         sheet(res.far ? 'В этом городе нет аэропорта' : list.length > 1 ? 'Какой аэропорт?' : 'Аэропорт', `
-          <div class="st-muted" style="margin:4px 0 10px;font-size:.86rem">${res.far ? 'Ближайшие аэропорты к «' + esc(q) + '»:' : list.length > 1 ? 'У «' + esc(q) + '» несколько аэропортов. Уточните, какой нужен:' : ''}</div>
+          <div class="st-muted" style="margin:4px 0 10px;font-size:.86rem">${res.far ? esc(tr('Ближайшие аэропорты к «')) + esc(q) + '»:' : list.length > 1 ? 'У «' + esc(q) + '» несколько аэропортов. Уточните, какой нужен:' : ''}</div>
           <div class="bk-form">${list.map((a, i) => `<button class="bk-card bk-apopt" type="button" data-i="${i}"><b>${a.code}</b>
-            <span><span>${esc(a.name)}</span><small>${esc(T.cityShort(a))}${a.d != null ? ' · ' + Math.round(a.d) + ' км от центра' : ''}</small></span></button>`).join('')}</div>`, (root, close) => {
+            <span><span>${esc(a.name)}</span><small>${esc(T.cityShort(a))}${a.d != null ? ' · ' + Math.round(a.d) + ' ' + tr('км от центра') : ''}</small></span></button>`).join('')}</div>`, (root, close) => {
           root.querySelectorAll('[data-i]').forEach(x => x.addEventListener('click', () => { setAirport(side, list[+x.dataset.i], T); close(); }));
         });
       }
@@ -1008,7 +1093,7 @@
           });
         };
         if (list.length > 1) {
-          sheet('Найдено броней: ' + list.length, `<div class="st-muted" style="margin:4px 0 10px;font-size:.86rem">В файле несколько рейсов. Проверим каждый по очереди — каждый станет отдельной бронью и появится в календаре.</div>
+          sheet(tr('Найдено броней:') + ' ' + list.length, `<div class="st-muted" style="margin:4px 0 10px;font-size:.86rem">В файле несколько рейсов. Проверим каждый по очереди — каждый станет отдельной бронью и появится в календаре.</div>
             <div class="bk-form">${list.map(d => `<div class="bk-card bk-apopt" style="cursor:default"><b>${esc(d.number || d.from || '')}</b><span><span>${esc((d.from || '') + ' → ' + (d.to || ''))}</span><small>${d.date ? esc(dayName(d.date)) : ''}${d.time ? ', ' + esc(d.time) : ''}</small></span></div>`).join('')}
             <button class="st-btn st-btn-fw" type="button" data-a="go" style="margin-top:6px">Проверить по очереди</button></div>`, (root, close) => {
             root.querySelector('[data-a="go"]').addEventListener('click', () => { close(); run(0); });
@@ -1023,7 +1108,7 @@
           if (!draft.from || !draft.to) {
             const side = !draft.from ? 'from' : 'to';
             const txt = (draft[side + 'City'] || '').trim();
-            if (txt) { ctx.toast('Уточните аэропорт: «' + txt + '»'); resolveAirport(side, true); }
+            if (txt) { ctx.toast(tr('Уточните аэропорт:') + ' «' + txt + '»'); resolveAirport(side, true); }
             else ctx.toast(side === 'from' ? 'Укажите, откуда летите' : 'Укажите, куда летите');
             return;
           }
