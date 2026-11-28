@@ -17,6 +17,13 @@
   const ID = 'translator';
   const IMG = '/img/translator/';
   const OCR = '/vendor/tesseract/';
+  // 13 моделей распознавания лежат в приложении; остальные (те же бесплатные модели tesseract.js)
+  // скачиваются с jsDelivr при первом выборе языка и потом работают офлайн (кэш Tesseract + кэш офлайна)
+  const OCR_LOCAL = ['eng', 'deu', 'fra', 'spa', 'ita', 'por', 'nld', 'pol', 'ces', 'hrv', 'tur', 'ell', 'rus'];
+  const OCR_CDN = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/';
+  const ocrBase = o => OCR_LOCAL.includes(o) ? OCR + 'lang' : OCR_CDN + o + '/4.0.0_best_int';
+  // сербский — кириллическая модель; сербскую латиницу читают и модели хорватского/боснийского
+  const ocrUrls = c => (L[c] && L[c].o ? L[c].o.split('+').map(o => ocrBase(o) + '/' + o + '.traineddata.gz') : []);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const icons = el => { if (typeof initializeIcons === 'function') initializeIcons(el); };
   const online = () => navigator.onLine !== false;
@@ -28,31 +35,31 @@
 
   // ---------- Языки: n — название, cc — флаг, v — голос, o — файл распознавания текста ----------
   const L = {
-    ru: { n: 'Русский', cc: 'ru', v: 'ru-RU' }, en: { n: 'Английский', cc: 'gb', v: 'en-GB', o: 'eng' },
+    ru: { n: 'Русский', cc: 'ru', v: 'ru-RU', o: 'rus' }, en: { n: 'Английский', cc: 'gb', v: 'en-GB', o: 'eng' },
     de: { n: 'Немецкий', cc: 'de', v: 'de-DE', o: 'deu' }, fr: { n: 'Французский', cc: 'fr', v: 'fr-FR', o: 'fra' },
     es: { n: 'Испанский', cc: 'es', v: 'es-ES', o: 'spa' }, it: { n: 'Итальянский', cc: 'it', v: 'it-IT', o: 'ita' },
     pt: { n: 'Португальский', cc: 'pt', v: 'pt-PT', o: 'por' }, nl: { n: 'Нидерландский', cc: 'nl', v: 'nl-NL', o: 'nld' },
     pl: { n: 'Польский', cc: 'pl', v: 'pl-PL', o: 'pol' }, cs: { n: 'Чешский', cc: 'cz', v: 'cs-CZ', o: 'ces' },
     hr: { n: 'Хорватский', cc: 'hr', v: 'hr-HR', o: 'hrv' }, tr: { n: 'Турецкий', cc: 'tr', v: 'tl-TR', o: 'tur' },
-    el: { n: 'Греческий', cc: 'gr', v: 'el-GR', o: 'ell' }, uk: { n: 'Украинский', cc: 'ua', v: 'uk-UA' },
-    ka: { n: 'Грузинский', cc: 'ge', v: 'ka-GE' }, hy: { n: 'Армянский', cc: 'am', v: 'hy-AM' },
-    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA' },
-    sr: { n: 'Сербский', cc: 'rs', v: 'sr-RS' }, bs: { n: 'Боснийский', cc: 'ba', v: 'bs-BA' }, sl: { n: 'Словенский', cc: 'si', v: 'sl-SI' },
-    sk: { n: 'Словацкий', cc: 'sk', v: 'sk-SK' }, bg: { n: 'Болгарский', cc: 'bg', v: 'bg-BG' }, ro: { n: 'Румынский', cc: 'ro', v: 'ro-RO' },
-    hu: { n: 'Венгерский', cc: 'hu', v: 'hu-HU' }, da: { n: 'Датский', cc: 'dk', v: 'da-DK' }, sv: { n: 'Шведский', cc: 'se', v: 'sv-SE' },
-    no: { n: 'Норвежский', cc: 'no', v: 'nb-NO' }, fi: { n: 'Финский', cc: 'fi', v: 'fi-FI' }, is: { n: 'Исландский', cc: 'is', v: 'is-IS' },
-    et: { n: 'Эстонский', cc: 'ee', v: 'et-EE' }, lv: { n: 'Латышский', cc: 'lv', v: 'lv-LV' }, lt: { n: 'Литовский', cc: 'lt', v: 'lt-LT' },
-    sq: { n: 'Албанский', cc: 'al', v: 'sq-AL' }, mk: { n: 'Македонский', cc: 'mk', v: 'mk-MK' }, mt: { n: 'Мальтийский', cc: 'mt', v: 'mt-MT' },
-    he: { n: 'Иврит', cc: 'il', v: 'he-IL' }, fa: { n: 'Персидский', cc: 'ir', v: 'fa-IR' }, hi: { n: 'Хинди', cc: 'in', v: 'hi-IN' },
-    bn: { n: 'Бенгальский', cc: 'bd', v: 'bn-BD' }, ur: { n: 'Урду', cc: 'pk', v: 'ur-PK' }, ta: { n: 'Тамильский', cc: 'in', v: 'ta-IN' },
-    te: { n: 'Телугу', cc: 'in', v: 'te-IN' }, ml: { n: 'Малаялам', cc: 'in', v: 'ml-IN' }, mr: { n: 'Маратхи', cc: 'in', v: 'mr-IN' },
-    gu: { n: 'Гуджарати', cc: 'in', v: 'gu-IN' }, ne: { n: 'Непальский', cc: 'np', v: 'ne-NP' }, si: { n: 'Сингальский', cc: 'lk', v: 'si-LK' },
-    th: { n: 'Тайский', cc: 'th', v: 'th-TH' }, vi: { n: 'Вьетнамский', cc: 'vn', v: 'vi-VN' }, id: { n: 'Индонезийский', cc: 'id', v: 'id-ID' },
-    ms: { n: 'Малайский', cc: 'my', v: 'ms-MY' }, tl: { n: 'Филиппинский', cc: 'ph', v: 'fil-PH' }, ko: { n: 'Корейский', cc: 'kr', v: 'ko-KR' },
-    km: { n: 'Кхмерский', cc: 'kh', v: 'km-KH' }, lo: { n: 'Лаосский', cc: 'la', v: 'lo-LA' }, my: { n: 'Бирманский', cc: 'mm', v: 'my-MM' },
-    sw: { n: 'Суахили', cc: 'ke', v: 'sw-KE' }, am: { n: 'Амхарский', cc: 'et', v: 'am-ET' }, af: { n: 'Африкаанс', cc: 'za', v: 'af-ZA' },
-    zu: { n: 'Зулу', cc: 'za', v: 'zu-ZA' }, az: { n: 'Азербайджанский', cc: 'az', v: 'az-AZ' }, kk: { n: 'Казахский', cc: 'kz', v: 'kk-KZ' },
-    uz: { n: 'Узбекский', cc: 'uz', v: 'uz-UZ' }, ky: { n: 'Киргизский', cc: 'kg', v: 'ky-KG' }, mn: { n: 'Монгольский', cc: 'mn', v: 'mn-MN' }
+    el: { n: 'Греческий', cc: 'gr', v: 'el-GR', o: 'ell' }, uk: { n: 'Украинский', cc: 'ua', v: 'uk-UA', o: 'ukr' },
+    ka: { n: 'Грузинский', cc: 'ge', v: 'ka-GE', o: 'kat' }, hy: { n: 'Армянский', cc: 'am', v: 'hy-AM', o: 'hye' },
+    ja: { n: 'Японский', cc: 'jp', v: 'ja-JP', o: 'jpn' }, zh: { n: 'Китайский', cc: 'cn', v: 'zh-CN', o: 'chi_sim' }, ar: { n: 'Арабский', cc: 'ae', v: 'ar-SA', o: 'ara' },
+    sr: { n: 'Сербский', cc: 'rs', v: 'sr-RS', o: 'srp' }, bs: { n: 'Боснийский', cc: 'ba', v: 'bs-BA', o: 'bos' }, sl: { n: 'Словенский', cc: 'si', v: 'sl-SI', o: 'slv' },
+    sk: { n: 'Словацкий', cc: 'sk', v: 'sk-SK', o: 'slk' }, bg: { n: 'Болгарский', cc: 'bg', v: 'bg-BG', o: 'bul' }, ro: { n: 'Румынский', cc: 'ro', v: 'ro-RO', o: 'ron' },
+    hu: { n: 'Венгерский', cc: 'hu', v: 'hu-HU', o: 'hun' }, da: { n: 'Датский', cc: 'dk', v: 'da-DK', o: 'dan' }, sv: { n: 'Шведский', cc: 'se', v: 'sv-SE', o: 'swe' },
+    no: { n: 'Норвежский', cc: 'no', v: 'nb-NO', o: 'nor' }, fi: { n: 'Финский', cc: 'fi', v: 'fi-FI', o: 'fin' }, is: { n: 'Исландский', cc: 'is', v: 'is-IS', o: 'isl' },
+    et: { n: 'Эстонский', cc: 'ee', v: 'et-EE', o: 'est' }, lv: { n: 'Латышский', cc: 'lv', v: 'lv-LV', o: 'lav' }, lt: { n: 'Литовский', cc: 'lt', v: 'lt-LT', o: 'lit' },
+    sq: { n: 'Албанский', cc: 'al', v: 'sq-AL', o: 'sqi' }, mk: { n: 'Македонский', cc: 'mk', v: 'mk-MK', o: 'mkd' }, mt: { n: 'Мальтийский', cc: 'mt', v: 'mt-MT', o: 'mlt' },
+    he: { n: 'Иврит', cc: 'il', v: 'he-IL', o: 'heb' }, fa: { n: 'Персидский', cc: 'ir', v: 'fa-IR', o: 'fas' }, hi: { n: 'Хинди', cc: 'in', v: 'hi-IN', o: 'hin' },
+    bn: { n: 'Бенгальский', cc: 'bd', v: 'bn-BD', o: 'ben' }, ur: { n: 'Урду', cc: 'pk', v: 'ur-PK', o: 'urd' }, ta: { n: 'Тамильский', cc: 'in', v: 'ta-IN', o: 'tam' },
+    te: { n: 'Телугу', cc: 'in', v: 'te-IN', o: 'tel' }, ml: { n: 'Малаялам', cc: 'in', v: 'ml-IN', o: 'mal' }, mr: { n: 'Маратхи', cc: 'in', v: 'mr-IN', o: 'mar' },
+    gu: { n: 'Гуджарати', cc: 'in', v: 'gu-IN', o: 'guj' }, ne: { n: 'Непальский', cc: 'np', v: 'ne-NP', o: 'nep' }, si: { n: 'Сингальский', cc: 'lk', v: 'si-LK', o: 'sin' },
+    th: { n: 'Тайский', cc: 'th', v: 'th-TH', o: 'tha' }, vi: { n: 'Вьетнамский', cc: 'vn', v: 'vi-VN', o: 'vie' }, id: { n: 'Индонезийский', cc: 'id', v: 'id-ID', o: 'ind' },
+    ms: { n: 'Малайский', cc: 'my', v: 'ms-MY', o: 'msa' }, tl: { n: 'Филиппинский', cc: 'ph', v: 'fil-PH', o: 'fil' }, ko: { n: 'Корейский', cc: 'kr', v: 'ko-KR', o: 'kor' },
+    km: { n: 'Кхмерский', cc: 'kh', v: 'km-KH', o: 'khm' }, lo: { n: 'Лаосский', cc: 'la', v: 'lo-LA', o: 'lao' }, my: { n: 'Бирманский', cc: 'mm', v: 'my-MM', o: 'mya' },
+    sw: { n: 'Суахили', cc: 'ke', v: 'sw-KE', o: 'swa' }, am: { n: 'Амхарский', cc: 'et', v: 'am-ET', o: 'amh' }, af: { n: 'Африкаанс', cc: 'za', v: 'af-ZA', o: 'afr' },
+    zu: { n: 'Зулу', cc: 'za', v: 'zu-ZA' }, az: { n: 'Азербайджанский', cc: 'az', v: 'az-AZ', o: 'aze' }, kk: { n: 'Казахский', cc: 'kz', v: 'kk-KZ', o: 'kaz' },
+    uz: { n: 'Узбекский', cc: 'uz', v: 'uz-UZ', o: 'uzb' }, ky: { n: 'Киргизский', cc: 'kg', v: 'ky-KG', o: 'kir' }, mn: { n: 'Монгольский', cc: 'mn', v: 'mn-MN', o: 'mon' }
   };
   const CODES = Object.keys(L);
   const CC_LANG = { DE:'de', AT:'de', CH:'de', LI:'de', FR:'fr', BE:'fr', LU:'fr', MC:'fr', MA:'ar', TN:'ar', DZ:'ar', ES:'es', AD:'es', MX:'es', AR:'es', CU:'es', DO:'es', CO:'es', CL:'es', PE:'es', VE:'es', UY:'es', PY:'es', BO:'es', EC:'es', GT:'es', CR:'es', PA:'es', HN:'es', NI:'es', SV:'es',
@@ -62,26 +69,30 @@
   const nm = c => (L[c] ? L[c].n : c);
   const regionName = cc => { try { return new Intl.DisplayNames(['ru'], { type: 'region' }).of(cc); } catch (_) { return cc; } };
 
-  // ---------- Разговорник: 32 фразы, встроены на 7 языках ----------
-  const CATS = [['basic', 'Основное', 'message-circle'], ['hotel', 'Отель', 'bed-double'], ['food', 'Ресторан', 'utensils'], ['transport', 'Транспорт', 'bus'], ['sos', 'Экстренно', 'siren']];
+  // ---------- Разговорник: 50 фраз, встроены на 7 языках ----------
+  const CATS = [['basic', 'Основное', 'message-circle'], ['hotel', 'Отель', 'bed-double'], ['food', 'Ресторан', 'utensils'], ['transport', 'Транспорт', 'bus'], ['shop', 'Покупки', 'shopping-bag'], ['city', 'В городе', 'map-pin'], ['social', 'Знакомство', 'smile'], ['sos', 'Экстренно', 'siren']];
   const PH = [
     ['basic', 'Здравствуйте!'], ['basic', 'Спасибо!'], ['basic', 'Извините.'], ['basic', 'Да / Нет'], ['basic', 'Я не понимаю.'], ['basic', 'Пожалуйста, говорите медленнее.'], ['basic', 'Сколько это стоит?'], ['basic', 'Где туалет?'],
     ['hotel', 'У меня забронирован номер.'], ['hotel', 'Во сколько завтрак?'], ['hotel', 'Какой пароль от Wi-Fi?'], ['hotel', 'Можно оставить здесь багаж?'], ['hotel', 'Во сколько нужно освободить номер?'], ['hotel', 'Вызовите мне такси, пожалуйста.'],
     ['food', 'Столик на двоих, пожалуйста.'], ['food', 'Меню, пожалуйста.'], ['food', 'Что вы посоветуете?'], ['food', 'Я не ем мясо.'], ['food', 'Счёт, пожалуйста.'], ['food', 'Можно оплатить картой?'],
     ['transport', 'Где автобусная остановка?'], ['transport', 'Как добраться до вокзала?'], ['transport', 'Один билет, пожалуйста.'], ['transport', 'Отвезите меня по этому адресу, пожалуйста.'], ['transport', 'Сколько стоит поездка?'], ['transport', 'Где ближайшая станция метро?'],
-    ['sos', 'Помогите!'], ['sos', 'Вызовите скорую помощь!'], ['sos', 'Вызовите полицию!'], ['sos', 'Мне нужен врач.'], ['sos', 'Где ближайшая аптека?'], ['sos', 'Я потерял паспорт.']
+    ['sos', 'Помогите!'], ['sos', 'Вызовите скорую помощь!'], ['sos', 'Вызовите полицию!'], ['sos', 'Мне нужен врач.'], ['sos', 'Где ближайшая аптека?'], ['sos', 'Я потерял паспорт.'],
+    ['shop', 'Можно посмотреть?'], ['shop', 'У вас есть другой размер?'], ['shop', 'Можно примерить?'], ['shop', 'Это слишком дорого.'], ['shop', 'Сделаете скидку?'], ['shop', 'Дайте чек, пожалуйста.'],
+    ['city', 'Как добраться до центра города?'], ['city', 'Это далеко отсюда?'], ['city', 'Покажите на карте, пожалуйста.'], ['city', 'Где ближайший банкомат?'], ['city', 'Где можно купить SIM-карту?'], ['city', 'Во сколько открывается музей?'],
+    ['social', 'Как вас зовут?'], ['social', 'Приятно познакомиться!'], ['social', 'Вы говорите по-английски?'], ['social', 'Сфотографируйте нас, пожалуйста.'], ['social', 'До свидания!'], ['social', 'Хорошего дня!']
   ];
   const PB = {
-    en: 'Hello!|Thank you!|Excuse me.|Yes / No|I don’t understand.|Please speak more slowly.|How much is this?|Where is the toilet?|I have a reservation.|What time is breakfast?|What is the Wi-Fi password?|Can I leave my luggage here?|What time is check-out?|Could you call me a taxi, please?|A table for two, please.|The menu, please.|What do you recommend?|I don’t eat meat.|The bill, please.|Can I pay by card?|Where is the bus stop?|How do I get to the train station?|One ticket, please.|Please take me to this address.|How much is the fare?|Where is the nearest metro station?|Help!|Call an ambulance!|Call the police!|I need a doctor.|Where is the nearest pharmacy?|I have lost my passport.',
-    de: 'Guten Tag!|Danke!|Entschuldigung.|Ja / Nein|Ich verstehe nicht.|Bitte sprechen Sie langsamer.|Wie viel kostet das?|Wo ist die Toilette?|Ich habe ein Zimmer reserviert.|Wann gibt es Frühstück?|Wie lautet das WLAN-Passwort?|Kann ich mein Gepäck hier lassen?|Bis wann muss ich das Zimmer räumen?|Können Sie mir bitte ein Taxi rufen?|Einen Tisch für zwei, bitte.|Die Speisekarte, bitte.|Was empfehlen Sie?|Ich esse kein Fleisch.|Die Rechnung, bitte.|Kann ich mit Karte zahlen?|Wo ist die Bushaltestelle?|Wie komme ich zum Bahnhof?|Eine Fahrkarte, bitte.|Bringen Sie mich bitte zu dieser Adresse.|Was kostet die Fahrt?|Wo ist die nächste U-Bahn-Station?|Hilfe!|Rufen Sie einen Krankenwagen!|Rufen Sie die Polizei!|Ich brauche einen Arzt.|Wo ist die nächste Apotheke?|Ich habe meinen Reisepass verloren.',
-    fr: 'Bonjour !|Merci !|Excusez-moi.|Oui / Non|Je ne comprends pas.|Parlez plus lentement, s’il vous plaît.|Combien ça coûte ?|Où sont les toilettes ?|J’ai une réservation.|À quelle heure est le petit-déjeuner ?|Quel est le mot de passe du Wi-Fi ?|Puis-je laisser mes bagages ici ?|À quelle heure faut-il libérer la chambre ?|Pouvez-vous m’appeler un taxi, s’il vous plaît ?|Une table pour deux, s’il vous plaît.|La carte, s’il vous plaît.|Que me conseillez-vous ?|Je ne mange pas de viande.|L’addition, s’il vous plaît.|Puis-je payer par carte ?|Où est l’arrêt de bus ?|Comment aller à la gare ?|Un billet, s’il vous plaît.|Emmenez-moi à cette adresse, s’il vous plaît.|Combien coûte la course ?|Où est la station de métro la plus proche ?|Au secours !|Appelez une ambulance !|Appelez la police !|J’ai besoin d’un médecin.|Où est la pharmacie la plus proche ?|J’ai perdu mon passeport.',
-    es: '¡Hola!|¡Gracias!|Perdón.|Sí / No|No entiendo.|Hable más despacio, por favor.|¿Cuánto cuesta?|¿Dónde está el baño?|Tengo una reserva.|¿A qué hora es el desayuno?|¿Cuál es la contraseña del wifi?|¿Puedo dejar mi equipaje aquí?|¿A qué hora hay que dejar la habitación?|¿Me puede llamar un taxi, por favor?|Una mesa para dos, por favor.|La carta, por favor.|¿Qué me recomienda?|No como carne.|La cuenta, por favor.|¿Puedo pagar con tarjeta?|¿Dónde está la parada de autobús?|¿Cómo llego a la estación de tren?|Un billete, por favor.|Lléveme a esta dirección, por favor.|¿Cuánto cuesta el viaje?|¿Dónde está la estación de metro más cercana?|¡Ayuda!|¡Llame a una ambulancia!|¡Llame a la policía!|Necesito un médico.|¿Dónde está la farmacia más cercana?|He perdido mi pasaporte.',
-    it: 'Buongiorno!|Grazie!|Mi scusi.|Sì / No|Non capisco.|Parli più lentamente, per favore.|Quanto costa?|Dov’è il bagno?|Ho una prenotazione.|A che ora è la colazione?|Qual è la password del Wi-Fi?|Posso lasciare qui i bagagli?|A che ora devo lasciare la camera?|Mi può chiamare un taxi, per favore?|Un tavolo per due, per favore.|Il menù, per favore.|Cosa mi consiglia?|Non mangio carne.|Il conto, per favore.|Posso pagare con la carta?|Dov’è la fermata dell’autobus?|Come arrivo alla stazione?|Un biglietto, per favore.|Mi porti a questo indirizzo, per favore.|Quanto costa la corsa?|Dov’è la stazione della metro più vicina?|Aiuto!|Chiamate un’ambulanza!|Chiamate la polizia!|Ho bisogno di un medico.|Dov’è la farmacia più vicina?|Ho perso il passaporto.',
-    pt: 'Olá!|Obrigado!|Desculpe.|Sim / Não|Não entendo.|Fale mais devagar, por favor.|Quanto custa?|Onde é a casa de banho?|Tenho uma reserva.|A que horas é o pequeno-almoço?|Qual é a palavra-passe do Wi-Fi?|Posso deixar a bagagem aqui?|A que horas tenho de deixar o quarto?|Pode chamar-me um táxi, por favor?|Uma mesa para dois, por favor.|A ementa, por favor.|O que me recomenda?|Não como carne.|A conta, por favor.|Posso pagar com cartão?|Onde é a paragem do autocarro?|Como chego à estação de comboios?|Um bilhete, por favor.|Leve-me a esta morada, por favor.|Quanto custa a viagem?|Onde é a estação de metro mais próxima?|Socorro!|Chamem uma ambulância!|Chamem a polícia!|Preciso de um médico.|Onde é a farmácia mais próxima?|Perdi o meu passaporte.',
-    tr: 'Merhaba!|Teşekkür ederim!|Affedersiniz.|Evet / Hayır|Anlamıyorum.|Lütfen daha yavaş konuşun.|Bu ne kadar?|Tuvalet nerede?|Rezervasyonum var.|Kahvaltı saat kaçta?|Wi-Fi şifresi nedir?|Bavulumu burada bırakabilir miyim?|Odadan saat kaçta çıkmam gerekiyor?|Bana bir taksi çağırır mısınız lütfen?|İki kişilik bir masa, lütfen.|Menü, lütfen.|Ne tavsiye edersiniz?|Et yemiyorum.|Hesap, lütfen.|Kartla ödeyebilir miyim?|Otobüs durağı nerede?|Tren istasyonuna nasıl giderim?|Bir bilet, lütfen.|Lütfen beni bu adrese götürün.|Yolculuk ne kadar tutar?|En yakın metro istasyonu nerede?|İmdat!|Ambulans çağırın!|Polis çağırın!|Doktora ihtiyacım var.|En yakın eczane nerede?|Pasaportumu kaybettim.'
+    en: 'Hello!|Thank you!|Excuse me.|Yes / No|I don’t understand.|Please speak more slowly.|How much is this?|Where is the toilet?|I have a reservation.|What time is breakfast?|What is the Wi-Fi password?|Can I leave my luggage here?|What time is check-out?|Could you call me a taxi, please?|A table for two, please.|The menu, please.|What do you recommend?|I don’t eat meat.|The bill, please.|Can I pay by card?|Where is the bus stop?|How do I get to the train station?|One ticket, please.|Please take me to this address.|How much is the fare?|Where is the nearest metro station?|Help!|Call an ambulance!|Call the police!|I need a doctor.|Where is the nearest pharmacy?|I have lost my passport.|Can I have a look?|Do you have another size?|Can I try it on?|That’s too expensive.|Can you give me a discount?|Can I have a receipt, please?|How do I get to the city centre?|Is it far from here?|Please show me on the map.|Where is the nearest ATM?|Where can I buy a SIM card?|What time does the museum open?|What is your name?|Nice to meet you!|Do you speak English?|Could you take a photo of us, please?|Goodbye!|Have a nice day!',
+    de: 'Guten Tag!|Danke!|Entschuldigung.|Ja / Nein|Ich verstehe nicht.|Bitte sprechen Sie langsamer.|Wie viel kostet das?|Wo ist die Toilette?|Ich habe ein Zimmer reserviert.|Wann gibt es Frühstück?|Wie lautet das WLAN-Passwort?|Kann ich mein Gepäck hier lassen?|Bis wann muss ich das Zimmer räumen?|Können Sie mir bitte ein Taxi rufen?|Einen Tisch für zwei, bitte.|Die Speisekarte, bitte.|Was empfehlen Sie?|Ich esse kein Fleisch.|Die Rechnung, bitte.|Kann ich mit Karte zahlen?|Wo ist die Bushaltestelle?|Wie komme ich zum Bahnhof?|Eine Fahrkarte, bitte.|Bringen Sie mich bitte zu dieser Adresse.|Was kostet die Fahrt?|Wo ist die nächste U-Bahn-Station?|Hilfe!|Rufen Sie einen Krankenwagen!|Rufen Sie die Polizei!|Ich brauche einen Arzt.|Wo ist die nächste Apotheke?|Ich habe meinen Reisepass verloren.|Darf ich mal sehen?|Haben Sie eine andere Größe?|Kann ich das anprobieren?|Das ist zu teuer.|Können Sie mir einen Rabatt geben?|Eine Quittung, bitte.|Wie komme ich ins Stadtzentrum?|Ist das weit von hier?|Zeigen Sie es mir bitte auf der Karte.|Wo ist der nächste Geldautomat?|Wo kann ich eine SIM-Karte kaufen?|Wann öffnet das Museum?|Wie heißen Sie?|Freut mich, Sie kennenzulernen!|Sprechen Sie Englisch?|Könnten Sie bitte ein Foto von uns machen?|Auf Wiedersehen!|Einen schönen Tag noch!',
+    fr: 'Bonjour !|Merci !|Excusez-moi.|Oui / Non|Je ne comprends pas.|Parlez plus lentement, s’il vous plaît.|Combien ça coûte ?|Où sont les toilettes ?|J’ai une réservation.|À quelle heure est le petit-déjeuner ?|Quel est le mot de passe du Wi-Fi ?|Puis-je laisser mes bagages ici ?|À quelle heure faut-il libérer la chambre ?|Pouvez-vous m’appeler un taxi, s’il vous plaît ?|Une table pour deux, s’il vous plaît.|La carte, s’il vous plaît.|Que me conseillez-vous ?|Je ne mange pas de viande.|L’addition, s’il vous plaît.|Puis-je payer par carte ?|Où est l’arrêt de bus ?|Comment aller à la gare ?|Un billet, s’il vous plaît.|Emmenez-moi à cette adresse, s’il vous plaît.|Combien coûte la course ?|Où est la station de métro la plus proche ?|Au secours !|Appelez une ambulance !|Appelez la police !|J’ai besoin d’un médecin.|Où est la pharmacie la plus proche ?|J’ai perdu mon passeport.|Je peux regarder ?|Vous avez une autre taille ?|Je peux l’essayer ?|C’est trop cher.|Vous pouvez me faire une réduction ?|Un reçu, s’il vous plaît.|Comment aller au centre-ville ?|C’est loin d’ici ?|Montrez-moi sur la carte, s’il vous plaît.|Où est le distributeur le plus proche ?|Où puis-je acheter une carte SIM ?|À quelle heure ouvre le musée ?|Comment vous appelez-vous ?|Enchanté !|Vous parlez anglais ?|Vous pouvez nous prendre en photo, s’il vous plaît ?|Au revoir !|Bonne journée !',
+    es: '¡Hola!|¡Gracias!|Perdón.|Sí / No|No entiendo.|Hable más despacio, por favor.|¿Cuánto cuesta?|¿Dónde está el baño?|Tengo una reserva.|¿A qué hora es el desayuno?|¿Cuál es la contraseña del wifi?|¿Puedo dejar mi equipaje aquí?|¿A qué hora hay que dejar la habitación?|¿Me puede llamar un taxi, por favor?|Una mesa para dos, por favor.|La carta, por favor.|¿Qué me recomienda?|No como carne.|La cuenta, por favor.|¿Puedo pagar con tarjeta?|¿Dónde está la parada de autobús?|¿Cómo llego a la estación de tren?|Un billete, por favor.|Lléveme a esta dirección, por favor.|¿Cuánto cuesta el viaje?|¿Dónde está la estación de metro más cercana?|¡Ayuda!|¡Llame a una ambulancia!|¡Llame a la policía!|Necesito un médico.|¿Dónde está la farmacia más cercana?|He perdido mi pasaporte.|¿Puedo mirarlo?|¿Tiene otra talla?|¿Puedo probármelo?|Es demasiado caro.|¿Me hace un descuento?|El recibo, por favor.|¿Cómo llego al centro de la ciudad?|¿Está lejos de aquí?|Muéstremelo en el mapa, por favor.|¿Dónde está el cajero más cercano?|¿Dónde puedo comprar una tarjeta SIM?|¿A qué hora abre el museo?|¿Cómo se llama?|¡Encantado de conocerle!|¿Habla inglés?|¿Nos puede hacer una foto, por favor?|¡Adiós!|¡Que tenga un buen día!',
+    it: 'Buongiorno!|Grazie!|Mi scusi.|Sì / No|Non capisco.|Parli più lentamente, per favore.|Quanto costa?|Dov’è il bagno?|Ho una prenotazione.|A che ora è la colazione?|Qual è la password del Wi-Fi?|Posso lasciare qui i bagagli?|A che ora devo lasciare la camera?|Mi può chiamare un taxi, per favore?|Un tavolo per due, per favore.|Il menù, per favore.|Cosa mi consiglia?|Non mangio carne.|Il conto, per favore.|Posso pagare con la carta?|Dov’è la fermata dell’autobus?|Come arrivo alla stazione?|Un biglietto, per favore.|Mi porti a questo indirizzo, per favore.|Quanto costa la corsa?|Dov’è la stazione della metro più vicina?|Aiuto!|Chiamate un’ambulanza!|Chiamate la polizia!|Ho bisogno di un medico.|Dov’è la farmacia più vicina?|Ho perso il passaporto.|Posso dare un’occhiata?|Avete un’altra taglia?|Posso provarlo?|È troppo caro.|Mi fa uno sconto?|Lo scontrino, per favore.|Come arrivo al centro città?|È lontano da qui?|Me lo mostri sulla mappa, per favore.|Dov’è il bancomat più vicino?|Dove posso comprare una SIM?|A che ora apre il museo?|Come si chiama?|Piacere di conoscerla!|Parla inglese?|Ci può fare una foto, per favore?|Arrivederci!|Buona giornata!',
+    pt: 'Olá!|Obrigado!|Desculpe.|Sim / Não|Não entendo.|Fale mais devagar, por favor.|Quanto custa?|Onde é a casa de banho?|Tenho uma reserva.|A que horas é o pequeno-almoço?|Qual é a palavra-passe do Wi-Fi?|Posso deixar a bagagem aqui?|A que horas tenho de deixar o quarto?|Pode chamar-me um táxi, por favor?|Uma mesa para dois, por favor.|A ementa, por favor.|O que me recomenda?|Não como carne.|A conta, por favor.|Posso pagar com cartão?|Onde é a paragem do autocarro?|Como chego à estação de comboios?|Um bilhete, por favor.|Leve-me a esta morada, por favor.|Quanto custa a viagem?|Onde é a estação de metro mais próxima?|Socorro!|Chamem uma ambulância!|Chamem a polícia!|Preciso de um médico.|Onde é a farmácia mais próxima?|Perdi o meu passaporte.|Posso ver?|Tem outro tamanho?|Posso experimentar?|É muito caro.|Pode fazer-me um desconto?|O recibo, por favor.|Como chego ao centro da cidade?|É longe daqui?|Mostre-me no mapa, por favor.|Onde fica o multibanco mais próximo?|Onde posso comprar um cartão SIM?|A que horas abre o museu?|Como se chama?|Muito prazer!|Fala inglês?|Pode tirar-nos uma fotografia, por favor?|Adeus!|Tenha um bom dia!',
+    tr: 'Merhaba!|Teşekkür ederim!|Affedersiniz.|Evet / Hayır|Anlamıyorum.|Lütfen daha yavaş konuşun.|Bu ne kadar?|Tuvalet nerede?|Rezervasyonum var.|Kahvaltı saat kaçta?|Wi-Fi şifresi nedir?|Bavulumu burada bırakabilir miyim?|Odadan saat kaçta çıkmam gerekiyor?|Bana bir taksi çağırır mısınız lütfen?|İki kişilik bir masa, lütfen.|Menü, lütfen.|Ne tavsiye edersiniz?|Et yemiyorum.|Hesap, lütfen.|Kartla ödeyebilir miyim?|Otobüs durağı nerede?|Tren istasyonuna nasıl giderim?|Bir bilet, lütfen.|Lütfen beni bu adrese götürün.|Yolculuk ne kadar tutar?|En yakın metro istasyonu nerede?|İmdat!|Ambulans çağırın!|Polis çağırın!|Doktora ihtiyacım var.|En yakın eczane nerede?|Pasaportumu kaybettim.|Bakabilir miyim?|Başka bedeni var mı?|Deneyebilir miyim?|Bu çok pahalı.|İndirim yapar mısınız?|Fiş alabilir miyim?|Şehir merkezine nasıl giderim?|Buradan uzak mı?|Lütfen haritada gösterin.|En yakın ATM nerede?|Nereden SIM kart alabilirim?|Müze saat kaçta açılıyor?|Adınız ne?|Tanıştığımıza memnun oldum!|İngilizce biliyor musunuz?|Fotoğrafımızı çekebilir misiniz, lütfen?|Hoşça kalın!|İyi günler!'
   };
-  const phrases = c => c === 'ru' ? PH.map(p => p[1]) : PB[c] ? PB[c].split('|') : LS.get('pb_' + c, null);
-  const phraseState = c => (c === 'ru' || PB[c]) ? 'builtin' : (LS.get('pb_' + c, null) ? 'saved' : 'need');
+  const savedPh = c => { const a = LS.get('pb_' + c, null); return Array.isArray(a) && a.length >= PH.length ? a : null; };
+  const phrases = c => c === 'ru' ? PH.map(p => p[1]) : PB[c] ? PB[c].split('|') : savedPh(c);
+  const phraseState = c => (c === 'ru' || PB[c]) ? 'builtin' : (savedPh(c) ? 'saved' : 'need');
 
   // ---------- Перевод ----------
   const norm = s => String(s || '').toLowerCase().replace(/[!?.¡¿,;:'"’«»…\s]+/g, ' ').trim();
@@ -173,7 +184,37 @@
         if (d) { const r = await d.detect(t); const top = r && r[0]; if (top && top.confidence > 0.6 && L[top.detectedLanguage]) return top.detectedLanguage; }
       } catch (_) { detP = null; }
     }
-    return null;
+    return latinGuess(t);
+  }
+  // Запасной вариант для латиницы без детектора Chrome: особые буквы, затем частые короткие слова.
+  // Отвечает только при явном перевесе, иначе null.
+  const LAT_WORDS = {
+    en: 'the is are and you to how where what my please can do i it this of need have want me',
+    de: 'der die das und ist ich nicht wie wo bitte ein eine zu ist sie mein kann',
+    fr: 'le la les et est je vous de un une où comment pour pas mon ce',
+    es: 'el la los las y es yo de un una dónde donde cómo como a por favor para no mi hay tiene',
+    it: 'il lo la gli e è di un una dove come sono per non mi che a al alla posso con vorrei',
+    pt: 'o a os as e é de um uma onde como eu não para meu por posso com quero',
+    nl: 'de het een en is ik waar hoe niet mijn van',
+    pl: 'i w nie jest to jak gdzie się na proszę',
+    tr: 've bir bu ne nerede nasıl lütfen için mi'
+  };
+  function latinGuess(t) {
+    const low = t.toLowerCase();
+    if (/[ğış]/.test(low)) return 'tr';
+    if (/[ąćęłńśźż]/.test(low)) return 'pl';
+    if (/[ãõ]/.test(low)) return 'pt';
+    if (/[ñ¿¡]/.test(low)) return 'es';
+    if (/[äöüß]/.test(low)) return 'de';
+    if (/[œ]|[èêëîûù]/.test(low)) return 'fr';
+    const words = low.match(/[a-zà-ÿ]+/g) || [];
+    if (!words.length) return null;
+    let best = null, top = 0, second = 0;
+    for (const [c, list] of Object.entries(LAT_WORDS)) {
+      const set = new Set(list.split(' ')); const n = words.filter(w => set.has(w)).length;
+      if (n > top) { second = top; top = n; best = c; } else if (n > second) second = n;
+    }
+    return top >= 1 && top > second ? best : null;
   }
 
   // ---------- Голос ----------
@@ -219,6 +260,12 @@
     const list = favs(), k = keyOf(x), i = list.findIndex(f => keyOf(f) === k);
     if (i >= 0) list.splice(i, 1); else list.unshift({ from: x.from, to: x.to, src: x.src, tr: x.tr, t: Date.now() });
     LS.set('fav', list.slice(0, 200)); return i < 0;
+  }
+  // своя фраза: та же запись, что и ☆, но с пометкой own; повторное сохранение заменяет старую
+  function saveFav(x) {
+    const k = keyOf(x), list = favs().filter(f => keyOf(f) !== k);
+    list.unshift({ from: x.from, to: x.to, src: x.src, tr: x.tr, t: Date.now(), own: true });
+    LS.set('fav', list.slice(0, 200));
   }
   function addHist(x) {
     // пока человек печатает, не копим «Hal», «Hall», «Hallo» — оставляем только последний вариант
@@ -268,7 +315,7 @@
   }));
   async function readPhoto(file, c, onProgress) {
     const T = await loadTess();
-    const worker = await T.createWorker(L[c].o, 1, { workerPath: OCR + 'worker.min.js', corePath: OCR, langPath: OCR + 'lang', gzip: true, workerBlobURL: false,
+    const worker = await T.createWorker(L[c].o, 1, { workerPath: OCR + 'worker.min.js', corePath: OCR, langPath: ocrBase(L[c].o.split('+')[0]), gzip: true, workerBlobURL: false,
       logger: m => { if (onProgress && m && typeof m.progress === 'number') onProgress(m.status, m.progress); } });
     try {
       const url = URL.createObjectURL(file);
@@ -278,7 +325,11 @@
       const cv = document.createElement('canvas'); cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
       const { data } = await worker.recognize(cv);
-      return (data.text || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      ocrCached(c).then(ok => { if (!ok) cacheUrls(ocrUrls(c)); }); // скачанная модель — в кэш офлайна
+      let txt = (data.text || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      // японский/китайский: Tesseract ставит пробелы между иероглифами — убираем
+      if (c === 'ja' || c === 'zh') txt = txt.replace(/([\u3000-\u9fff\uff00-\uffef]) +(?=[\u3000-\u9fff\uff00-\uffef])/g, '$1');
+      return txt;
     } finally { try { await worker.terminate(); } catch (_) {} }
   }
 
@@ -290,8 +341,9 @@
     for (const u of urls) { try { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) await c.put(u, r.clone()); } catch (_) {} }
   }
   async function ocrCached(c) {
-    if (!L[c] || !L[c].o || !('caches' in window)) return false;
-    try { return !!(await caches.match(OCR + 'lang/' + L[c].o + '.traineddata.gz')); } catch (_) { return false; }
+    const urls = ocrUrls(c);
+    if (!urls.length || !('caches' in window)) return false;
+    try { for (const u of urls) if (!(await caches.match(u))) return false; return true; } catch (_) { return false; }
   }
   async function langStatus(c, my) {
     my = my || myLang();
@@ -319,8 +371,9 @@
       if (!online()) res.phrases = 'offline';
       else {
         try {
-          const out = [];
+          const out = [], prev = LS.get('pb_' + c, null) || [];
           for (let i = 0; i < PH.length; i++) {
+            if (prev[i]) { out.push(prev[i]); continue; }
             say('Фразы: ' + (i + 1) + ' из ' + PH.length);
             const r = await translate(PH[i][1], 'ru', c); out.push(r ? r.text : '');
             if (r && r.engine === 'online') await pause(250);
@@ -330,7 +383,7 @@
       }
     }
     // 3) распознавание текста с фото
-    if (L[c] && L[c].o) { say('Текст с фото: ' + nm(c) + '…'); await cacheUrls([OCR + 'lang/' + L[c].o + '.traineddata.gz', OCR + 'tesseract.min.js', OCR + 'worker.min.js', OCR + coreFile()]); res.ocr = (await ocrCached(c)) ? 'ok' : 'fail'; }
+    if (L[c] && L[c].o) { say('Текст с фото: ' + nm(c) + '…'); await cacheUrls([...ocrUrls(c), OCR + 'tesseract.min.js', OCR + 'worker.min.js', OCR + coreFile()]); res.ocr = (await ocrCached(c)) ? 'ok' : 'fail'; }
     return res;
   }
   // какой файл ядра Tesseract выберет этот браузер (та же проверка, что в worker.min.js)
@@ -399,6 +452,12 @@
     .tl-chip svg{width:16px;height:16px}
     .tl-chip.on{background:linear-gradient(135deg,#5b4bd6,#7b6bf0);color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(91,75,214,.28)}
     .tl-chip .tl-flag{width:20px;height:20px}
+    /* Категории фраз: 4 одинаковые плитки в ряд, иконка сверху, подпись до 2 строк (длинные слова на el/pl/pt не вылезают) */
+    .tl-cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;gap:6px;overflow:visible;padding:2px 0 6px}
+    .tl-cats .tl-chip{flex-direction:column;justify-content:center;gap:5px;min-width:0;min-height:68px;padding:8px 3px;border-radius:16px;font-size:.74rem;line-height:1.15;letter-spacing:-.01em;text-align:center;white-space:normal}
+    .tl-cats .tl-chip svg{width:18px;height:18px;flex-shrink:0}
+    .tl-cats .tl-chip span{display:block;max-width:100%;overflow-wrap:anywhere;hyphens:auto}
+    @media (max-width:350px){.tl-cats{gap:5px}.tl-cats .tl-chip{font-size:.66rem;padding:8px 2px;letter-spacing:-.02em}}
     .tl-ph{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:20px;background:var(--hub-card);border:1px solid var(--hub-card-b);box-shadow:var(--hub-shadow);cursor:pointer}
     .tl-ph>span{flex:1;min-width:0}
     .tl-ph b{display:block;font-size:1.05rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
@@ -450,8 +509,10 @@
     .tl-sheet>div{width:100%;max-width:560px;max-height:82vh;overflow:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
     .tl-sheet h3{margin:0 0 12px;font-size:1.15rem;font-weight:800;text-align:center}
     .tl-opt{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:16px;background:none;font:inherit;font-size:1rem;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
-    .tl-lang-search{position:sticky;top:-18px;z-index:1;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid var(--hub-card-b);border-radius:14px;background:var(--hub-card);font:inherit;color:var(--text)}
+    .tl-lang-search{position:sticky;top:-18px;z-index:2;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid var(--b1,rgba(30,30,80,.1));border-radius:14px;background:var(--bg3,#fff);box-shadow:0 -10px 0 8px var(--bg);font:inherit;color:var(--text)}
     .tl-opt.on{background:rgba(106,77,244,.1)}
+    [data-theme=light] .tl-lang-search{background:#fff}
+    .tl-sheet .tl-lh{margin:12px 12px 4px}
     .tl-opt>span:not(.tl-oc){flex:1}
     .tl-oc{font-size:.8rem;color:var(--t2);font-weight:700}
   `);
@@ -477,21 +538,34 @@
     if (bind) bind(el.firstChild, close);
     return close;
   }
+  // Выбор языка: сверху — часто используемые (по счётчику выборов) и текущий, ниже — все по алфавиту
+  // на языке приложения. Поиск ищет и по переведённому названию, и по коду.
+  const langUse = () => LS.get('langUse', {}) || {};
+  const bumpLang = c => { const u = langUse(); u[c] = (u[c] || 0) + 1; LS.set('langUse', u); };
+  const shownName = c => { try { return window.STModuleUI ? window.STModuleUI.translate(nm(c)) : nm(c); } catch (_) { return nm(c); } };
   function pickLang(title, cur, onPick, filter) {
-    const list = CODES.filter(c => !filter || filter(c));
-    sheet(title, `<input class="tl-lang-search" type="search" placeholder="Найти язык" aria-label="Найти язык">` + list.map(c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`).join(''),
+    const ok = c => !filter || filter(c);
+    const use = langUse(), ui = myLang();
+    const top = [...new Set([cur, ...Object.keys(use).sort((a, b) => use[b] - use[a]), ui])].filter(c => c && L[c] && ok(c)).slice(0, 6);
+    let loc = 'ru'; try { loc = window.STModuleUI ? window.STModuleUI.locale() : (document.documentElement.lang || 'ru'); } catch (_) {}
+    const rest = CODES.filter(c => ok(c) && !top.includes(c)).sort((a, b) => shownName(a).localeCompare(shownName(b), loc));
+    const opt = c => `<button class="tl-opt${c === cur ? ' on' : ''}" type="button" data-c="${c}">${flag(c)}<span>${esc(nm(c))}</span><span class="tl-oc">${c.toUpperCase()}</span></button>`;
+    sheet(title, `<input class="tl-lang-search" type="search" placeholder="Найти язык" aria-label="Найти язык">`
+      + (top.length ? `<div class="tl-sec tl-lh">Часто используемые</div>${top.map(opt).join('')}<div class="tl-sec tl-lh">Все языки</div>` : '')
+      + rest.map(opt).join(''),
       (root, close) => {
         root.querySelector('.tl-lang-search').addEventListener('input', e => {
           const q = e.target.value.trim().toLocaleLowerCase();
-          root.querySelectorAll('[data-c]').forEach(b => { b.style.display = !q || nm(b.dataset.c).toLocaleLowerCase().includes(q) || b.dataset.c.includes(q) ? '' : 'none'; });
+          root.querySelectorAll('.tl-lh').forEach(h => { h.style.display = q ? 'none' : ''; });
+          root.querySelectorAll('[data-c]').forEach(b => { const c = b.dataset.c; b.style.display = !q || b.textContent.toLocaleLowerCase().includes(q) || nm(c).toLocaleLowerCase().includes(q) || c.includes(q) ? '' : 'none'; });
         });
-        root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); onPick(b.dataset.c); }));
+        root.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => { close(); bumpLang(b.dataset.c); onPick(b.dataset.c); }));
       });
   }
   function bigView(text, c, sub) {
     const el = document.createElement('div'); el.className = 'tl-big';
     el.innerHTML = `<button class="hub-icbtn x" type="button" aria-label="Закрыть"><i data-lucide="x"></i></button>
-      <div class="h">${flag(c)}${esc(nm(c))}</div><div class="t">${esc(text)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ''}
+      <div class="h">${flag(c)}${esc(nm(c))}</div><div class="t" translate="no">${esc(text)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ''}
       <button class="tl-btn" type="button" style="max-width:320px"><i data-lucide="volume-2"></i>Озвучить</button>`;
     document.body.appendChild(el); icons(el);
     el.querySelector('.x').addEventListener('click', () => { try { speechSynthesis.cancel(); } catch (_) {} el.remove(); });
@@ -504,7 +578,7 @@
   function resultHtml(x, extra) {
     return `<div class="tl-res">
       <div class="tl-res-h"><span class="l">${flag(x.from)}${esc(nm(x.from))}</span>→<span class="l">${flag(x.to)}${esc(nm(x.to))}</span><em>${esc(ENGINE[x.engine] || '')}</em></div>
-      <div class="tl-res-t">${esc(x.tr)}</div>
+      <div class="tl-res-t" translate="no">${esc(x.tr)}</div>
       <div class="tl-res-acts">
         <button class="tl-act" type="button" data-r="say" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
         <button class="tl-act" type="button" data-r="copy" aria-label="Копировать"><i data-lucide="copy"></i></button>
@@ -704,11 +778,11 @@
                 <button class="tl-btn" type="button" data-a="shot"><i data-lucide="camera"></i>Снять</button>
                 <button class="tl-btn lite" type="button" data-a="pick"><i data-lucide="image"></i>Из галереи</button>
               </div>
-              <div class="tl-note">Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется. Перевод — на «${esc(nm(my).toLowerCase())}».</div>
+              <div class="tl-note"><span>Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется.</span> <span>Перевод:</span> <span>${esc(nm(my))}</span></div>
             </div>
             ${st.url ? `<img class="tl-photo" src="${st.url}" alt="" style="margin-top:12px">` : ''}
             ${st.busy ? `<div class="tl-card" style="margin-top:12px"><b>${esc(st.busy)}</b><div class="tl-prog"><i style="width:${Math.round(st.pct * 100)}%"></i></div></div>` : ''}
-            ${st.text && !st.busy ? `<div class="tl-sec">Распознанный текст — можно поправить</div><textarea class="tl-ta" id="cm-text">${esc(st.text)}</textarea>
+            ${st.text && !st.busy ? `<div class="tl-sec">Распознанный текст — можно поправить</div><textarea class="tl-ta" id="cm-text" translate="no">${esc(st.text)}</textarea>
               <button class="tl-btn" type="button" data-a="tr" style="margin-top:10px"><i data-lucide="languages"></i>Перевести</button>` : ''}
             ${st.err ? `<div class="tl-err">${esc(st.err)}</div>` : ''}
             <div id="cm-res"></div>`;
@@ -748,24 +822,25 @@
     function phr() {
       if (!S.phLang) S.phLang = foreign() || my;
       screenOf('tl-phr', 'Фразы', (body, screen) => {
-        const c = S.phLang, list = phrases(c);
+        const c = S.phLang, list = phrases(c), mine = myLang() !== 'ru' ? phrases(myLang()) : null;
+        const mean = i => (mine && mine[i]) || PH[i][1];
         body.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
             <span style="font-weight:700;color:var(--t2)">Язык</span>
             <button class="tl-chip" type="button" data-a="lang">${flag(c)}${esc(nm(c))}<i data-lucide="chevron-down"></i></button></div>
-          <div class="tl-chips">${CATS.map(([k, t, ic]) => `<button class="tl-chip${S.cat === k ? ' on' : ''}" type="button" data-cat="${k}"><i data-lucide="${ic}"></i>${t}</button>`).join('')}</div>
+          <div class="tl-chips tl-cats">${CATS.map(([k, t, ic]) => `<button class="tl-chip${S.cat === k ? ' on' : ''}" type="button" data-cat="${k}"><i data-lucide="${ic}"></i><span>${t}</span></button>`).join('')}</div>
           ${list ? `<div class="tl-list" style="margin-top:8px">${PH.map((p, i) => p[0] !== S.cat ? '' : `
-            <div class="tl-ph" data-i="${i}"><span><b>${esc(list[i])}</b><small>${esc(p[1])}</small></span>
+            <div class="tl-ph" data-i="${i}"><span><b translate="no">${esc(list[i])}</b>${mean(i) === list[i] ? '' : `<small${mean(i) === p[1] ? '' : ' translate="no"'}>${esc(mean(i))}</small>`}</span>
               <button class="tl-act" type="button" data-say="${i}" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
               <button class="tl-act${isFav({ from: 'ru', to: c, src: p[1] }) ? ' fav' : ''}" type="button" data-fav="${i}" aria-label="В избранное"><i data-lucide="star"></i></button></div>`).join('')}</div>
             <div class="tl-note">Нажмите на фразу, чтобы показать её собеседнику крупно. ${phraseState(c) === 'builtin' ? 'Фразы встроены в приложение и работают без интернета.' : 'Фразы скачаны и работают без интернета.'}</div>`
-          : `<div class="tl-card" style="margin-top:8px"><b>Фразы на языке «${esc(nm(c))}» ещё не скачаны</b>
+          : `<div class="tl-card" style="margin-top:8px"><b><span>Фразы ещё не скачаны:</span> <span>${esc(nm(c))}</span></b>
               <div class="tl-note">Скачайте их один раз, пока есть интернет, — потом они будут работать офлайн.</div>
               <button class="tl-btn" type="button" data-a="dl" style="margin-top:12px"><i data-lucide="download"></i>Скачать фразы</button><div class="tl-note" id="ph-st"></div></div>`}`;
         icons(body);
         body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык фраз', c, x => { S.phLang = x; screen.refresh(); }, x => x !== 'ru'));
         body.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { S.cat = b.dataset.cat; screen.refresh(); }));
-        body.querySelectorAll('[data-i]').forEach(el => el.addEventListener('click', e => { if (e.target.closest('button')) return; const i = +el.dataset.i; bigView(list[i], c, PH[i][1]); }));
+        body.querySelectorAll('[data-i]').forEach(el => el.addEventListener('click', e => { if (e.target.closest('button')) return; const i = +el.dataset.i; bigView(list[i], c, mean(i) === list[i] ? '' : mean(i)); }));
         body.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => { if (!speak(list[+b.dataset.say], c)) ctx.toast('Озвучка недоступна в этом браузере'); }));
         body.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.fav; const on = toggleFav({ from: 'ru', to: c, src: PH[i][1], tr: list[i] }); b.classList.toggle('fav', on); ctx.toast(on ? 'Добавлено в избранное' : 'Убрано из избранного'); }));
         const dl = body.querySelector('[data-a="dl"]');
@@ -774,7 +849,8 @@
           dl.disabled = true; const stEl = body.querySelector('#ph-st');
           const out = [];
           try {
-            for (let i = 0; i < PH.length; i++) { stEl.textContent = 'Скачиваю: ' + (i + 1) + ' из ' + PH.length; const r = await translate(PH[i][1], 'ru', c); out.push(r.text); if (r.engine === 'online') await pause(250); }
+            const prev = LS.get('pb_' + c, null) || [];
+            for (let i = 0; i < PH.length; i++) { if (prev[i]) { out.push(prev[i]); continue; } stEl.textContent = 'Скачиваю: ' + (i + 1) + ' из ' + PH.length; const r = await translate(PH[i][1], 'ru', c); out.push(r.text); if (r.engine === 'online') await pause(250); }
             LS.set('pb_' + c, out); ctx.toast('Фразы скачаны'); screen.refresh();
           } catch (e) { dl.disabled = false; stEl.textContent = errText(e); }
         });
@@ -787,12 +863,13 @@
         const list = S.favTab === 'fav' ? favs() : hist();
         body.innerHTML = `
           <div class="tl-tabs"><button type="button" data-t="fav" class="${S.favTab === 'fav' ? 'on' : ''}">Избранное</button><button type="button" data-t="hist" class="${S.favTab === 'hist' ? 'on' : ''}">История</button></div>
+          ${S.favTab === 'fav' ? '<button class="tl-btn lite" type="button" data-a="own" style="margin-top:12px"><i data-lucide="plus"></i>Добавить свою фразу</button>' : ''}
           <div class="tl-list" style="margin-top:12px">${list.length ? list.map((x, i) => `
-            <div class="tl-ph" data-i="${i}"><span><b>${esc(x.tr)}</b><small>${flag(x.from, 'tl-flag" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px')}${esc(x.src)}</small></span>
+            <div class="tl-ph" data-i="${i}"><span><b translate="no">${esc(x.tr)}</b><small>${flag(x.from, 'tl-flag" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px')}${esc(x.src)}</small></span>
               <button class="tl-act" type="button" data-say="${i}" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
               ${S.favTab === 'fav' ? `<button class="tl-act" type="button" data-del="${i}" aria-label="Удалить"><i data-lucide="trash-2"></i></button>`
                 : `<button class="tl-act${isFav(x) ? ' fav' : ''}" type="button" data-fav="${i}" aria-label="В избранное"><i data-lucide="star"></i></button>`}</div>`).join('')
-            : `<div class="st-empty"><i data-lucide="${S.favTab === 'fav' ? 'star' : 'history'}"></i><div>${S.favTab === 'fav' ? 'Нажмите ☆ у перевода или фразы — она появится здесь и будет доступна без интернета.' : 'Здесь появятся ваши последние переводы.'}</div></div>`}</div>
+            : `<div class="st-empty"><i data-lucide="${S.favTab === 'fav' ? 'star' : 'history'}"></i><div>${S.favTab === 'fav' ? 'Нажмите ☆ у перевода или фразы — или добавьте свою. Избранное работает без интернета.' : 'Здесь появятся ваши последние переводы.'}</div></div>`}</div>
           ${S.favTab === 'hist' && list.length ? '<button class="tl-btn lite" type="button" data-a="clear" style="margin-top:14px"><i data-lucide="trash-2"></i>Очистить историю</button>' : ''}`;
         icons(body);
         body.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { S.favTab = b.dataset.t; screen.refresh(); }));
@@ -801,7 +878,51 @@
         body.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { toggleFav(list[+b.dataset.del]); screen.refresh(); }));
         body.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => { const on = toggleFav(list[+b.dataset.fav]); b.classList.toggle('fav', on); }));
         const cl = body.querySelector('[data-a="clear"]'); if (cl) cl.addEventListener('click', () => { LS.set('hist', []); screen.refresh(); });
+        const ow = body.querySelector('[data-a="own"]'); if (ow) ow.addEventListener('click', () => ownPhrase());
       });
+    }
+
+    // ===== Своя фраза в избранное =====
+    // Пишем фразу на любом языке (он определяется сам), переводим (на устройстве / онлайн) или вписываем перевод сами — без сети тоже можно.
+    function ownPhrase() {
+      const st = { to: S.ownLang || (foreign() !== my ? foreign() : (my === 'en' ? 'de' : 'en')), from: '', src: '', tr: '', busy: false, msg: '' };
+      const srcLang = async () => (await detect(st.src)) || my;
+      screenOf('tl-own', 'Своя фраза', (body, screen) => {
+        const draw = () => {
+          body.innerHTML = `
+            <div class="tl-sec" style="margin-top:4px">Что хотите сказать</div>
+            <textarea class="tl-ta" id="ow-src" placeholder="Например: у меня аллергия на орехи" style="min-height:90px"></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px">
+              <span style="font-weight:700;color:var(--t2)">Язык перевода</span>
+              <button class="tl-chip" type="button" data-a="lang">${flag(st.to)}${esc(nm(st.to))}<i data-lucide="chevron-down"></i></button></div>
+            <button class="tl-btn lite" type="button" data-a="tr" style="margin-top:12px"${st.busy ? ' disabled' : ''}><i data-lucide="languages"></i>${st.busy ? 'Перевожу…' : 'Перевести'}</button>
+            <div class="tl-sec">Перевод — можно исправить или написать свой</div>
+            <textarea class="tl-ta" id="ow-tr" style="min-height:90px"></textarea>
+            ${st.msg ? `<div class="tl-note">${esc(st.msg)}</div>` : st.from && st.tr ? `<div class="tl-note"><span>Определён язык:</span> <span>${esc(nm(st.from))}</span></div>` : ''}
+            <button class="tl-btn" type="button" data-a="save" style="margin-top:14px"><i data-lucide="star"></i>Сохранить в избранное</button>
+            <div class="tl-note">Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.</div>`;
+          icons(body);
+          const src = body.querySelector('#ow-src'), tr = body.querySelector('#ow-tr');
+          src.value = st.src; tr.value = st.tr;
+          src.addEventListener('input', () => { st.src = src.value; st.from = ''; });
+          tr.addEventListener('input', () => { st.tr = tr.value; });
+          body.querySelector('[data-a="lang"]').addEventListener('click', () => pickLang('Язык перевода', st.to, x => { st.to = S.ownLang = x; st.msg = ''; draw(); }));
+          body.querySelector('[data-a="tr"]').addEventListener('click', async () => {
+            if (!st.src.trim()) { ctx.toast('Напишите фразу'); src.focus(); return; }
+            st.busy = true; st.msg = ''; draw();
+            try { st.from = await srcLang(); const r = await translate(st.src, st.from, st.to); st.tr = r ? r.text : ''; st.msg = ''; }
+            catch (e) { st.msg = errText(e); }
+            st.busy = false; draw();
+          });
+          body.querySelector('[data-a="save"]').addEventListener('click', async () => {
+            const a = st.src.trim(), b = st.tr.trim();
+            if (!a || !b) { ctx.toast('Напишите фразу и перевод'); (a ? tr : src).focus(); return; }
+            saveFav({ from: st.from || await srcLang(), to: st.to, src: a, tr: b });
+            ctx.toast('Фраза сохранена в избранное'); S.favTab = 'fav'; fav();
+          });
+        };
+        draw();
+      }, fav);
     }
 
     // ===== Языки для офлайна =====
@@ -848,7 +969,7 @@
     name: nm, flag, myLang, tripLang, tripCC, detectTripCC,
     status: (c, my) => langStatus(c, my),
     download: (c, my, onStep) => downloadLang(c, my, onStep),
-    ocrFile: c => (L[c] && L[c].o ? OCR + 'lang/' + L[c].o + '.traineddata.gz' : null),
+    ocrFile: c => ocrUrls(c)[0] || null,
     coreFile: () => OCR + coreFile(),
     open(view) { pendingView = view || null; STHub.openService(ID); }
   };

@@ -197,13 +197,13 @@
           const t = ctx.trip || {};
           const members = ctx.members.length;
           body.innerHTML = `
-            <button class="hub-trip2" type="button" id="ckl-trip" aria-label="Открыть текущую поездку">
+            ${ctx.trip ? `<button class="hub-trip2" type="button" id="ckl-trip" aria-label="Открыть текущую поездку">
               <span class="hub-trip2-ph on ckl-trip-ph"><img id="ckl-trip-photo" src="/img/trips/abstract.jpg" alt=""></span>
               <span class="hub-trip2-txt"><span class="hub-trip2-k"><i data-lucide="plane"></i>Текущая поездка</span>
                 <span class="hub-trip2-name">${esc(t.name || 'Поездка')}</span>
                 <span class="hub-trip2-meta">${esc(t.dest || '')}${t.dest && members ? ' <b>•</b> ' : ''}${members ? esc(window.STModuleUI.count(members, 'participant')) : ''}</span>
               </span><span class="hub-trip2-go"><i data-lucide="chevron-right"></i></span>
-            </button>
+            </button>` : ''}
             <div class="ckl-card ckl-prog">${ring(pctOf(c), 64, 7)}
               <div><div class="ckl-prog-ttl">Подготовка к поездке</div>
               <div class="ckl-prog-sub">${c.total ? esc(window.STModuleUI.progress(c.done, c.total)) : 'Добавьте разделы и пункты'}</div></div>
@@ -222,7 +222,7 @@
             <button class="ckl-add-sec" type="button" id="ckl-add-sec"><i data-lucide="plus"></i>Добавить раздел</button>
           `;
           if (ctx.trip && window.STPlacePhoto?.tripImg) STPlacePhoto.tripImg(body.querySelector('#ckl-trip-photo'), ctx.trip, { width: 900 });
-          body.querySelector('#ckl-trip').addEventListener('click', () => STHub.openExpenses('pg-dash'));
+          body.querySelector('#ckl-trip')?.addEventListener('click', () => STHub.openExpenses('pg-dash'));
           body.querySelectorAll('[data-sec]').forEach(row => {
             const sec = sections.find(s => s.id === row.dataset.sec);
             row.querySelector('[data-open]').addEventListener('click', () => openSection(sec.id));

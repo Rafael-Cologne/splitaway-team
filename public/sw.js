@@ -8,7 +8,7 @@
 // v3.0: локальный lucide.js, qrcode.min.js; убран CDN-кэш; нет Google Fonts
 // ============================================================
 
-const SW_VERSION = '1.0.25-147-team';
+const SW_VERSION = '1.0.25-163-team';
 const CACHE_STATIC = `splitaway-static-${SW_VERSION}`;
 
 // Ресурсы, которые кэшируем при установке (все локальные — нет CDN)
@@ -50,7 +50,7 @@ const SKIP_CACHE = [
 //   st-offline-assets — копия экранов, картинок и библиотек; st-offline-maps — карта района поездки.
 const OFFLINE_PREFIX = 'st-offline-';
 // Внешние файлы, которые нужны без сети: карта (Leaflet), флаги
-const CDN_HOSTS = ['unpkg.com', 'flagcdn.com'];
+const CDN_HOSTS = ['unpkg.com', 'flagcdn.com', 'cdn.jsdelivr.net'];
 
 // ============================================================
 // INSTALL — кэшируем ядро приложения

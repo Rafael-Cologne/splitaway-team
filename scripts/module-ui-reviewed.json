@@ -331,5 +331,242 @@
   },
   "Не удалось скопировать": {
     "en": "Could not copy", "de": "Kopieren fehlgeschlagen", "fr": "Impossible de copier", "it": "Impossibile copiare", "es": "No se pudo copiar", "pt": "Não foi possível copiar", "pl": "Nie udało się skopiować", "el": "Η αντιγραφή απέτυχε", "tr": "Kopyalanamadı"
+  },
+  "Снять": {
+    "en": "Take photo", "de": "Foto aufnehmen", "fr": "Prendre une photo", "it": "Scatta foto", "es": "Hacer foto", "pt": "Tirar foto", "pl": "Zrób zdjęcie", "el": "Λήψη φωτογραφίας", "tr": "Fotoğraf çek"
+  },
+  "Меню, вывески, объявления, документы. Распознавание идёт на телефоне — фото никуда не отправляется.": {
+    "en": "Menus, signs, notices, documents. Text is recognised on your phone — the photo is never uploaded.", "de": "Speisekarten, Schilder, Aushänge, Dokumente. Die Erkennung läuft auf dem Gerät – das Foto wird nirgendwohin gesendet.", "fr": "Menus, panneaux, affiches, documents. La reconnaissance se fait sur le téléphone — la photo n’est envoyée nulle part.", "it": "Menu, insegne, avvisi, documenti. Il riconoscimento avviene sul telefono: la foto non viene inviata da nessuna parte.", "es": "Menús, carteles, anuncios, documentos. El reconocimiento se hace en el teléfono: la foto no se envía a ninguna parte.", "pt": "Menus, placas, avisos, documentos. O reconhecimento é feito no telemóvel — a foto não é enviada para lado nenhum.", "pl": "Menu, szyldy, ogłoszenia, dokumenty. Rozpoznawanie odbywa się na telefonie — zdjęcie nigdzie nie jest wysyłane.", "el": "Μενού, πινακίδες, ανακοινώσεις, έγγραφα. Η αναγνώριση γίνεται στο κινητό — η φωτογραφία δεν αποστέλλεται πουθενά.", "tr": "Menüler, tabelalar, ilanlar, belgeler. Tanıma telefonda yapılır — fotoğraf hiçbir yere gönderilmez."
+  },
+  "Перевод:": {
+    "en": "Translation:", "de": "Übersetzung:", "fr": "Traduction :", "it": "Traduzione:", "es": "Traducción:", "pt": "Tradução:", "pl": "Tłumaczenie:", "el": "Μετάφραση:", "tr": "Çeviri:"
+  },
+  "Фразы ещё не скачаны:": {
+    "en": "Phrases not downloaded yet:", "de": "Sätze noch nicht heruntergeladen:", "fr": "Phrases pas encore téléchargées :", "it": "Frasi non ancora scaricate:", "es": "Frases aún no descargadas:", "pt": "Frases ainda não transferidas:", "pl": "Zwroty jeszcze nie pobrane:", "el": "Οι φράσεις δεν έχουν ληφθεί ακόμη:", "tr": "İfadeler henüz indirilmedi:"
+  },
+  "Можно посмотреть?": {
+    "en": "Can I have a look?", "de": "Darf ich mal sehen?", "fr": "Je peux regarder ?", "it": "Posso dare un’occhiata?", "es": "¿Puedo mirarlo?", "pt": "Posso ver?", "pl": "Czy mogę obejrzeć?", "el": "Μπορώ να ρίξω μια ματιά;", "tr": "Bakabilir miyim?"
+  },
+  "У вас есть другой размер?": {
+    "en": "Do you have another size?", "de": "Haben Sie eine andere Größe?", "fr": "Vous avez une autre taille ?", "it": "Avete un’altra taglia?", "es": "¿Tiene otra talla?", "pt": "Tem outro tamanho?", "pl": "Czy jest inny rozmiar?", "el": "Έχετε άλλο μέγεθος;", "tr": "Başka bedeni var mı?"
+  },
+  "Можно примерить?": {
+    "en": "Can I try it on?", "de": "Kann ich das anprobieren?", "fr": "Je peux l’essayer ?", "it": "Posso provarlo?", "es": "¿Puedo probármelo?", "pt": "Posso experimentar?", "pl": "Czy mogę przymierzyć?", "el": "Μπορώ να το δοκιμάσω;", "tr": "Deneyebilir miyim?"
+  },
+  "Это слишком дорого.": {
+    "en": "That’s too expensive.", "de": "Das ist zu teuer.", "fr": "C’est trop cher.", "it": "È troppo caro.", "es": "Es demasiado caro.", "pt": "É muito caro.", "pl": "To za drogo.", "el": "Είναι πολύ ακριβό.", "tr": "Bu çok pahalı."
+  },
+  "Сделаете скидку?": {
+    "en": "Can you give me a discount?", "de": "Können Sie mir einen Rabatt geben?", "fr": "Vous pouvez me faire une réduction ?", "it": "Mi fa uno sconto?", "es": "¿Me hace un descuento?", "pt": "Pode fazer-me um desconto?", "pl": "Czy mogę dostać rabat?", "el": "Μου κάνετε έκπτωση;", "tr": "İndirim yapar mısınız?"
+  },
+  "Дайте чек, пожалуйста.": {
+    "en": "Can I have a receipt, please?", "de": "Eine Quittung, bitte.", "fr": "Un reçu, s’il vous plaît.", "it": "Lo scontrino, per favore.", "es": "El recibo, por favor.", "pt": "O recibo, por favor.", "pl": "Poproszę paragon.", "el": "Την απόδειξη, παρακαλώ.", "tr": "Fiş alabilir miyim?"
+  },
+  "Как добраться до центра города?": {
+    "en": "How do I get to the city centre?", "de": "Wie komme ich ins Stadtzentrum?", "fr": "Comment aller au centre-ville ?", "it": "Come arrivo al centro città?", "es": "¿Cómo llego al centro de la ciudad?", "pt": "Como chego ao centro da cidade?", "pl": "Jak dojechać do centrum miasta?", "el": "Πώς πάω στο κέντρο της πόλης;", "tr": "Şehir merkezine nasıl giderim?"
+  },
+  "Это далеко отсюда?": {
+    "en": "Is it far from here?", "de": "Ist das weit von hier?", "fr": "C’est loin d’ici ?", "it": "È lontano da qui?", "es": "¿Está lejos de aquí?", "pt": "É longe daqui?", "pl": "Czy to daleko stąd?", "el": "Είναι μακριά από εδώ;", "tr": "Buradan uzak mı?"
+  },
+  "Покажите на карте, пожалуйста.": {
+    "en": "Please show me on the map.", "de": "Zeigen Sie es mir bitte auf der Karte.", "fr": "Montrez-moi sur la carte, s’il vous plaît.", "it": "Me lo mostri sulla mappa, per favore.", "es": "Muéstremelo en el mapa, por favor.", "pt": "Mostre-me no mapa, por favor.", "pl": "Proszę pokazać na mapie.", "el": "Δείξτε μου στον χάρτη, παρακαλώ.", "tr": "Lütfen haritada gösterin."
+  },
+  "Где ближайший банкомат?": {
+    "en": "Where is the nearest ATM?", "de": "Wo ist der nächste Geldautomat?", "fr": "Où est le distributeur le plus proche ?", "it": "Dov’è il bancomat più vicino?", "es": "¿Dónde está el cajero más cercano?", "pt": "Onde fica o multibanco mais próximo?", "pl": "Gdzie jest najbliższy bankomat?", "el": "Πού είναι το πλησιέστερο ATM;", "tr": "En yakın ATM nerede?"
+  },
+  "Где можно купить SIM-карту?": {
+    "en": "Where can I buy a SIM card?", "de": "Wo kann ich eine SIM-Karte kaufen?", "fr": "Où puis-je acheter une carte SIM ?", "it": "Dove posso comprare una SIM?", "es": "¿Dónde puedo comprar una tarjeta SIM?", "pt": "Onde posso comprar um cartão SIM?", "pl": "Gdzie mogę kupić kartę SIM?", "el": "Πού μπορώ να αγοράσω κάρτα SIM;", "tr": "Nereden SIM kart alabilirim?"
+  },
+  "Во сколько открывается музей?": {
+    "en": "What time does the museum open?", "de": "Wann öffnet das Museum?", "fr": "À quelle heure ouvre le musée ?", "it": "A che ora apre il museo?", "es": "¿A qué hora abre el museo?", "pt": "A que horas abre o museu?", "pl": "O której otwierają muzeum?", "el": "Τι ώρα ανοίγει το μουσείο;", "tr": "Müze saat kaçta açılıyor?"
+  },
+  "Как вас зовут?": {
+    "en": "What is your name?", "de": "Wie heißen Sie?", "fr": "Comment vous appelez-vous ?", "it": "Come si chiama?", "es": "¿Cómo se llama?", "pt": "Como se chama?", "pl": "Jak ma Pan/Pani na imię?", "el": "Πώς σας λένε;", "tr": "Adınız ne?"
+  },
+  "Приятно познакомиться!": {
+    "en": "Nice to meet you!", "de": "Freut mich, Sie kennenzulernen!", "fr": "Enchanté !", "it": "Piacere di conoscerla!", "es": "¡Encantado de conocerle!", "pt": "Muito prazer!", "pl": "Miło mi poznać!", "el": "Χάρηκα πολύ!", "tr": "Tanıştığımıza memnun oldum!"
+  },
+  "Вы говорите по-английски?": {
+    "en": "Do you speak English?", "de": "Sprechen Sie Englisch?", "fr": "Vous parlez anglais ?", "it": "Parla inglese?", "es": "¿Habla inglés?", "pt": "Fala inglês?", "pl": "Czy mówi Pan/Pani po angielsku?", "el": "Μιλάτε αγγλικά;", "tr": "İngilizce biliyor musunuz?"
+  },
+  "Сфотографируйте нас, пожалуйста.": {
+    "en": "Could you take a photo of us, please?", "de": "Könnten Sie bitte ein Foto von uns machen?", "fr": "Vous pouvez nous prendre en photo, s’il vous plaît ?", "it": "Ci può fare una foto, per favore?", "es": "¿Nos puede hacer una foto, por favor?", "pt": "Pode tirar-nos uma fotografia, por favor?", "pl": "Proszę zrobić nam zdjęcie.", "el": "Μπορείτε να μας βγάλετε μια φωτογραφία, παρακαλώ;", "tr": "Fotoğrafımızı çekebilir misiniz, lütfen?"
+  },
+  "До свидания!": {
+    "en": "Goodbye!", "de": "Auf Wiedersehen!", "fr": "Au revoir !", "it": "Arrivederci!", "es": "¡Adiós!", "pt": "Adeus!", "pl": "Do widzenia!", "el": "Αντίο!", "tr": "Hoşça kalın!"
+  },
+  "Хорошего дня!": {
+    "en": "Have a nice day!", "de": "Einen schönen Tag noch!", "fr": "Bonne journée !", "it": "Buona giornata!", "es": "¡Que tenga un buen día!", "pt": "Tenha um bom dia!", "pl": "Miłego dnia!", "el": "Καλή σας μέρα!", "tr": "İyi günler!"
+  },
+  "Основное": {
+    "en": "Basics", "de": "Grundlagen", "fr": "Essentiel", "it": "Essenziali", "es": "Básico", "pt": "Essencial", "pl": "Podstawy", "el": "Βασικά", "tr": "Temel"
+  },
+  "Отель": {
+    "en": "Hotel", "de": "Hotel", "fr": "Hôtel", "it": "Hotel", "es": "Hotel", "pt": "Hotel", "pl": "Hotel", "el": "Ξενοδοχείο", "tr": "Otel"
+  },
+  "В городе": {
+    "en": "In the city", "de": "In der Stadt", "fr": "En ville", "it": "In città", "es": "En la ciudad", "pt": "Na cidade", "pl": "W mieście", "el": "Στην πόλη", "tr": "Şehirde"
+  },
+  "Знакомство": {
+    "en": "Meeting people", "de": "Smalltalk", "fr": "Rencontres", "it": "Conoscersi", "es": "Conocer gente", "pt": "Conhecer pessoas", "pl": "Poznawanie", "el": "Γνωριμία", "tr": "Tanışma"
+  },
+  "Экстренно": {
+    "en": "Emergency", "de": "Notfall", "fr": "Urgence", "it": "Emergenza", "es": "Emergencia", "pt": "Emergência", "pl": "Nagłe wypadki", "el": "Έκτακτη ανάγκη", "tr": "Acil durum"
+  },
+  "Счёт, пожалуйста.": {
+    "en": "Bill, please.", "de": "Bill, bitte.", "fr": "Bill, s'il vous plaît.", "it": "Bill, per favore.", "es": "Bill, por favor.", "pt": "Bill, por favor.", "pl": "Poproszę rachunek.", "el": "Τον λογαριασμό, παρακαλώ.", "tr": "Faturayı alabilir miyim, lütfen?"
+  },
+  "Во сколько нужно освободить номер?": {
+    "en": "What time do you need to vacate your room?", "de": "Um wie viel Uhr müssen Sie Ihr Zimmer räumen?", "fr": "À quelle heure devez-vous libérer votre chambre ?", "it": "A che ora devi liberare la tua stanza?", "es": "¿A qué hora necesitas desalojar tu habitación?", "pt": "A que horas você precisa para desocupar seu quarto?", "pl": "Do której trzeba zwolnić pokój?", "el": "Μέχρι τι ώρα πρέπει να αδειάσω το δωμάτιο;", "tr": "Odanızı saat kaçta boşaltmanız gerekiyor?"
+  },
+  "Отвезите меня по этому адресу, пожалуйста.": {
+    "en": "Take me to this address, please.", "de": "Bringen Sie mich bitte zu dieser Adresse.", "fr": "Emmenez-moi à cette adresse, s'il vous plaît.", "it": "Portami a questo indirizzo, per favore.", "es": "Llévame a esta dirección, por favor.", "pt": "Leve-me para este endereço, por favor.", "pl": "Proszę mnie zawieźć pod ten adres.", "el": "Πηγαίνετε με σε αυτή τη διεύθυνση, παρακαλώ.", "tr": "Beni bu adrese götürün lütfen."
+  },
+  "Вызовите скорую помощь!": {
+    "en": "Call an ambulance!", "de": "Rufen Sie einen Krankenwagen!", "fr": "Appelez une ambulance !", "it": "Chiama un'ambulanza!", "es": "¡Llame a una ambulancia!", "pt": "Chame uma ambulância!", "pl": "Proszę wezwać karetkę!", "el": "Καλέστε ασθενοφόρο!", "tr": "Ambulans çağırın!"
+  },
+  "Вызовите полицию!": {
+    "en": "Call the police!", "de": "Rufen Sie die Polizei!", "fr": "Appelez la police !", "it": "Chiama la polizia!", "es": "¡Llama a la policía!", "pt": "Chame a polícia!", "pl": "Proszę wezwać policję!", "el": "Καλέστε την αστυνομία!", "tr": "Polisi arayın!"
+  },
+  "Как добраться до вокзала?": {
+    "en": "How to get to the station?", "de": "Wie komme ich zum Bahnhof?", "fr": "Comment venir à la gare ?", "it": "Come arrivare alla stazione?", "es": "¿Cómo llegar a la estación?", "pt": "Como chegar à estação?", "pl": "Jak dojechać na dworzec?", "el": "Πώς πάω στον σιδηροδρομικό σταθμό;", "tr": "İstasyona nasıl gidilir?"
+  },
+  "Сколько стоит поездка?": {
+    "en": "How much does the trip cost?", "de": "Wie viel kostet die Reise?", "fr": "Combien coûte le trajet ?", "it": "Quanto costa il viaggio?", "es": "¿Cuanto cuesta el viaje?", "pt": "Quanto custa a viagem?", "pl": "Ile kosztuje przejazd?", "el": "Πόσο κοστίζει η διαδρομή;", "tr": "Yolculuk ücreti ne kadar?"
+  },
+  "Меню, пожалуйста.": {
+    "en": "Menu please.", "de": "Menü bitte.", "fr": "Menu s'il vous plaît.", "it": "Menù per favore.", "es": "Menú por favor.", "pt": "Cardápio por favor.", "pl": "Proszę o menu.", "el": "Τον κατάλογο, παρακαλώ.", "tr": "Menü lütfen."
+  },
+  "Один билет, пожалуйста.": {
+    "en": "One ticket please.", "de": "Ein Ticket bitte.", "fr": "Un ticket s'il vous plaît.", "it": "Un biglietto, per favore.", "es": "Un boleto por favor.", "pt": "Um ingresso, por favor.", "pl": "Poproszę jeden bilet.", "el": "Ένα εισιτήριο, παρακαλώ.", "tr": "Bir bilet lütfen."
+  },
+  "Какой пароль от Wi-Fi?": {
+    "en": "What is the Wi-Fi password?", "de": "Wie lautet das WLAN-Passwort?", "fr": "Quel est le mot de passe Wi-Fi ?", "it": "Qual è la password Wi-Fi?", "es": "¿Cuál es la contraseña de Wi-Fi?", "pt": "Qual é a senha do Wi-Fi?", "pl": "Jakie jest hasło Wi-Fi?", "el": "Ποιος είναι ο κωδικός του Wi-Fi;", "tr": "Wi-Fi şifresi nedir?"
+  },
+  "Своя фраза": {
+    "en": "My phrase", "de": "Eigener Satz", "fr": "Ma phrase", "it": "Frase personale", "es": "Frase propia", "pt": "Frase própria", "pl": "Własne zdanie", "el": "Δική μου φράση", "tr": "Kendi ifadem"
+  },
+  "Добавить свою фразу": {
+    "en": "Add my own phrase", "de": "Eigenen Satz hinzufügen", "fr": "Ajouter ma phrase", "it": "Aggiungi una frase", "es": "Añadir mi frase", "pt": "Adicionar frase própria", "pl": "Dodaj własne zdanie", "el": "Προσθήκη δικής μου φράσης", "tr": "Kendi ifademi ekle"
+  },
+  "Что хотите сказать": {
+    "en": "What you want to say", "de": "Was möchten Sie sagen", "fr": "Ce que vous voulez dire", "it": "Cosa vuoi dire", "es": "Lo que quiere decir", "pt": "O que quer dizer", "pl": "Co chcesz powiedzieć", "el": "Τι θέλετε να πείτε", "tr": "Ne söylemek istiyorsunuz"
+  },
+  "Например: у меня аллергия на орехи": {
+    "en": "For example: I am allergic to nuts", "de": "Zum Beispiel: Ich bin allergisch gegen Nüsse", "fr": "Par exemple : je suis allergique aux noix", "it": "Per esempio: sono allergico alla frutta secca", "es": "Por ejemplo: soy alérgico a los frutos secos", "pt": "Por exemplo: sou alérgico a frutos secos", "pl": "Na przykład: mam alergię na orzechy", "el": "Για παράδειγμα: έχω αλλεργία στους ξηρούς καρπούς", "tr": "Örneğin: Kuruyemişe alerjim var"
+  },
+  "Язык перевода": {
+    "en": "Translation language", "de": "Zielsprache", "fr": "Langue de traduction", "it": "Lingua di traduzione", "es": "Idioma de traducción", "pt": "Idioma da tradução", "pl": "Język tłumaczenia", "el": "Γλώσσα μετάφρασης", "tr": "Çeviri dili"
+  },
+  "Перевод — можно исправить или написать свой": {
+    "en": "Translation — you can edit it or write your own", "de": "Übersetzung — Sie können sie ändern oder selbst schreiben", "fr": "Traduction — vous pouvez la corriger ou écrire la vôtre", "it": "Traduzione — puoi correggerla o scriverne una tua", "es": "Traducción: puede corregirla o escribir la suya", "pt": "Tradução — pode corrigi-la ou escrever a sua", "pl": "Tłumaczenie — możesz je poprawić lub wpisać własne", "el": "Μετάφραση — μπορείτε να τη διορθώσετε ή να γράψετε τη δική σας", "tr": "Çeviri — düzeltebilir ya da kendiniz yazabilirsiniz"
+  },
+  "Сохранить в избранное": {
+    "en": "Save to favorites", "de": "In Favoriten speichern", "fr": "Enregistrer dans les favoris", "it": "Salva nei preferiti", "es": "Guardar en favoritos", "pt": "Guardar nos favoritos", "pl": "Zapisz w ulubionych", "el": "Αποθήκευση στα αγαπημένα", "tr": "Favorilere kaydet"
+  },
+  "Без интернета впишите перевод сами — фраза сохранится и будет работать офлайн.": {
+    "en": "Without internet, type the translation yourself — the phrase will be saved and work offline.", "de": "Ohne Internet tragen Sie die Übersetzung selbst ein — der Satz wird gespeichert und funktioniert offline.", "fr": "Sans internet, saisissez la traduction vous-même : la phrase sera enregistrée et fonctionnera hors ligne.", "it": "Senza internet scrivi tu la traduzione: la frase verrà salvata e funzionerà offline.", "es": "Sin internet, escriba la traducción usted mismo: la frase se guardará y funcionará sin conexión.", "pt": "Sem internet, escreva a tradução — a frase fica guardada e funciona offline.", "pl": "Bez internetu wpisz tłumaczenie sam — zdanie zostanie zapisane i będzie działać offline.", "el": "Χωρίς internet γράψτε μόνοι σας τη μετάφραση — η φράση θα αποθηκευτεί και θα λειτουργεί εκτός σύνδεσης.", "tr": "İnternet yoksa çeviriyi kendiniz yazın — ifade kaydedilir ve çevrimdışı çalışır."
+  },
+  "Фраза сохранена в избранное": {
+    "en": "Phrase saved to favorites", "de": "Satz in Favoriten gespeichert", "fr": "Phrase enregistrée dans les favoris", "it": "Frase salvata nei preferiti", "es": "Frase guardada en favoritos", "pt": "Frase guardada nos favoritos", "pl": "Zdanie zapisane w ulubionych", "el": "Η φράση αποθηκεύτηκε στα αγαπημένα", "tr": "İfade favorilere kaydedildi"
+  },
+  "Напишите фразу и перевод": {
+    "en": "Enter the phrase and its translation", "de": "Geben Sie Satz und Übersetzung ein", "fr": "Saisissez la phrase et sa traduction", "it": "Scrivi la frase e la traduzione", "es": "Escriba la frase y la traducción", "pt": "Escreva a frase e a tradução", "pl": "Wpisz zdanie i tłumaczenie", "el": "Γράψτε τη φράση και τη μετάφραση", "tr": "İfadeyi ve çevirisini yazın"
+  },
+  "Напишите фразу": {
+    "en": "Enter a phrase", "de": "Geben Sie einen Satz ein", "fr": "Saisissez une phrase", "it": "Scrivi una frase", "es": "Escriba una frase", "pt": "Escreva uma frase", "pl": "Wpisz zdanie", "el": "Γράψτε μια φράση", "tr": "Bir ifade yazın"
+  },
+  "Нажмите ☆ у перевода или фразы — или добавьте свою. Избранное работает без интернета.": {
+    "en": "Tap ☆ next to a translation or phrase — or add your own. Favorites work without internet.", "de": "Tippen Sie bei einer Übersetzung oder einem Satz auf ☆ — oder fügen Sie einen eigenen hinzu. Favoriten funktionieren ohne Internet.", "fr": "Touchez ☆ à côté d’une traduction ou d’une phrase, ou ajoutez la vôtre. Les favoris fonctionnent sans internet.", "it": "Tocca ☆ accanto a una traduzione o a una frase, oppure aggiungine una tua. I preferiti funzionano senza internet.", "es": "Toque ☆ junto a una traducción o frase, o añada la suya. Los favoritos funcionan sin internet.", "pt": "Toque em ☆ junto a uma tradução ou frase, ou adicione a sua. Os favoritos funcionam sem internet.", "pl": "Dotknij ☆ przy tłumaczeniu lub zwrocie albo dodaj własne. Ulubione działają bez internetu.", "el": "Πατήστε ☆ δίπλα σε μια μετάφραση ή φράση — ή προσθέστε τη δική σας. Τα αγαπημένα λειτουργούν χωρίς internet.", "tr": "Bir çevirinin ya da ifadenin yanındaki ☆ simgesine dokunun veya kendi ifadenizi ekleyin. Favoriler internetsiz çalışır."
+  },
+  "Определён язык:": {
+    "en": "Detected language:", "de": "Erkannte Sprache:", "fr": "Langue détectée :", "it": "Lingua rilevata:", "es": "Idioma detectado:", "pt": "Idioma detetado:", "pl": "Wykryty język:", "el": "Εντοπίστηκε γλώσσα:", "tr": "Algılanan dil:"
+  },
+  "Часто используемые": {
+    "en": "Frequently used", "de": "Häufig verwendet", "fr": "Fréquemment utilisées", "it": "Usate spesso", "es": "Usados con frecuencia", "pt": "Usados frequentemente", "pl": "Często używane", "el": "Συχνά χρησιμοποιούμενες", "tr": "Sık kullanılanlar"
+  },
+  "Все языки": {
+    "en": "All languages", "de": "Alle Sprachen", "fr": "Toutes les langues", "it": "Tutte le lingue", "es": "Todos los idiomas", "pt": "Todos os idiomas", "pl": "Wszystkie języki", "el": "Όλες οι γλώσσες", "tr": "Tüm diller"
+  },
+  "PDF или фото билета — приложение заполнит бронь само": {
+    "en": "PDF or photo of the ticket — the app fills in the booking itself", "de": "PDF oder Foto des Tickets – die App füllt die Buchung selbst aus", "fr": "PDF ou photo du billet — l’application remplit la réservation toute seule", "it": "PDF o foto del biglietto: l’app compila la prenotazione da sola", "es": "PDF o foto del billete: la app rellena la reserva sola", "pt": "PDF ou foto do bilhete — a app preenche a reserva sozinha", "pl": "PDF lub zdjęcie biletu — aplikacja sama uzupełni rezerwację", "el": "PDF ή φωτογραφία του εισιτηρίου — η εφαρμογή συμπληρώνει μόνη της την κράτηση", "tr": "Biletin PDF’i veya fotoğrafı — uygulama rezervasyonu kendisi doldurur"
+  },
+  "Апартаменты, отель": {
+    "en": "Apartment, hotel", "de": "Apartment, Hotel", "fr": "Appartement, hôtel", "it": "Appartamento, hotel", "es": "Apartamento, hotel", "pt": "Apartamento, hotel", "pl": "Apartament, hotel", "el": "Διαμέρισμα, ξενοδοχείο", "tr": "Daire, otel"
+  },
+  "В файле": {
+    "en": "In the file", "de": "In der Datei", "fr": "Dans le fichier", "it": "Nel file", "es": "En el archivo", "pt": "No ficheiro", "pl": "W pliku", "el": "Στο αρχείο", "tr": "Dosyada"
+  },
+  "Водители": {
+    "en": "Drivers", "de": "Fahrer", "fr": "Conducteurs", "it": "Conducenti", "es": "Conductores", "pt": "Condutores", "pl": "Kierowcy", "el": "Οδηγοί", "tr": "Sürücüler"
+  },
+  "Вылет": {
+    "en": "Departure", "de": "Abflug", "fr": "Départ", "it": "Partenza", "es": "Salida", "pt": "Partida", "pl": "Wylot", "el": "Αναχώρηση", "tr": "Kalkış"
+  },
+  "Загрузить подтверждение брони": {
+    "en": "Upload booking confirmation", "de": "Buchungsbestätigung hochladen", "fr": "Importer la confirmation de réservation", "it": "Carica la conferma di prenotazione", "es": "Subir la confirmación de la reserva", "pt": "Carregar a confirmação da reserva", "pl": "Prześlij potwierdzenie rezerwacji", "el": "Μεταφόρτωση επιβεβαίωσης κράτησης", "tr": "Rezervasyon onayını yükle"
+  },
+  "Место получения": {
+    "en": "Pick-up location", "de": "Abholort", "fr": "Lieu de prise en charge", "it": "Luogo di ritiro", "es": "Lugar de recogida", "pt": "Local de levantamento", "pl": "Miejsce odbioru", "el": "Σημείο παραλαβής", "tr": "Teslim alma yeri"
+  },
+  "Найдено броней:": {
+    "en": "Bookings found:", "de": "Gefundene Buchungen:", "fr": "Réservations trouvées :", "it": "Prenotazioni trovate:", "es": "Reservas encontradas:", "pt": "Reservas encontradas:", "pl": "Znalezione rezerwacje:", "el": "Βρέθηκαν κρατήσεις:", "tr": "Bulunan rezervasyonlar:"
+  },
+  "Начало": {
+    "en": "Start", "de": "Beginn", "fr": "Début", "it": "Inizio", "es": "Inicio", "pt": "Início", "pl": "Początek", "el": "Έναρξη", "tr": "Başlangıç"
+  },
+  "Окончание": {
+    "en": "End", "de": "Ende", "fr": "Fin", "it": "Fine", "es": "Fin", "pt": "Fim", "pl": "Koniec", "el": "Λήξη", "tr": "Bitiş"
+  },
+  "Обложка": {
+    "en": "Cover image", "de": "Titelbild", "fr": "Image de couverture", "it": "Immagine di copertina", "es": "Imagen de portada", "pt": "Imagem de capa", "pl": "Zdjęcie okładki", "el": "Εικόνα εξωφύλλου", "tr": "Kapak görseli"
+  },
+  "Ожидает": {
+    "en": "Pending", "de": "Ausstehend", "fr": "En attente", "it": "In attesa", "es": "Pendiente", "pt": "Pendente", "pl": "Oczekuje", "el": "Σε αναμονή", "tr": "Beklemede"
+  },
+  "Открываю…": {
+    "en": "Opening…", "de": "Wird geöffnet…", "fr": "Ouverture…", "it": "Apertura…", "es": "Abriendo…", "pt": "A abrir…", "pl": "Otwieram…", "el": "Άνοιγμα…", "tr": "Açılıyor…"
+  },
+  "Получение": {
+    "en": "Pick-up", "de": "Abholung", "fr": "Prise en charge", "it": "Ritiro", "es": "Recogida", "pt": "Levantamento", "pl": "Odbiór", "el": "Παραλαβή", "tr": "Teslim alma"
+  },
+  "Посадочный": {
+    "en": "Boarding pass", "de": "Bordkarte", "fr": "Carte d’embarquement", "it": "Carta d’imbarco", "es": "Tarjeta de embarque", "pt": "Cartão de embarque", "pl": "Karta pokładowa", "el": "Κάρτα επιβίβασης", "tr": "Biniş kartı"
+  },
+  "Подходит только PDF или фото": {
+    "en": "Only PDF or photo is supported", "de": "Nur PDF oder Foto möglich", "fr": "Seuls les PDF ou photos sont acceptés", "it": "Sono supportati solo PDF o foto", "es": "Solo se admite PDF o foto", "pt": "Só é suportado PDF ou foto", "pl": "Obsługiwany jest tylko PDF lub zdjęcie", "el": "Υποστηρίζεται μόνο PDF ή φωτογραφία", "tr": "Yalnızca PDF veya fotoğraf desteklenir"
+  },
+  "Своё фото": {
+    "en": "Own photo", "de": "Eigenes Foto", "fr": "Ma photo", "it": "Foto personale", "es": "Foto propia", "pt": "Foto própria", "pl": "Własne zdjęcie", "el": "Δική μου φωτογραφία", "tr": "Kendi fotoğrafım"
+  },
+  "Всё верно — сохранить": {
+    "en": "All correct — save", "de": "Alles korrekt – speichern", "fr": "Tout est correct — enregistrer", "it": "Tutto corretto — salva", "es": "Todo correcto: guardar", "pt": "Tudo certo — guardar", "pl": "Wszystko się zgadza — zapisz", "el": "Όλα σωστά — αποθήκευση", "tr": "Her şey doğru — kaydet"
+  },
+  "Читаю бронь…": {
+    "en": "Reading the booking…", "de": "Buchung wird gelesen…", "fr": "Lecture de la réservation…", "it": "Lettura della prenotazione…", "es": "Leyendo la reserva…", "pt": "A ler a reserva…", "pl": "Czytam rezerwację…", "el": "Ανάγνωση κράτησης…", "tr": "Rezervasyon okunuyor…"
+  },
+  "Время окончания раньше начала": {
+    "en": "End time is before start time", "de": "Endzeit liegt vor der Startzeit", "fr": "L’heure de fin précède l’heure de début", "it": "L’ora di fine è prima dell’inizio", "es": "La hora de fin es anterior al inicio", "pt": "A hora de fim é anterior ao início", "pl": "Godzina końca jest wcześniejsza niż początek", "el": "Η ώρα λήξης είναι πριν από την έναρξη", "tr": "Bitiş saati başlangıçtan önce"
+  },
+  "Проверьте данные": {
+    "en": "Check the details", "de": "Daten prüfen", "fr": "Vérifiez les données", "it": "Controlla i dati", "es": "Revisa los datos", "pt": "Verifique os dados", "pl": "Sprawdź dane", "el": "Ελέγξτε τα στοιχεία", "tr": "Bilgileri kontrol edin"
+  },
+  "Удалить бронь «": {
+    "en": "Delete booking “", "de": "Buchung „", "fr": "Supprimer la réservation « ", "it": "Eliminare la prenotazione «", "es": "¿Eliminar la reserva «", "pt": "Eliminar a reserva «", "pl": "Usunąć rezerwację „", "el": "Διαγραφή της κράτησης «", "tr": "«"
+  },
+  "» вместе с документами?": {
+    "en": "” with its documents?", "de": "“ samt Dokumenten löschen?", "fr": " » avec ses documents ?", "it": "» con i documenti?", "es": "» con sus documentos?", "pt": "» com os documentos?", "pl": "” wraz z dokumentami?", "el": "» μαζί με τα έγγραφα;", "tr": "» belgeleriyle birlikte silinsin mi?"
+  },
+  "Уточните аэропорт:": {
+    "en": "Specify the airport:", "de": "Flughafen angeben:", "fr": "Précisez l’aéroport :", "it": "Specifica l’aeroporto:", "es": "Indica el aeropuerto:", "pt": "Indique o aeroporto:", "pl": "Wskaż lotnisko:", "el": "Καθορίστε το αεροδρόμιο:", "tr": "Havalimanını belirtin:"
+  },
+  "Файл «": {
+    "en": "File “", "de": "Datei „", "fr": "Fichier « ", "it": "File «", "es": "Archivo «", "pt": "Ficheiro «", "pl": "Plik „", "el": "Αρχείο «", "tr": "«"
+  },
+  "Нажмите, чтобы заменить": {
+    "en": "Tap to replace", "de": "Zum Ersetzen tippen", "fr": "Touchez pour remplacer", "it": "Tocca per sostituire", "es": "Toca para cambiar", "pt": "Toque para substituir", "pl": "Dotknij, aby zmienić", "el": "Πατήστε για αντικατάσταση", "tr": "Değiştirmek için dokunun"
+  },
+  "Нажмите, чтобы выбрать своё фото": {
+    "en": "Tap to choose your own photo", "de": "Tippen, um ein eigenes Foto zu wählen", "fr": "Touchez pour choisir votre photo", "it": "Tocca per scegliere una tua foto", "es": "Toca para elegir tu propia foto", "pt": "Toque para escolher a sua foto", "pl": "Dotknij, aby wybrać własne zdjęcie", "el": "Πατήστε για να επιλέξετε δική σας φωτογραφία", "tr": "Kendi fotoğrafınızı seçmek için dokunun"
   }
 }
