@@ -18,7 +18,7 @@ const context={
   ]},
   localStorage:{getItem:key=>storage.has(key)?storage.get(key):null,setItem:(key,value)=>storage.set(key,value)},
   document:{getElementById:id=>id==='exp-list'?list:groups.get(id),querySelector:()=>header},
-  t:key=>key,fdate:String,fm:n=>String(n),expRow:e=>`<div>${e.id}</div>`,initializeIcons:()=>{},
+  t:key=>key,fdate:String,fm:n=>String(n),expenseViewMarkup:n=>String(n),expRow:e=>`<div>${e.id}</div>`,initializeIcons:()=>{},
 };
 vm.createContext(context);
 vm.runInContext(source,context);
