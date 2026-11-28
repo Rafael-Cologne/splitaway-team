@@ -759,7 +759,7 @@
               <button class="tl-act" type="button" data-say="${i}" aria-label="Озвучить"><i data-lucide="volume-2"></i></button>
               <button class="tl-act${isFav({ from: 'ru', to: c, src: p[1] }) ? ' fav' : ''}" type="button" data-fav="${i}" aria-label="В избранное"><i data-lucide="star"></i></button></div>`).join('')}</div>
             <div class="tl-note">Нажмите на фразу, чтобы показать её собеседнику крупно. ${phraseState(c) === 'builtin' ? 'Фразы встроены в приложение и работают без интернета.' : 'Фразы скачаны и работают без интернета.'}</div>`
-          : `<div class="tl-card" style="margin-top:8px"><b>Фразы на языке «${esc(nm(c))}» ещё не скачаны</b>
+          : `<div class="tl-card" style="margin-top:8px"><b><span>Фразы ещё не скачаны:</span> <span>${esc(nm(c))}</span></b>
               <div class="tl-note">Скачайте их один раз, пока есть интернет, — потом они будут работать офлайн.</div>
               <button class="tl-btn" type="button" data-a="dl" style="margin-top:12px"><i data-lucide="download"></i>Скачать фразы</button><div class="tl-note" id="ph-st"></div></div>`}`;
         icons(body);

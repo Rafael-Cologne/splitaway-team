@@ -298,3 +298,13 @@ img.st-flag{object-position:70% center!important;filter:none!important}
 @media (max-height:800px){.hub-wrap{padding-top:calc(var(--st) + 8px);padding-bottom:calc(var(--nh) + var(--sb) + 4px)}.hub-hd{margin-bottom:10px}.hub-hero{padding-top:12px;padding-bottom:12px}.hub-row2.hub-row3{margin-top:8px}.hub-row3 .hub-pill{min-height:54px;padding:6px 4px;gap:3px}.hub-row3 .hub-pill svg{width:17px;height:17px}.hub-sec-hd,.hub-row3 + .hub-sec-hd{margin:10px 2px 6px}.hub-grid{gap:8px}}
 @media (max-height:720px){.hub-hero-sub{display:none}.hub-hero{padding-top:9px;padding-bottom:9px}.hub-hero-ic{width:38px;height:38px}.hub-hero-plus{width:34px;height:34px}.hub-hd{margin-bottom:8px}.hub-row3 .hub-pill{min-height:48px;font-size:.7rem}}
 @media (max-height:690px){.hub-sec-hd{display:none}.hub-row3 ~ #hub-svc-body{margin-top:8px}.hub-row3 .hub-pill{line-height:1.1;padding:5px 4px}}
+
+/* Ленты кнопок без горизонтальной прокрутки: переносятся на следующую строку, всё видно сразу.
+   (Почасовой прогноз Погоды .wx-hours намеренно остаётся прокручиваемой шкалой.)
+   «html body» — чтобы перекрыть стили модулей, которые подключаются позже. */
+html body .bk-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));overflow:visible;margin:0;padding:2px 0 8px}
+html body .bk-cats .bk-cat{min-width:0}
+html body .cal-types{flex-wrap:wrap;overflow:visible;margin:0;padding:2px 0 4px}
+html body .cal-types .cal-type{flex:0 0 calc((100% - 32px) / 5);min-width:0}
+html body .fx-chips,html body .tl-chips,html body .tr-when,html body .wx-chips{flex-wrap:wrap;overflow:visible}
+html body .wx-chips{margin:-2px 0;padding:2px 0 4px}

@@ -340,5 +340,8 @@
   },
   "Перевод:": {
     "en": "Translation:", "de": "Übersetzung:", "fr": "Traduction :", "it": "Traduzione:", "es": "Traducción:", "pt": "Tradução:", "pl": "Tłumaczenie:", "el": "Μετάφραση:", "tr": "Çeviri:"
+  },
+  "Фразы ещё не скачаны:": {
+    "en": "Phrases not downloaded yet:", "de": "Sätze noch nicht heruntergeladen:", "fr": "Phrases pas encore téléchargées :", "it": "Frasi non ancora scaricate:", "es": "Frases aún no descargadas:", "pt": "Frases ainda não transferidas:", "pl": "Zwroty jeszcze nie pobrane:", "el": "Οι φράσεις δεν έχουν ληφθεί ακόμη:", "tr": "İfadeler henüz indirilmedi:"
   }
 }
